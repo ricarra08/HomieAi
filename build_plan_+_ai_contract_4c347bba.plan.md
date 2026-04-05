@@ -1,6 +1,6 @@
 ---
 name: Build Plan + AI Contract
-overview: "Broad Surface, Narrow Core build plan for HomeBuyer Pro v1. 8-10 weeks, solo dev + AI assistants. Shopping and Offer built light as acquisition surfaces. Escrow, Closing, Documents, Financing, and AI Copilot built deep. Post-Close as thin continuity. Includes complete AI/data extraction contract. Built on Next.js (App Router) + Supabase + OpenAI."
+overview: "Broad Surface, Narrow Core build plan for HomeBuyer Pro v1. 10-12 weeks, solo dev + AI assistants. Shopping and Offer built light as acquisition surfaces. Escrow, Closing, Documents, Financing, and AI Copilot built deep. Post-Close as thin continuity. Includes complete AI/data extraction contract with tiered document types. Built on Next.js (App Router) + Supabase + OpenAI."
 todos: []
 isProject: false
 ---
@@ -112,11 +112,14 @@ graph TB
 - Auth context provider
 
 ### 0.5 Layout Shell
-- App layout: sidebar + main content + copilot panel (collapsible)
-- Progress stepper component (5-phase, all interactive, Mint for completed/current, Gray for future)
-- Sidebar navigation: Dashboard, Homes, Documents, Financing, Insurance
-- Global footer with disclaimer
-- Phase-aware dashboard: renders different content based on `currentPhase`
+- App layout: sidebar (256px) + main content + floating AICopilot button
+- Progress stepper (`ProgressStepper`) — 69px, fixed top, 5-phase, Mint for completed/current, Gray for future
+- **Sidebar navigation: 3 items** (confirmed from Figma) — Dashboard, Documents, Financing
+  - "HomeBuyer Pro" wordmark above nav
+  - Phase-contextual CTA button at sidebar bottom
+- Global footer (`GlobalFooter`) — 52px, fixed bottom, disclaimer text
+- **AICopilot**: Two states. Collapsed = 56x56 Bronze floating button, fixed bottom-right. Expanded = right-side panel (~300px), chat UI with message history, input field, send button (Mint), quick-action chips ("Explain this document", "Calculate closing costs", "Market analysis"). Default collapsed.
+- Phase-aware dashboard renders Shopping/Offer/Escrow/Closing/Post-Close based on `currentPhase`
 - State architecture: Zustand store for UI state, TanStack Query provider
 
 ### Phase 0 Database Schema
@@ -170,19 +173,36 @@ copilot_messages (id, deal_id, role, content, citations, phase,
 **Goal:** Shopping and Offer are functional light surfaces. A buyer can track homes, set up an offer, transition into Escrow, and start uploading documents. The product feels like a complete workspace from day one — not a tool that only activates at escrow.
 
 ### 1.1 Shopping Dashboard — Build Light (Week 2)
-- Saved homes list: add home (address, price, beds/baths/sqft, notes), edit, remove
-- Saved home card component
-- Affordability snapshot: simple cash-to-close estimator + monthly payment estimate
-- Pre-approval status card: upload pre-approval letter, display amount/expiration
-- "Ready to make an offer?" CTA → transitions to Offer with selected home pre-populated
-- Homes sidebar view (same data, list layout)
+*Component name confirmed from Figma: `ShoppingView`*
+
+**4 CollapsibleCards (confirmed from Figma deep inspection):**
+1. **Your Buy Box** — Target criteria: price range, bedrooms, target area. Manual input only.
+2. **Saved Homes** — Per-home rows: address, city, price, beds/baths/sqft, days on market, "Active" status badge, "Move to Offer" button. Manual entry only.
+3. **Affordability Estimate** — Purchase price input, down payment %, estimated cash-to-close output. Manual inputs only — no address enrichment, no property lookup, no automated data.
+4. **Market Snapshot** — Median home price, avg days on market, market trend ("Competitive"). Buyer-entered or manually maintained reference context — not live data, not API-fed. This card is informational context only.
+
+**Explicit boundary:** All property data is buyer-entered. No MLS lookup, no address enrichment, no Zillow/Redfin import, no automated listing metadata. If it's not typed by the buyer, it doesn't exist in v1.
+
+- "Add Property" button (Accent/Bronze)
+- Home tracking lives inside the Shopping dashboard, NOT a separate sidebar nav item
 
 ### 1.2 Offer Workspace — Build Light (Week 2)
-- Offer details form: property, price, EMD, contingencies, closing date, agent info
-- Offer checklist: pre-approval attached, proof of funds, EMD ready, contingencies defined
-- Pre-approval / proof of funds upload (stored in documents table, linked to offer)
-- Contingency setup: inspection/appraisal/financing/disclosure period inputs
-- "Offer Accepted — Move to Escrow" CTA → creates deal workspace, computes deadlines
+*Component name confirmed from Figma: `OfferView`*
+
+**Header:** "Offer Workspace" / "Structure and prepare your offer" / "Offer in Progress" status badge (Bronze)
+**Property card:** Address, city, beds/baths/sqft, list price
+
+**4 CollapsibleCards (confirmed from Figma deep inspection):**
+1. **Offer Details** — Offer price, earnest money deposit, down payment %, closing timeline. Editable input fields.
+2. **Contingencies** — Checkboxes + day inputs: Inspection (10d), Loan (21d), Appraisal (17d), Sale of Current Home. Feeds directly into Escrow deadline computation.
+3. **Supporting Documents** — Pre-approval letter upload, proof of funds upload. Shows file name, size, upload date.
+4. **Offer Readiness** — Checklist: pre-approval attached, proof of funds uploaded, EMD set, contingencies defined, offer expiration set. Progress tracking.
+
+- "Review & Submit Offer" button (Accent/Bronze)
+- **"Offer Accepted — Start Escrow" CTA** (Accent/Bronze) → creates deal workspace, computes deadlines
+- "Upload Additional Document" action
+
+**Legal boundary:** The offer workspace captures buyer-entered terms and uploaded documents. It does not generate, validate, or negotiate legal contract language.
 
 ### 1.3 Deal Workspace Creation (Week 2-3)
 - **From Offer flow:** CTA creates deal, populates from offer_details, sets phase to Escrow
@@ -216,12 +236,14 @@ copilot_messages (id, deal_id, role, content, citations, phase,
 
 **Goal:** The AI can extract structured fields from documents, summarize them in plain English, and answer deal-specific questions. The copilot is phase-aware — lighter in Shopping/Offer, deep in Escrow/Closing.
 
-### 2.1 Field Extraction Pipeline (Week 3-4)
+### 2.1 Field Extraction Pipeline — Tier 1 Focus (Week 3-4)
+- **Tier 1 first:** Purchase contract, Loan Estimate, Closing Disclosure, Inspection report
 - Per-document-type extraction prompts (see AI Extraction Contract below)
 - Structured JSON output via OpenAI function calling
 - Confidence scoring per field (high / medium / low)
 - Store in `documents.extracted_fields` (JSONB)
 - Low-confidence flag for human review
+- **Tier 2 (appraisal, title, disclosures, insurance binder):** classification + summarization ships now; full field extraction deferred to Phase 4 or polish
 
 ### 2.2 Document Summarization (Week 4)
 - Summarization prompt per document type
@@ -239,9 +261,11 @@ copilot_messages (id, deal_id, role, content, citations, phase,
 - Bulk selection bar (download ZIP, mark reviewed)
 
 ### 2.4 Copilot Chat Interface (Week 4-5)
-- Right-side expandable panel
-- Chat UI: message input, history, rich content rendering (tables, lists, callouts)
-- Collapsible/expandable behavior
+- Collapsed: 56x56 Bronze floating button, bottom-right, fixed
+- Expanded: right-side panel (~300px), "AI Copilot" header with expand/close buttons
+- Chat UI: message input ("Ask about homebuying, documents, or scenarios..."), message history with timestamps, rich content rendering (tables, lists, callouts)
+- Send button (Mint Green)
+- **Quick-action chips** pinned at bottom of panel: "Explain this document", "Calculate closing costs", "Market analysis" — phase-aware (chips change based on current phase)
 - Message persistence per deal in `copilot_messages`
 
 ### 2.5 Context Assembly Engine (Week 5)
@@ -333,39 +357,68 @@ copilot_messages (id, deal_id, role, content, citations, phase,
 
 **Goal:** Closing phase deep build, collaborator upload link, and Post-Close thin continuity. After this phase, the full shopping-to-close flow is functional end to end.
 
-### 5.1 Closing Disclosure Review — Build Deep (Week 7-8)
-- CD receipt confirmation + 3-business-day countdown
-- Integrates with LE vs CD variance panel from Phase 3
-- Line-item review UI
-- Change request guidance
+### 5.1 Closing Dashboard — Build Deep (Week 7-8)
+*Figma name: "Main Content" inside App — uses `CollapsibleCard` sections + `ClosingAlerts`*
 
-### 5.2 Wire Fraud SafeSend — Build Deep (Week 8)
-- Fraud prevention flow with verbal verification checklist
-- Wire instruction confirmation UI
-- "Never trust emailed wire instructions" warning
+**Header:**
+- "Final steps to complete your purchase"
+- Property address, closing date, purchase price
+- "Recording Complete — Keys in Hand!" CTA (top of view)
 
-### 5.3 Closing Components — Build Deep (Week 8)
-- Signing Appointment: notary info, what to bring, ID requirements
-- Final Walkthrough Checklist: room-by-room, repair verification
-- Underwriting Conditions Final: CTC confirmation, outstanding conditions
-- Closing Alerts: red flags, missing signatures, funding delays
-- Funding/Recording Timeline: basic multi-step tracker (light)
+**Critical Final Steps** — 3 CollapsibleCards (each 368x726), each containing a named component:
+- `ClosingDisclosureReview` — CD vs LE comparison, "Open CD" + "Explain Differences" buttons
+- `CashToCloseFinalizer` — Line-item breakdown, "Confirm Amount" CTA
+- `SigningAppointment` — Scheduling, required items checklist, "Confirm Appointment" / "Reschedule"
 
-### 5.4 Secure Collaborator Upload Link — Build Light (Week 8)
+**Pre-Closing Verification** — 3 CollapsibleCards (each 368x830):
+- `FinalWalkthroughChecklist` — Room-by-room checklist (71% complete in prototype), "Upload Photos" / "Complete Walkthrough"
+- `InsuranceBinderVerification` — Policy active/bound status, binder verification, premium included in closing costs
+- `UnderwritingConditionsFinal` — Outstanding conditions, "Submit Remaining Docs" CTA
+
+**Funding & Transfer** — 3 CollapsibleCards (each 368x818):
+- `WireTransferSafeSend` — CRITICAL fraud prevention. Verification steps, phone confirmation, "Upload Receipt" / "Mark as Wired"
+- `TitleEscrowFinalChecks` — Last-minute red flags, "View Full Report" / "Acknowledge & Continue"
+- `FundingRecordingTimeline` — Step tracker (fund → disburse → record → keys), "I've Picked Up the Keys" CTA
+
+**Alerts & Issues** — CollapsibleCard (1152x352) containing:
+- `ClosingAlerts` (1102x234) — Individual alert rows with action buttons ("Contact Lender", "Review Changes", "Monitor Status")
+
+**Internal build priority for Phase 5 (if time gets tight):**
+1. Closing Disclosure review + LE vs CD variance
+2. Wire fraud SafeSend
+3. Underwriting / final checks
+4. Collaborator upload link
+5. Post-close continuity
+
+### 5.2 Secure Collaborator Upload Link — Build Light (Week 8)
 - Generate unique link per collaborator (agent, lender, escrow, title)
 - No-account upload page: open link, upload files
-- Files flow into buyer's deal workspace via same AI pipeline
+- Files flow into buyer's deal workspace via same AI classification + extraction pipeline
 - Link expiration, revocation, upload count tracking
 - Buyer notification of new uploads
+- **Tagging rule:** If the link specifies requested document types, uploaded files inherit those tags by default and still pass through AI classification. Classification can override if the actual document differs from the request.
 
-### 5.5 Post-Close — Thin Continuity (Week 8)
-- Completion celebration screen on recording complete
-- Deal summary / snapshot card
-- Download all deal documents (ZIP) + deal summary PDF
-- First 30 days checklist (utilities, address changes, warranty registration)
-- "Homeowner tools coming soon" card with email capture
+### 5.3 Post-Close — Thin Continuity (Week 8)
+*Component name confirmed from Figma: `PostCloseView`*
 
-### 5.6 Phase Transitions (Week 8)
+**Header:**
+- "Congratulations! 🎉"
+- "You've successfully closed on [address]. Your journey is complete!"
+- Closing Date + Final Purchase Price display
+
+**CollapsibleCard 1: Deal Summary** — Purchase price, down payment, loan amount, interest rate, total cash to close, monthly PITI
+
+**CollapsibleCard 2: Document Archive** — Individual document rows, each with name, file size, date, "Download" button:
+- Closing Disclosure, Final Title Policy, Deed of Trust, Settlement Statement, Home Inspection Report, Appraisal Report
+- "Download Complete Archive (ZIP)" link (Accent/Bronze text)
+
+**Coming Soon cards:**
+- Equity Tracking — "Monitor your home's value and equity growth over time" + "Coming Soon"
+- Homeowner Tools — "Maintenance tracking, warranty management, and more" + "Coming Soon"
+
+**Closing message:** "Thank you for using HomeBuyer Pro" + "We hope we helped make your homebuying journey clearer and less stressful."
+
+### 5.4 Phase Transitions (Week 8)
 - Shopping → Offer: "Ready to make an offer?" with home pre-population
 - Offer → Escrow: "Offer Accepted" with deal workspace creation
 - Escrow → Closing: "All Contingencies Clear? Proceed to Closing"
@@ -373,17 +426,24 @@ copilot_messages (id, deal_id, role, content, citations, phase,
 
 ---
 
-## Phase 6: Polish + Beta Launch (Weeks 8-10)
+## Phase 6: Polish + Beta Launch (Weeks 9-12)
 
-**Goal:** Production-ready beta. First real buyers using the product with real documents across the full journey.
+**Goal:** Production-ready beta. Sequenced ruthlessly — core stability first, polish second, mobile last.
 
-### 6.1 Onboarding — Two Entry Paths (Week 9)
+**Week-by-week sequencing (strict order, not parallel):**
+- **Week 9:** Tier 2 extraction + onboarding paths
+- **Week 10:** Security + validation + desktop polish
+- **Week 11:** Mobile/responsive only if core is stable; otherwise bug fixing
+- **Week 12:** Beta onboarding + real-user seeding + bug fixing
+
+### 6.1 Tier 2 Extraction + Onboarding (Week 9-10)
+- Tier 2 field extraction for appraisal, title report, disclosures, insurance binder
 - Landing page (simple, warm, trust-communicating)
 - **Path A (Shopper):** "I'm shopping for a home" → Shopping dashboard
 - **Path B (Under contract):** "I have an accepted offer" → Deal setup → Escrow
 - Both paths get copilot introduction and guided first steps
 
-### 6.2 Emotional Identity Polish (Week 9)
+### 6.2 Emotional Identity Polish (Week 10)
 - Phase stepper animations and transitions
 - Contextual glossary / term explanations (inline, hover/tap)
 - Alerts panel styling and urgency states
@@ -391,7 +451,7 @@ copilot_messages (id, deal_id, role, content, citations, phase,
 - Empty states for all views (Shopping with no homes, Escrow with no documents, etc.)
 - Loading skeletons
 
-### 6.3 Responsive / Mobile (Week 9)
+### 6.3 Responsive / Mobile (Week 10-11)
 - Sidebar collapse to hamburger
 - Single-column layouts
 - Full-screen modals on mobile
@@ -399,7 +459,7 @@ copilot_messages (id, deal_id, role, content, citations, phase,
 - Copilot panel behavior on small screens
 - Progress stepper vertical on mobile
 
-### 6.4 Performance + Security (Week 10)
+### 6.4 Performance + Security (Week 11)
 - Route-based code splitting
 - Image/component lazy loading
 - Supabase RLS audit
@@ -408,7 +468,7 @@ copilot_messages (id, deal_id, role, content, citations, phase,
 - Document upload size limits
 - CORS and CSP headers
 
-### 6.5 Beta Deployment (Week 10)
+### 6.5 Beta Deployment (Week 11-12)
 - Vercel production deploy
 - Supabase production project
 - OpenAI API key management (env vars, usage monitoring)
@@ -438,9 +498,20 @@ graph LR
   Extract -->|Low confidence| FlagReview[Flag for Review]
 ```
 
+### Document Type Tiers
+
+Not all document types are equally important for beta. Extraction effort should be concentrated on Tier 1 first.
+
+| Tier | Document types | Rationale |
+|------|---------------|-----------|
+| **Tier 1 — Must extract** | Purchase contract, Loan Estimate, Closing Disclosure, Inspection report | These drive the highest-value workflows: deadline computation, LE comparison, LE vs CD variance, cash-to-close, red-flag summaries. Beta is not viable without them. |
+| **Tier 2 — Should extract** | Appraisal, Title report, Disclosures, Insurance binder | Important for completeness but lower extraction urgency. Classification + summarization may ship before full field extraction. |
+
+**Build plan implication:** Phase 2 field extraction (Weeks 3-4) focuses on Tier 1. Tier 2 gets classification + summarization in Phase 2, with full field extraction added in Phase 4 or during polish.
+
 ### Document Types + Extraction Fields
 
-**1. Purchase Contract / RPA**
+**1. Purchase Contract / RPA** — Tier 1
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
@@ -461,7 +532,7 @@ graph LR
 | escrow_company | string | No | |
 | title_company | string | No | |
 
-**2. Loan Estimate (LE)**
+**2. Loan Estimate (LE)** — Tier 1
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
@@ -483,7 +554,7 @@ graph LR
 | lock_expiration | date | No | |
 | down_payment_pct | number | Yes | |
 
-**3. Closing Disclosure (CD)**
+**3. Closing Disclosure (CD)** — Tier 1
 
 Same fields as LE, plus:
 
@@ -497,7 +568,7 @@ Same fields as LE, plus:
 | prepaid_items | number | No | |
 | initial_escrow | number | No | |
 
-**4. Inspection Report**
+**4. Inspection Report** — Tier 1
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
@@ -510,7 +581,7 @@ Same fields as LE, plus:
 | recommended_actions | string[] | No | |
 | overall_condition | string | No | good / fair / poor |
 
-**5. Appraisal**
+**5. Appraisal** — Tier 2
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
@@ -521,7 +592,7 @@ Same fields as LE, plus:
 | appraisal_gap | number | Computed | purchase_price - appraised_value |
 | condition_notes | string | No | |
 
-**6. Title Report / Preliminary Title**
+**6. Title Report / Preliminary Title** — Tier 2
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
@@ -533,7 +604,7 @@ Same fields as LE, plus:
 | exceptions | string[] | No | Standard and special |
 | title_insurance_premium | number | No | |
 
-**7. Disclosures (TDS, NHD, etc.)**
+**7. Disclosures (TDS, NHD, etc.)** — Tier 2
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
@@ -543,7 +614,7 @@ Same fields as LE, plus:
 | required_acknowledgment | boolean | Yes | Buyer signature needed? |
 | review_deadline | date | No | |
 
-**8. Insurance Binder**
+**8. Insurance Binder** — Tier 2
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
@@ -583,6 +654,19 @@ This is within TILA tolerance limits but worth confirming with your lender."
 
 Pattern: `[Document Name, page, section]` inline in natural language.
 
+### Engineering Rule: Deterministic Computation Over Model Inference
+
+**When structured fields are available, deterministic code always wins over LLM inference.**
+
+This means:
+- Deadline dates → computed from contract dates + contingency days. Not inferred by the model.
+- Cash-to-close math → calculated from extracted LE/CD fields. Not estimated by the model.
+- LE vs CD variance numbers → computed by comparison logic. The model explains the result, it does not produce it.
+- Monthly P&I → standard amortization formula. Not generated text.
+- Progress/completion status → derived from data state (checklist counts, document statuses). Not judged by the model.
+
+The AI copilot's job is to **explain, contextualize, and surface implications** — not to perform math or decide status. If a number can be computed, compute it. If a status can be derived, derive it. The model adds understanding, not arithmetic.
+
 ### Phase-Aware AI Context Assembly
 
 | Phase | Context assembled | System prompt mode |
@@ -601,11 +685,14 @@ Pattern: `[Document Name, page, section]` inline in natural language.
 |------|-----------|-----------|
 | 1 | Foundation deployed, auth works, layout renders with all 5 phases | Can sign up and navigate Shopping/Offer/Escrow/Closing/Post-Close shells |
 | 3 | Shopping + Offer light surfaces work; documents upload + classify | Can track homes, set up offer, transition to Escrow, upload and classify a PDF |
-| 5 | AI copilot answers questions; LE entry works; field extraction running | Can ask the AI about a document and get a grounded answer with citations |
-| 6 | LE comparison + cash-to-close functional | Can compare loan estimates and see live cash-to-close |
-| 7 | Full Escrow dashboard populated | Contingency countdown, deadlines, alerts all rendering from real data |
-| 8 | Closing + collaborator link + Post-Close complete | Full shopping-to-close flow functional end to end |
-| 10 | Beta deployed with real users | 2-3 buyers using the product with real documents |
+| 5 | AI copilot answers questions; Tier 1 field extraction running | Can ask the AI about a document and get a grounded answer with citations |
+| 7 | LE comparison + cash-to-close + Escrow dashboard functional | Can compare loan estimates, see cash-to-close, track deadlines with real data |
+| 9 | Closing + collaborator link + Post-Close complete | Full shopping-to-close flow functional end to end |
+| 10 | Security + validation + desktop polish | Auth/RLS audited; input validation solid; desktop UI polished and stable |
+| 11 | Mobile/responsive (only if core is stable) | Product works on mobile; or this week is bug fixing if core needs it |
+| 12 | Beta deployed with real users | 2-3 buyers using the product with real documents |
+
+**Week 8 checkpoint:** If Week 8 arrives and Closing is not functional, invoke the cut list (see below). Do not let polish eat into core feature time.
 
 ---
 
@@ -615,8 +702,57 @@ Pattern: `[Document Name, page, section]` inline in natural language.
 |------|------------|
 | PDF extraction quality varies | Digital-first with Vision fallback; confidence scoring; human review flags |
 | OpenAI rate limits / latency | Queue extraction jobs; cache summaries; show "processing" state |
-| Solo dev + 8-week timeline is tight | Light surfaces are genuinely light (1-2 days each). Phase 6 polish is the buffer. Ship ugly before shipping late. |
+| Solo dev timeline slips | 10-12 week range gives 2 weeks of buffer. Cut list defines what drops first. Ship ugly before shipping late. |
 | Light phases feel like dead ends | Ensure Shopping → Offer → Escrow transitions feel seamless. Empty states guide the user forward. |
 | Scope creep from "just one more Shopping feature" | MVP overlay v2.0 is the scope authority. If it's not in Build Deep or Build Light, it doesn't get built. |
 | Supabase RLS complexity for collaborator links | Collaborator links use separate auth-free API route with link token validation |
 | Phase-aware AI feels inconsistent | Clear system prompt switching. User-facing messaging: "I'll know more once you upload documents in escrow." |
+| Tier 1 extraction takes longer than expected | Focus on purchase contract + LE first (they feed the most workflows). CD and inspection can follow a week later. |
+
+---
+
+## Beta-Ready Definition
+
+The product is beta-ready when all of the following are true. This is the minimum bar — do not ship below it, and do not gold-plate above it.
+
+**Must be true for beta:**
+1. A buyer can sign up, track a home, set up an offer, and transition into Escrow
+2. A buyer under contract can skip Shopping/Offer and enter directly at Escrow via deal setup form
+3. Documents can be uploaded and are classified + summarized by AI
+4. Tier 1 document types (purchase contract, LE, CD, inspection) have field extraction working
+5. When a Loan Estimate is uploaded and extracted, the system auto-populates a `loan_estimates` row **with buyer review/edit confirmation before saving** (not silent creation)
+6. LE comparison works with 2-3 estimates side by side
+7. LE vs CD variance panel renders when both docs are uploaded
+8. Cash-to-close engine produces a live number from chosen LE (deterministic computation, not LLM inference)
+9. Contingency countdown renders deadlines from deal setup / offer contingency days
+10. Closing Disclosure review + wire fraud SafeSend flow are functional
+11. AI copilot answers deal-specific questions with citations in Escrow/Closing
+12. Collaborator upload link works (no-account file intake)
+13. Post-Close shows completion screen + document archive with individual download buttons
+14. Auth, RLS, and basic input validation are in place
+15. The product works on desktop (mobile is a plus, not a gate)
+
+**Not required for beta:**
+- Tier 2 field extraction (classification + summary is sufficient)
+- Full responsive/mobile polish
+- Email/SMS notifications
+- Insurance view depth
+- Performance optimization beyond basic code splitting
+- Full accessibility audit
+
+---
+
+## Cut List (If Timeline Slips)
+
+Ordered by what drops first. Each cut removes scope without breaking the core product.
+
+| Priority | What to cut | Impact | When to decide |
+|----------|------------|--------|----------------|
+| Cut 1 | Tier 2 field extraction (appraisal, title, disclosure, binder) | Classification + summarization still work. Copilot can answer questions from raw text. Structured comparison loses some depth. | Week 8 |
+| Cut 2 | Responsive/mobile polish | Desktop-only beta. Most escrow work happens at a desk anyway. | Week 9 |
+| Cut 3 | Post-Close thin continuity | Replace with a simple "Congratulations" page and download-all-docs button. First-30-days checklist and email capture dropped. | Week 8 |
+| Cut 4 | Shopping affordability snapshot | Keep saved homes + pre-approval card. Drop the estimator. Buyers can still track homes and transition to Offer. | Week 6 |
+| Cut 5 | Offer checklist completion tracking | Keep the offer details form + contingency setup (these feed Escrow). Drop the visual checklist with checkbox progress. | Week 6 |
+| Cut 6 | Copilot in Shopping/Offer phases | Keep copilot in Escrow/Closing only. Shopping/Offer get static educational content instead of live AI. | Week 7 |
+
+**Rule:** Never cut from Build Deep. Cuts come from Build Light and Thin Continuity only. The moat is non-negotiable.

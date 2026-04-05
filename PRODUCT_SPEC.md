@@ -521,28 +521,36 @@ The system does **not** need v1 support for:
 - **Component:** `Sidebar.tsx`
 - **Width:** 256px (64 units)
 - **Background:** Secondary (#FEFCF8 Off-white)
-- **v1 Navigation Items:**
-  1. Dashboard (LayoutDashboard icon) — **Build Deep** — Phase-aware: renders Shopping, Offer, Escrow, Closing, or Post-Close dashboard based on `deal.currentPhase`
-  2. Homes (Home icon) — **Build Light** — Saved/tracked homes list. Always accessible. Functions as the persistent Shopping surface even after a deal is created.
-  3. Documents (FileText icon) — **Build Deep** — Available once a deal exists (Offer phase or later)
-  4. Financing (CreditCard icon) — **Build Deep** — Available once a deal exists (Escrow phase or later)
-  5. Insurance (Shield icon) — **Build Light** — Thin binding flow, available in Escrow/Closing
+- **v1 Navigation Items** (confirmed from Figma prototype — 3 items):
+  1. Dashboard (LayoutDashboard icon) — **Build Deep** — Phase-aware hub. Renders Shopping, Offer, Escrow, Closing, or Post-Close dashboard based on current phase.
+  2. Documents (FileText icon) — **Build Deep** — Full-width view. Available once a deal exists.
+  3. Financing (CreditCard icon) — **Build Deep** — Full-width view. Available once a deal exists.
 - **Active State:** Accent (#D38E45 Bronze) text/icon with Card (#FFFFFF) background, subtle shadow
-- **Contextual visibility:** Documents, Financing, and Insurance appear grayed/locked until the buyer has a deal in the appropriate phase. Homes and Dashboard are always accessible.
+- **Brand header:** "HomeBuyer Pro" wordmark above the navigation items.
+- **Bottom button:** Phase-contextual CTA at the bottom of the sidebar (e.g., "Proceed to Closing").
 
-**Information architecture note:** The Dashboard is the phase-aware hub — it shows the right content for where the buyer is. Homes is a persistent sidebar destination for property tracking that lives outside any specific deal. When the buyer has no deal yet, Dashboard renders the Shopping dashboard (which includes a Homes summary widget). Once a deal is created, Dashboard renders the active phase dashboard. Homes remains accessible for tracking additional properties or starting new deals.
+**IA note:** The prototype has 3 sidebar nav items, not 5. Homes, Insurance, and other views are not top-level sidebar destinations in v1 — they are either embedded in the Dashboard (Shopping phase includes home tracking) or accessible from within phase dashboards (insurance binding is inside Escrow, not a separate nav item). The sidebar is intentionally minimal.
 
 #### AI Copilot Panel
 - **Component:** `AICopilot.tsx`
-- **Position:** Right-side expandable panel
-- **Width:** 30% of viewport when expanded
-- **Features:**
-  - Collapsible/expandable interface
-  - Real-time chat interface
-  - **Deal-context grounded** — see Section 8 for full AI spec
-  - Rich content support (tables, lists, tips)
-  - Message history
-  - Send message input with icon
+- **Two states** (confirmed from prototype screenshot):
+
+**Collapsed state:**
+- 56x56 floating button, Accent/Bronze (#D38E45) fill, fixed bottom-right corner
+- Present on every screen
+- Click to expand
+
+**Expanded state:**
+- Right-side panel, approximately 280-320px wide
+- "AI Copilot" header with expand (fullscreen) and close (X) buttons
+- Welcome message: "Hi there! I'm your AI homebuying assistant. I can help you understand documents, explain the process, or run scenarios. What would you like to know?"
+- Message history with timestamps
+- Input field: "Ask about homebuying, documents, or scenarios..."
+- Send button (Primary/Mint Green #6EE7B7)
+- **Quick-action chips** pinned at bottom: "Explain this document", "Calculate closing costs", "Market analysis"
+- **Deal-context grounded** — see Section 8 for full AI spec
+- Phase-aware depth (lighter in Shopping/Offer, deep in Escrow/Closing)
+- Dismiss by clicking X or pressing Escape; panel pushes content left or overlays depending on viewport width
 
 #### Global Footer
 - **Component:** `GlobalFooter.tsx`
@@ -720,52 +728,42 @@ These are the specific AI-driven features that ship in v1:
 #### Overview
 The product's front door for early-stage buyers. The Shopping phase gives buyers a place to track homes they're interested in, understand basic affordability, and organize their readiness before making an offer. It is real and functional, but it is not a deep search or analytics product.
 
-#### Dashboard Layout
+#### Dashboard Layout (from Figma prototype)
 ```
 ┌──────────────────────────────────────┐
-│  Pre-Approval Status Card            │
-├──────────────────┬───────────────────┤
-│  Saved Homes     │  Affordability    │
-│  List            │  Snapshot         │
-├──────────────────┴───────────────────┤
-│  "Ready to make an offer?" CTA       │
+│  "Track homes and prepare your       │
+│   buy box"           [Add Property]  │
+├──────────────────────────────────────┤
+│  CollapsibleCard (home entries)      │
 └──────────────────────────────────────┘
 ```
 
+The Shopping view is intentionally minimal — the prototype confirms this as a lightweight home-tracking surface, not a research or analytics tool.
+
 #### Components
 
-**1. Saved Homes List** (`SavedHomesList.tsx`) — Build Light
-- Manual entry: address, price, beds/baths/sqft, notes, photo (optional)
-- Simple card or list layout
-- Quick actions: Edit, Remove, "Make an offer on this home" (transitions to Offer)
-- No MLS integration, no Zillow/Redfin import, no neighborhood analytics
+**1. ShoppingView** (`ShoppingView.tsx`) — Build Light
+- Header: "Track homes and prepare your buy box"
+- "Add Property" button
+- CollapsibleCard per saved home (address, price, basic details)
+- Note: no separate Homes sidebar view — home tracking lives inside the Shopping phase dashboard
 
-**2. Affordability Snapshot** (`AffordabilitySnapshot.tsx`) — Build Light
-- Simple cash-to-close estimator (purchase price, down payment %, estimated closing costs)
-- Monthly payment estimate (P&I from basic rate assumption)
-- Not a full calculator product — lightweight orientation tool
-
-**3. Pre-Approval Status Card** (`PreApprovalCard.tsx`) — Build Light
-- Upload pre-approval letter (PDF)
-- Display: lender name, approved amount, expiration date
-- Status: "Pre-approved" / "Not yet" / "Expired"
-
-**4. Shopping Alerts** — Build Light
-- Pre-approval expiration warning
-- Basic readiness reminders ("Have you talked to a lender?")
+**2. CollapsibleCard** (`CollapsibleCard.tsx`) — Shared pattern
+- Reusable across Shopping, Offer, Closing, and Post-Close phases
+- Expand/collapse to show/hide details
+- Header with summary, expandable body
 
 #### Phase Transition
 **CTA:** "Ready to make an offer?"
 - Transitions to Offer phase
-- If a saved home is selected, pre-populates the offer form with property address and price
+- Pre-populates offer form with selected home details
 
 #### What does NOT ship in Shopping
 - MLS search or property import
 - Market analytics, neighborhood comps, price trends
-- Equity appreciation forecast
-- BRBC summary or deep financial planning
+- Equity appreciation forecast, BRBC summary
 - Loan type recommendation wizard
-- Offer strength prediction
+- Separate "Homes" sidebar navigation item — homes are managed inside Dashboard/Shopping
 
 ---
 
@@ -1002,34 +1000,34 @@ The primary v1 experience. Manages the 21–45 day period between offer acceptan
 #### Overview
 Handles final verifications, document signing, and fund transfer in the 3–7 days before recording. Second primary v1 experience.
 
-#### Dashboard Layout
+#### Dashboard Layout (from Figma prototype)
+
+The Closing dashboard uses `CollapsibleCard` sections rather than individually named components. This is structurally simpler than Escrow and reflects that closing is more of a checklist than a monitoring system.
+
 ```
-🚨 CRITICAL FINAL STEPS
-┌───────────┬──────────────┬───────────┐
-│ Closing   │ Cash-to-     │ Signing   │
-│ Disclosure│ Close        │ Appoint.  │
-│ Review    │ Finalizer    │           │
-└───────────┴──────────────┴───────────┘
-
-🔍 PRE-CLOSING VERIFICATION
-┌───────────┬──────────────┬───────────┐
-│ Final     │ Insurance    │ Under-    │
-│ Walk-     │ Binder       │ writing   │
-│ through   │ Verification │ Conditions│
-└───────────┴──────────────┴───────────┘
-
-💰 FUNDING & TRANSFER
-┌───────────┬──────────────┬───────────┐
-│ Wire      │ Title/Escrow │ Funding & │
-│ Transfer  │ Final Checks │ Recording │
-│ SafeSend  │              │ Timeline  │
-└───────────┴──────────────┴───────────┘
-
-⚠️ ALERTS
-┌──────────────────────────────────────┐
-│  Closing Alerts (full-width)         │
-└──────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│  "Final steps to complete your purchase"                      │
+│  Closing: 12/29/2024  •  Purchase Price: $900,000            │
+├──────────────────────────────────────────────────────────────┤
+│  Critical Final Steps                                         │
+│  ┌──────────────────────────────────────────────────────┐    │
+│  │  CollapsibleCard  (CD Review, Cash-to-Close, Signing) │    │
+│  └──────────────────────────────────────────────────────┘    │
+├──────────────────────────────────────────────────────────────┤
+│  Pre-Closing Verification                                     │
+│  (Final walkthrough, insurance binder, underwriting)         │
+├──────────────────────────────────────────────────────────────┤
+│  Funding & Transfer                                           │
+│  (Wire SafeSend, title checks, recording timeline)           │
+├──────────────────────────────────────────────────────────────┤
+│  Alerts & Issues                                             │
+│  ┌──────────────────────────────────────────────────────┐    │
+│  │  ClosingAlerts  (full-width, 1102px)                  │    │
+│  └──────────────────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────────────────┘
 ```
+
+**Phase CTA (top of view):** "Recording Complete — Keys in Hand!" (appears as the phase completion action)
 
 #### Components
 
@@ -1051,106 +1049,70 @@ Handles final verifications, document signing, and fund transfer in the 3–7 da
 - Verification steps
 - Fraud prevention checklist
 
-**3. Signing Appointment** (`SigningAppointment.tsx`)
-- Notary scheduling info
-- Location (office, mobile, remote)
-- Document count preview
-- What to bring checklist
-- ID requirements
+**3. Signing Appointment** (inside Critical Final Steps CollapsibleCard)
+- Notary scheduling info, what to bring checklist, ID requirements
 
-**PRE-CLOSING VERIFICATION** — v1
+**PRE-CLOSING VERIFICATION** — CollapsibleCard section
 
-**4. Final Walkthrough Checklist** (`FinalWalkthroughChecklist.tsx`)
-- Schedule within 24–48 hours of closing
-- Room-by-room inspection list
-- Repair verification
-- Appliance testing
-- Issue documentation
+**4-6. Pre-Closing items** (inside Pre-Closing Verification CollapsibleCard)
+- Final walkthrough checklist (24–48 hrs before closing)
+- Insurance binder verification
+- Underwriting conditions final / clear-to-close
 
-**5. Insurance Binder Verification** (`InsuranceBinderVerification.tsx`) — v1.5
-- Binder received by lender
-- Mortgagee clause correct
-- Effective date matches closing
+**FUNDING & TRANSFER** — CollapsibleCard section
 
-**6. Underwriting Conditions Final** (`UnderwritingConditionsFinal.tsx`)
-- Final approval status
-- Outstanding conditions
-- Clear-to-close confirmation
-- Last-minute document requests
+**7-9. Funding items** (inside Funding & Transfer CollapsibleCard)
+- Wire Transfer SafeSend — CRITICAL fraud prevention flow, verbal verification requirement
+- Title/Escrow final checks (clear title, escrow balance, prorations)
+- Funding & Recording Timeline — multi-step tracker (lender funds → escrow disburses → records at county → keys released)
 
-**FUNDING & TRANSFER** — v1
+**ALERTS** — v1 named component
 
-**7. Wire Transfer SafeSend** (`WireTransferSafeSend.tsx`)
-- CRITICAL: Fraud prevention flow
-- Verbal verification requirement
-- Wire instruction confirmation
-- Timing guidance
-- Never trust emailed wire instructions warning
+**10. Closing Alerts** (`ClosingAlerts.tsx`) — 1102px full-width
+- Red flag warnings, missing signatures, funding delays, title issues
 
-**8. Title/Escrow Final Checks** (`TitleEscrowFinalChecks.tsx`)
-- Clear title confirmation
-- Escrow balance sheet
-- Proration calculations
-- Outstanding liens cleared
-
-**9. Funding & Recording Timeline** (`FundingRecordingTimeline.tsx`) — v1 (light)
-- Multi-step visual tracker:
-  1. Lender funds escrow
-  2. Escrow disburses to seller
-  3. Documents record at county
-  4. Keys released
-- Estimated timing per step
-- Basic status updates
-
-**ALERTS** — v1
-
-**10. Closing Alerts** (`ClosingAlerts.tsx`)
-- Red flag warnings
-- Missing signatures
-- Funding delays
-- Title issues
-- Last-minute issues
+**Implementation note:** The Closing phase uses `CollapsibleCard` sections for Critical Final Steps, Pre-Closing Verification, and Funding & Transfer — the same pattern used in Offer and Shopping. Individual components within each section expand inside the card. `ClosingAlerts` is the only standalone named component in Closing.
 
 #### Phase Transition
-**CTA Button:** "Recording Complete — Keys in Hand!"
-- **Action:** Marks deal as closed
-- **v1 behavior:** Celebratory state. Post-Close dashboard is deferred; user sees a completion summary and option to export/archive deal documents.
+**CTA:** "Recording Complete — Keys in Hand!" — appears at top of Closing view
+- **Action:** Marks deal as closed, navigates to Post-Close
 
 ---
 
 ### 9.6 POST-CLOSE PHASE — [Thin Continuity]
 
-Visible in the product to give completeness and maintain the buyer relationship. Minimal implementation.
+Visible in the product to give completeness and maintain the buyer relationship. Minimal implementation. The Figma prototype confirms the exact content: congratulations, archive download, and "Coming Soon" labels for future features.
 
 #### Components
 
 **1. Completion Celebration** (`CompletionCelebration.tsx`) — Thin Continuity
-- Congratulatory screen on recording complete
-- Deal snapshot: address, purchase price, closing date, total cash to close
-- Emotional payoff for the journey
+- "Congratulations! 🎉"
+- "You've successfully closed on [address]. Your journey is complete!"
+- CollapsibleCard with deal summary
 
 **2. Deal Archive** (`DealArchive.tsx`) — Thin Continuity
 - Download all deal documents (ZIP)
 - Deal summary PDF export
 - Permanent access to deal workspace in read-only mode
 
-**3. First 30 Days Checklist** (`FirstThirtyDays.tsx`) — Thin Continuity
-- Utility transfer reminders
-- Address change checklist
-- Warranty registration prompts
-- Simple checkbox list — not a deep management tool
+**2. Deal Archive** (`DealArchive.tsx`) — Thin Continuity
+- "Download Complete Archive (ZIP)" — primary CTA
+- Permanent read-only access to the deal workspace
 
-**4. Future Value Prompt** — Thin Continuity
-- "Post-close homeowner tools coming soon" card
-- Email capture for launch notification
-- Keeps the user connected for future product expansion
+**3. Coming Soon cards** (inside PostCloseView) — Thin Continuity
+- **Equity Tracking** — "Monitor your home's value and equity growth over time" + "Coming Soon" badge
+- **Homeowner Tools** — "Maintenance tracking, warranty management, and more" + "Coming Soon" badge
+
+**4. Closing message** — Thin Continuity
+- "Thank you for using HomeBuyer Pro"
+- "We hope we helped make your homebuying journey clearer and less stressful."
 
 #### Deferred from Post-Close (v1.0 archive)
-- Equity Value Tracker
+- Equity Value Tracker (shows as "Coming Soon" card in prototype)
 - Refi Rate Watch
 - Insurance Risk Monitor
 - Property Tax Exemptions
-- Maintenance Planner
+- Maintenance Planner (shows as "Coming Soon" under Homeowner Tools)
 - Renovation & ADU Planner
 - Post-Close Alerts
 
@@ -1300,9 +1262,10 @@ The Loan Type Helper wizard (3-step recommendation flow) is **deferred to v1.5**
 - Historical changes tracked
 
 **7. Sticky Snapshot Footer** (`StickySnapshot.tsx`) — v1
-- Fixed bottom of viewport
+- Fixed bottom of viewport (85px tall)
 - Appears when "Chosen" loan exists
-- Compact display: Lender + product, Rate, Monthly payment, Cash to close
+- Compact display: Chosen Monthly Payment, PITI, Lock status, lock expiry, Lender name, Cash to Close
+- **"Explain math" button** — AI copilot action that explains the cash-to-close calculation inline
 
 #### Deferred from Financing View
 - Loan Type Helper wizard (3-step recommendation flow) — v1.5
@@ -1331,30 +1294,70 @@ The Loan Type Helper wizard (3-step recommendation flow) is **deferred to v1.5**
 
 ---
 
-### 10.4 HOMES VIEW — [Build Light]
+### 10.4 HOMES — [Embedded in Shopping Dashboard]
 
-**Component:** `HomesView.tsx`
-**Access:** Sidebar navigation
-**Background:** Secondary (#FEFCF8 Off-white)
+**Figma ground truth:** There is no separate Homes sidebar navigation item in the prototype. The sidebar has 3 items: Dashboard, Documents, Financing. Home tracking lives inside the Shopping phase dashboard (`ShoppingView`) as a CollapsibleCard list.
 
-Simple property tracking for the Shopping phase. Not a search engine.
+**What ships:**
+- "Track homes and prepare your buy box" header within Shopping dashboard
+- "Add Property" button
+- CollapsibleCard per saved home (address, price, basic details)
 
-**v1 features:**
-- List of saved/tracked homes (manual entry)
-- Per-home: address, price, beds/baths/sqft, notes, photo (optional)
-- Quick actions: Edit, Remove, "Make an offer on this home"
-- "Add a home" card
-- Link to Shopping dashboard
-
-**Deferred:**
-- MLS integration or property import (Zillow, Redfin)
+**Deferred (not in prototype, not in v1):**
+- Separate Homes sidebar nav item
+- MLS integration or property import
 - Owned properties section
-- Neighborhood analytics or market data
-- Property comparison tools
+- Neighborhood analytics or comparison tools
 
 ---
 
 ## 11. Advanced Features & Interactions
+
+### 11.0 Figma Component Inventory
+
+The following component names are confirmed from the Figma prototype (file: `eiC6bmYZG2p3OE0E5iJHb8`). These are the exact names to use in code.
+
+**Shared layout components (every screen):**
+- `ProgressStepper` — 5-phase stepper, top of viewport
+- `Sidebar` — 256px, left navigation
+- `GlobalFooter` — 52px, bottom disclaimer
+- `AICopilot` — 56x56 collapsed floating button
+
+**Phase view components:**
+- `ShoppingView` — Shopping phase dashboard
+- `OfferView` — Offer phase dashboard
+- `DocumentsView` — Documents full-width view (1803px)
+- `FinancingView` — Financing full-width view (1803px)
+- `PostCloseView` — Post-close completion view
+
+**Escrow named components** (11, individually built):
+- `EarnestMoneyDepositTracker`
+- `ContingencyCountdown`
+- `AppraisalStatus`
+- `InspectionChecklist`
+- `RepairsCreditsTracker`
+- `EscrowTitleAlerts`
+- `LoanFinancing`
+- `DisclosuresDocuments`
+- `GiftFundsTracker`
+- `InsuranceBinding`
+- `CashToCloseEscrowVersion`
+
+**Closing named components** (1 individual, rest CollapsibleCard):
+- `ClosingAlerts` — 1102px full-width
+
+**Financing named components:**
+- `LoanEstimateCard` — with "Chosen" badge
+- `GuardrailNotes` — AI guardrail hints
+- `StickySnapshot` — sticky bottom bar with loan summary + "Explain math" AI action
+
+**Documents named components:**
+- `EssentialsCard` — stage essentials strip
+- `SmartTabs` — horizontal tab navigation
+- `DocRow` — document list row
+
+**Repeating pattern:**
+- `CollapsibleCard` — used in Shopping, Offer, Closing, and Post-Close. Expand/collapse sections.
 
 ### 11.1 Animations
 *[v1 — Retained. Same implementation spec as v1.0.]*
@@ -1462,31 +1465,27 @@ Located in `/components/ui/`
 
 ## 14. User Flows & Journeys
 
-### 14.1 v1 Onboarding Flow — Two Entry Paths
+### 14.1 v1 Onboarding Flow
 
-**Path A — Early entry (serious shopper):**
+The Figma prototype uses a single deal-setup onboarding screen. The primary entry path is escrow-first: the buyer lands on a workspace setup form immediately after signing up.
+
 ```
 1. Landing → Sign Up
-2. "I'm shopping for a home" → Shopping dashboard
-3. Save homes, explore affordability, upload pre-approval
-4. "Ready to make an offer?" → Offer workspace
-5. Fill in offer details, contingencies, checklist
-6. "Offer Accepted" → Deal workspace created → Escrow dashboard
-7. Upload documents, track deadlines, use copilot
+2. Deal Setup form:
+   - Property Address (e.g., "123 Main Street, San Francisco, CA 94102")
+   - Offer Acceptance Date
+   - Scheduled Closing Date
+   - Purchase Price
+   - Earnest Money Deposit
+   - Contingency Periods (Inspection, Appraisal, Loan days)
+3. "Start Transaction Workspace" CTA → Escrow dashboard
+   (OR "Skip setup (use demo data)" for exploration)
+4. Upload first documents (contract, LE)
+5. AI classifies and summarizes
+6. Copilot available via floating button
 ```
 
-**Path B — Mid-journey entry (buyer under contract):**
-```
-1. Landing → Sign Up
-2. "I already have an accepted offer" → Deal Setup
-3. Enter property address, dates, key details
-4. Workspace created → Escrow dashboard
-5. Upload first documents (contract, LE)
-6. AI classifies and summarizes
-7. Copilot introduction: "Ask me anything about your deal"
-```
-
-Both paths converge at the Escrow dashboard, where the deep product experience begins.
+**Shopping path:** Users who want to start earlier can navigate to Dashboard → Shopping phase and use the home tracking surface before formally creating an escrow deal. The shopping surface is lightweight (track homes, prepare buy box) and naturally transitions into Offer when ready.
 
 ### 14.2 Full v1 Journey (Shopping → Close)
 
@@ -1712,7 +1711,7 @@ At 90 days, v1 is successful if:
 
 ### 20.2 v1 Differentiators
 
-- **Full-journey buyer workspace** — no competitor covers shopping through close from the buyer's perspective
+- **Buyer-first journey workspace with deepest value in escrow and closing** — unlike search portals, lender-centric tools, or professional-only transaction software
 - **AI document intelligence** — plain-English explanations grounded in the buyer's actual documents
 - **LE vs CD variance review** — automated comparison that surfaces what changed and whether it matters
 - **Deal-context copilot** — not a generic chatbot; answers are grounded in the specific deal and adapt depth to the buyer's phase

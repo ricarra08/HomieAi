@@ -179,33 +179,38 @@ Not in v1. Does not appear in the product UI.
 | Post-Close | Thin Continuity | Completion summary, document archive, future value signal |
 
 ### Shopping — Build Light
-The Shopping phase is the product's front door for early-stage buyers. It should feel real and useful but is not the value core.
+The Shopping phase is the product's front door for early-stage buyers. The Figma prototype confirms this as a minimal surface.
 
-**What ships:**
-- Saved/tracked homes list (manual entry — address, price, beds/baths/sqft, notes)
-- Lightweight affordability context (simple cash-to-close estimator, monthly payment estimate)
-- Pre-approval status card (upload pre-approval letter, display amount/expiration)
-- "Ready to make an offer?" CTA that transitions to Offer phase with selected property
-- AI Copilot available for general homebuying readiness questions (lighter grounding, general education mode)
+**What ships (confirmed in Figma):**
+- "Track homes and prepare your buy box" — header copy confirmed
+- "Add Property" button — manual entry
+- CollapsibleCard per saved home — the primary UI pattern
+- "Ready to make an offer?" CTA → Offer workspace
+- AI Copilot floating button available; lighter grounding in this phase
+- Home tracking is embedded in the Shopping dashboard, NOT a separate sidebar nav item
 
 **What does not ship:**
+- Separate "Homes" sidebar navigation item (prototype has 3 nav items: Dashboard, Documents, Financing)
 - MLS integration or property search
 - Zillow/Redfin import
 - Market analytics or neighborhood comps
-- Equity appreciation forecast
-- BRBC summary or deep financial planning
-- Loan type recommendation wizard
+- Affordability calculator (not in prototype)
+- Pre-approval status card (not in prototype)
+- Equity appreciation forecast, BRBC summary, loan type wizard
 
 ### Offer — Build Light
-The Offer phase captures the transition from "interested buyer" to "buyer under contract." It provides structure without deep tools.
+The Offer phase captures the transition from "interested buyer" to "buyer under contract."
 
-**What ships:**
-- Offer details form (property, price, earnest money, contingency periods, closing date, agent info)
-- Offer checklist (pre-approval letter attached, proof of funds, earnest money ready, contingencies defined)
-- Pre-approval / proof of funds upload
-- Contingency setup (inspection, appraisal, financing, disclosure periods — feeds into Escrow deadline tracker)
-- Phase transition CTA: "Offer Accepted — Move to Escrow"
-- AI Copilot available for offer-stage questions (lighter grounding, "what to expect" mode)
+**What ships (confirmed in Figma):**
+- "Offer Workspace" — header copy confirmed
+- "Structure and prepare your offer" — subheader
+- "Offer in Progress" status badge
+- Property card (742 Evergreen Terrace, Springfield, IL — 3 bed, 2 bath, 1,850 sqft, List Price $425,000)
+- CollapsibleCard for offer details
+- "Upload Additional Document" action
+- "Review & Submit Offer" button
+- "Offer Accepted — Start Escrow" CTA → transitions to Escrow with deal workspace creation
+- AI Copilot floating button available; lighter grounding in this phase
 
 **What does not ship:**
 - RPA / contract builder
@@ -256,6 +261,11 @@ These are not optional polish. They are part of the product's identity and user 
 ---
 
 ## 9. AI Copilot Scope
+
+### UI behavior (confirmed from prototype screenshot)
+The AI Copilot has two states:
+- **Collapsed:** 56x56 Bronze floating button, fixed bottom-right. Present on every screen. Never open by default.
+- **Expanded:** Right-side panel (~300px). "AI Copilot" header with expand/close buttons. Chat interface with message history, input field, send button (Mint Green). Quick-action chips pinned at bottom: "Explain this document", "Calculate closing costs", "Market analysis" — chips adapt to the current phase.
 
 ### Non-negotiable rule
 **The AI must always know the deal context before it answers.**
