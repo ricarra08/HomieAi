@@ -7,19 +7,20 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #F7F4EE;
-    --surface: #FFFDFC;
-    --surface-alt: #F1ECE3;
-    --ink: #2A2723;
-    --ink-muted: #6F685F;
-    --ink-faint: #A09889;
-    --accent: #8C5A3C;
-    --accent-hover: #72472F;
-    --accent-light: #F3EBE4;
-    --rule: #DDD4C7;
-    --success: #617A5D;
-    --warning: #C08A3C;
-    --destructive: #B85243;
+    --bg: #F5DEB3;
+    --card: #FFFFFF;
+    --secondary: #FEFCF8;
+    --ink: #2D3748;
+    --ink-muted: #767676;
+    --ink-faint: #9E9E9E;
+    --accent: #D38E45;
+    --accent-hover: #B87735;
+    --accent-light: #FFF3E5;
+    --primary: #6EE7B7;
+    --success: #10B981;
+    --rule: #E8DBBF;
+    --warning: #F59E0B;
+    --destructive: #E53E3E;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -69,7 +70,7 @@
     font-weight: 500;
     letter-spacing: .12em;
     text-transform: uppercase;
-    color: var(--ink-faint);
+    color: var(--ink-muted);
     margin-bottom: 18px;
     display: block;
   }
@@ -106,13 +107,13 @@
   }
 
   .info-card {
-    background: var(--surface);
+    background: var(--card);
     border: 1px solid var(--rule);
     border-radius: 4px;
     padding: 18px 20px;
   }
 
-  .info-card .label { color: var(--ink-faint); }
+  .info-card .label { color: var(--ink-muted); }
   .info-card .value {
     font-size: 15px;
     font-weight: 400;
@@ -175,7 +176,7 @@
   }
 
   .ai-rule {
-    background: var(--surface);
+    background: var(--card);
     border-left: 3px solid var(--accent);
     padding: 16px 20px;
     margin-bottom: 14px;
@@ -211,7 +212,7 @@
 
   .bucket-row {
     display: grid;
-    grid-template-columns: 90px 1fr;
+    grid-template-columns: 100px 1fr;
     gap: 12px;
     padding: 10px 0;
     border-bottom: 1px solid var(--rule);
@@ -231,10 +232,10 @@
     white-space: nowrap;
   }
 
-  .pill-must { background: #ECF0EB; color: var(--success); }
-  .pill-soul { background: var(--accent-light); color: var(--accent); }
-  .pill-defer { background: #F5F0E4; color: var(--warning); }
-  .pill-warn  { background: #F5EBE8; color: var(--destructive); }
+  .pill-deep { background: #D1FAE5; color: #065F46; }
+  .pill-light { background: #FFF3E5; color: #92400E; }
+  .pill-thin  { background: #F3F4F6; color: #6B7280; }
+  .pill-defer { background: #FEE2E2; color: #991B1B; }
 
   .feature-name { font-size: 13px; font-weight: 500; margin-bottom: 1px; }
   .feature-note { font-size: 12px; color: var(--ink-muted); line-height: 1.45; }
@@ -249,7 +250,7 @@
     border: 1px solid var(--rule);
     border-radius: 4px;
     padding: 14px 16px;
-    background: var(--surface);
+    background: var(--card);
   }
 
   .success-card .sc-num {
@@ -332,7 +333,7 @@
     display: flex;
     justify-content: space-between;
     font-size: 11px;
-    color: var(--ink-faint);
+    color: var(--ink-muted);
   }
 
   @media print {
@@ -348,7 +349,7 @@
 <div class="doc-header">
   <div>
     <div class="product-name">HomeBuyer <em>Pro</em></div>
-    <div style="font-size:13px;color:var(--ink-muted);margin-top:6px;">MVP Product Brief — Version 1.1</div>
+    <div style="font-size:13px;color:var(--ink-muted);margin-top:6px;">MVP Product Brief — Version 2.0 — Broad Surface, Narrow Core</div>
   </div>
   <div class="doc-meta">
     April 2026<br>
@@ -359,78 +360,78 @@
 
 <div class="identity-block">
   <span class="label">Product identity</span>
-  <div class="tagline">A homebuyer due-diligence and transaction clarity platform.<br>Not a marketplace. Not an agent replacement. Not "AI for real estate."</div>
+  <div class="tagline">A buyer-first homebuying workspace from serious shopping to close.<br>Not a marketplace. Not an agent replacement. Not "AI for real estate."</div>
 </div>
 
 <div class="two-col">
   <div class="info-card">
     <span class="label doc-label">Primary user</span>
-    <div class="value">A buyer who just had their offer accepted and is entering escrow — first-time or second-time, with a competent agent but no personal comprehension layer for their own transaction.</div>
+    <div class="value">First-time or second-time buyers — from serious shoppers getting organized to buyers under contract entering escrow. Both entry points converge into the deep escrow/closing experience.</div>
   </div>
   <div class="info-card">
     <span class="label doc-label">Moment we own</span>
-    <div class="value">Offer accepted through clear to close. The 21–45 days when documents are arriving, deadlines are running, and the buyer has the least visibility into what is actually happening.</div>
+    <div class="value">Serious shopping to keys in hand. The product spans the full journey, but the moat is the 21–45 day escrow-to-close window where documents, deadlines, and finances converge.</div>
   </div>
 </div>
 
 <div class="two-col">
   <div class="info-card">
     <span class="label doc-label">Launch motion</span>
-    <div class="value">B2C-first. B2B2C-ready. The buyer gets full value alone — no brokerage adoption required. Free during beta. Revenue model validated after product-market fit.</div>
+    <div class="value">B2C-first. B2B2C-ready. Free during beta. Broader surface helps acquisition — buyers can discover the product during shopping, not just after offer acceptance.</div>
   </div>
   <div class="info-card">
-    <span class="label doc-label">Collaboration model (v1)</span>
-    <div class="value">Single-player value-first. One-way secure upload link for agent/lender — no account needed. No multi-user dashboard, no realtor tools, no brokerage admin in v1.</div>
+    <span class="label doc-label">Strategy</span>
+    <div class="value">Broad Surface, Narrow Core. The product feels complete across the journey. Shopping and Offer are light but real. Escrow, Closing, Documents, Financing, and AI Copilot are built deep.</div>
   </div>
 </div>
 
 <div class="section">
   <div class="section-title">Core promise</div>
   <div style="font-family:'DM Serif Display',serif;font-size:24px;line-height:1.35;color:var(--ink);margin-bottom:10px;">
-    "From offer accepted to keys in hand — you'll always know where you are, what's due, and what everything means."
+    "From serious shopping to keys in hand — you'll always know where you are, what's due, and what everything means."
   </div>
-  <div style="font-size:13px;color:var(--ink-muted);">Compression: <strong>Organize the deal. Explain the deal. Keep the buyer on track.</strong></div>
+  <div style="font-size:13px;color:var(--ink-muted);">Compression: <strong>Organize the journey. Explain the deal. Keep the buyer on track. Help them avoid expensive mistakes.</strong></div>
 </div>
 
 <div class="section">
   <div class="section-title">Design language</div>
-  <div style="font-size:13px;color:var(--ink-muted);margin-bottom:14px;">Premium restrained warm. Quiet confidence, not playful. The visual language should feel like a high-end financial document, not a consumer lifestyle app.</div>
+  <div style="font-size:13px;color:var(--ink-muted);margin-bottom:14px;">Warm, stress-reducing, and guided. Apple/Airbnb-inspired clarity with a calming Wheat/Bronze/Mint palette that builds trust across a high-stakes journey.</div>
   <div class="palette-strip">
-    <div class="palette-swatch" style="background:#F7F4EE;">
-      <div class="swatch-label" style="color:#6F685F;">Background</div>
-      <div class="swatch-hex" style="color:#6F685F;">#F7F4EE</div>
+    <div class="palette-swatch" style="background:#F5DEB3;">
+      <div class="swatch-label" style="color:#2D3748;">Wheat</div>
+      <div class="swatch-hex" style="color:#767676;">#F5DEB3</div>
     </div>
-    <div class="palette-swatch" style="background:#FFFDFC;">
-      <div class="swatch-label" style="color:#6F685F;">Surface</div>
-      <div class="swatch-hex" style="color:#6F685F;">#FFFDFC</div>
+    <div class="palette-swatch" style="background:#FFFFFF;">
+      <div class="swatch-label" style="color:#2D3748;">Card</div>
+      <div class="swatch-hex" style="color:#767676;">#FFFFFF</div>
     </div>
-    <div class="palette-swatch" style="background:#F1ECE3;">
-      <div class="swatch-label" style="color:#6F685F;">Surf. Alt</div>
-      <div class="swatch-hex" style="color:#6F685F;">#F1ECE3</div>
+    <div class="palette-swatch" style="background:#FEFCF8;">
+      <div class="swatch-label" style="color:#2D3748;">Secondary</div>
+      <div class="swatch-hex" style="color:#767676;">#FEFCF8</div>
     </div>
-    <div class="palette-swatch" style="background:#DDD4C7;">
-      <div class="swatch-label" style="color:#6F685F;">Border</div>
-      <div class="swatch-hex" style="color:#6F685F;">#DDD4C7</div>
+    <div class="palette-swatch" style="background:#D38E45;">
+      <div class="swatch-label" style="color:#fff;">Bronze</div>
+      <div class="swatch-hex" style="color:rgba(255,255,255,0.7);">#D38E45</div>
     </div>
-    <div class="palette-swatch" style="background:#8C5A3C;">
-      <div class="swatch-label" style="color:#fff;">Accent</div>
-      <div class="swatch-hex" style="color:rgba(255,255,255,0.7);">#8C5A3C</div>
+    <div class="palette-swatch" style="background:#6EE7B7;">
+      <div class="swatch-label" style="color:#2D3748;">Mint</div>
+      <div class="swatch-hex" style="color:#2D3748;">#6EE7B7</div>
     </div>
-    <div class="palette-swatch" style="background:#617A5D;">
+    <div class="palette-swatch" style="background:#10B981;">
       <div class="swatch-label" style="color:#fff;">Success</div>
-      <div class="swatch-hex" style="color:rgba(255,255,255,0.7);">#617A5D</div>
+      <div class="swatch-hex" style="color:rgba(255,255,255,0.7);">#10B981</div>
     </div>
-    <div class="palette-swatch" style="background:#C08A3C;">
+    <div class="palette-swatch" style="background:#F59E0B;">
       <div class="swatch-label" style="color:#fff;">Warning</div>
-      <div class="swatch-hex" style="color:rgba(255,255,255,0.7);">#C08A3C</div>
+      <div class="swatch-hex" style="color:rgba(255,255,255,0.7);">#F59E0B</div>
     </div>
-    <div class="palette-swatch" style="background:#B85243;">
+    <div class="palette-swatch" style="background:#E53E3E;">
       <div class="swatch-label" style="color:#fff;">Destructive</div>
-      <div class="swatch-hex" style="color:rgba(255,255,255,0.7);">#B85243</div>
+      <div class="swatch-hex" style="color:rgba(255,255,255,0.7);">#E53E3E</div>
     </div>
-    <div class="palette-swatch" style="background:#2A2723;">
+    <div class="palette-swatch" style="background:#2D3748;">
       <div class="swatch-label" style="color:#fff;">Text</div>
-      <div class="swatch-hex" style="color:rgba(255,255,255,0.7);">#2A2723</div>
+      <div class="swatch-hex" style="color:rgba(255,255,255,0.7);">#2D3748</div>
     </div>
   </div>
 </div>
@@ -441,36 +442,36 @@
     <li class="workflow-item">
       <div class="wf-num">1</div>
       <div>
-        <div class="wf-title">Create the deal workspace</div>
-        <div class="wf-desc">Buyer enters property address, contract acceptance date, closing date, key transaction details. System generates the five-phase map, expected timeline, and document checklist immediately. Active experience begins in escrow. Offer data captured as setup input only — no offer workflows.</div>
+        <div class="wf-title">Track homes and build readiness</div>
+        <div class="wf-desc">Save homes, understand affordability, upload pre-approval. The product's front door — a light but real Shopping surface that builds context before the offer.</div>
       </div>
     </li>
     <li class="workflow-item">
       <div class="wf-num">2</div>
       <div>
-        <div class="wf-title">Ingest and organize deal documents</div>
-        <div class="wf-desc">Buyer uploads Loan Estimate, purchase contract, disclosures, inspection report, appraisal, title docs, and Closing Disclosure as they arrive. System classifies each document, extracts key fields, and places it in the correct phase automatically. Agent or lender can drop files via secure link — no account required.</div>
+        <div class="wf-title">Set up the offer and transition to escrow</div>
+        <div class="wf-desc">Enter offer details, define contingencies, complete the offer checklist, upload pre-approval and proof of funds. When the offer is accepted, the workspace deepens into escrow automatically.</div>
       </div>
     </li>
     <li class="workflow-item">
       <div class="wf-num">3</div>
       <div>
-        <div class="wf-title">Understand and compare the financial picture</div>
-        <div class="wf-desc">Compare Loan Estimates side by side. See LE vs CD variance with flagged changes. View a live cash-to-close number that updates as credits and repairs land. Understand what changed, what is normal, and what deserves a question.</div>
+        <div class="wf-title">Ingest, organize, and understand deal documents</div>
+        <div class="wf-desc">Upload docs as they arrive. System classifies, extracts fields, summarizes in plain English. Agent or lender can drop files via secure link. AI explains what matters and what to look for.</div>
       </div>
     </li>
     <li class="workflow-item">
       <div class="wf-num">4</div>
       <div>
-        <div class="wf-title">Track deadlines, contingencies, and open risks</div>
-        <div class="wf-desc">Live checklist: earnest money, inspection period, appraisal and financing contingencies, disclosure windows, closing tasks. Color-coded urgency. Flags unresolved risks from appraisal gaps, inspection findings, title concerns, or lender conditions.</div>
+        <div class="wf-title">Compare finances and track cash-to-close</div>
+        <div class="wf-desc">LE comparison side by side. LE vs CD variance with AI narrative. Live cash-to-close that updates as numbers change. Understand what changed, what's normal, what deserves a question.</div>
       </div>
     </li>
     <li class="workflow-item">
       <div class="wf-num">5</div>
       <div>
-        <div class="wf-title">Ask deal-specific questions — get clear next steps</div>
-        <div class="wf-desc">AI Copilot explains documents, answers questions in plain English, summarizes current deal status, and generates smart questions to ask the lender, escrow officer, or agent. Grounded in the buyer's actual transaction — not generic chat. Without deal context, it asks for it rather than guessing.</div>
+        <div class="wf-title">Track deadlines, navigate closing, avoid mistakes</div>
+        <div class="wf-desc">Contingency countdown, inspection red flags, wire fraud prevention, CD review, signing prep, funding timeline. AI copilot grounded in the buyer's actual deal — not generic chat.</div>
       </div>
     </li>
   </ul>
@@ -481,44 +482,40 @@
 
   <div class="critical-rule">
     <span class="rule-label">Non-negotiable design rule</span>
-    <div class="rule-text">The AI must always know the deal context before it answers. It is grounded in uploaded documents, extracted fields, current phase, timeline, open issues, chosen loan scenario, and pending deadlines. Without context, it does not answer — it asks for it.</div>
+    <div class="rule-text">The AI adapts depth to the buyer's phase. Light education in Shopping/Offer. Full deal-context grounding in Escrow/Closing — documents, extracted fields, deadlines, open issues. Without context, it asks rather than guesses.</div>
   </div>
 
   <div class="ai-rule">
-    <div class="wf-title">In document ingestion</div>
-    <div class="wf-desc">Classifies the document. Extracts important fields. Summarizes in plain English. Highlights sections that matter. Identifies questions, inconsistencies, or missing items. Links explanations back to source pages with citations.</div>
+    <div class="wf-title">In Shopping / Offer</div>
+    <div class="wf-desc">General education mode. Answers readiness questions, explains terms, provides affordability guidance. Helps buyer understand contingencies, EMD, and what to expect. Lighter grounding.</div>
   </div>
   <div class="ai-rule">
-    <div class="wf-title">In financial workflows</div>
-    <div class="wf-desc">Explains each LE and CD line item. Compares lender offers in plain language. Flags unusual variances. Recalculates cash-to-close when numbers change. Separates facts, estimates, and interpretations clearly.</div>
-  </div>
-  <div class="ai-rule">
-    <div class="wf-title">In deadline and risk tracking</div>
-    <div class="wf-desc">Translates dates into an understandable timeline. Warns when deadlines are approaching. Explains why each deadline matters and what missing it would mean in plain terms.</div>
+    <div class="wf-title">In Escrow / Closing</div>
+    <div class="wf-desc">Full deal-context mode. Classifies documents, extracts fields, summarizes in plain English. Compares LEs and CDs. Flags variances and red flags. Explains deadlines. Drafts questions for professionals. Cites sources.</div>
   </div>
   <div class="ai-rule">
     <div class="wf-title">Boundary behavior</div>
-    <div class="wf-desc">Explanation, organization, and due-diligence support only. Never acts as lender, lawyer, or agent. Never provides legal or financial advice. When it hits a boundary, it states it, suggests the right professional, and offers what it can do instead.</div>
+    <div class="wf-desc">Explanation, organization, and due-diligence support only. Never acts as lender, lawyer, or agent. When it hits a boundary, it states it, suggests the right professional, and offers what it can do instead.</div>
   </div>
 </div>
 
 <div class="section">
-  <div class="section-title">Feature classification</div>
+  <div class="section-title">Build depth taxonomy</div>
   <div class="bucket-row">
-    <span class="bucket-pill pill-must">Must — v1</span>
-    <div><div class="feature-name">Deal workspace, five-phase progress map, document ingestion + AI classification + explanation, LE comparison table, LE vs CD variance review, cash-to-close engine, contingency countdown + deadline tracker, alerts + urgency states, inspection red-flag summary, title/escrow red-flag summary, repairs/credits tracker, wire fraud warning flow, secure collaborator upload link</div></div>
+    <span class="bucket-pill pill-deep">Build Deep</span>
+    <div><div class="feature-name">Escrow dashboard, Closing dashboard, document ingestion + AI intelligence, LE comparison, LE vs CD variance, cash-to-close engine, contingency/deadline tracker, alerts + urgency, inspection/title red flags, repairs tracker, wire fraud flow, AI copilot (Escrow/Closing)</div></div>
   </div>
   <div class="bucket-row">
-    <span class="bucket-pill pill-soul">Identity</span>
-    <div><div class="feature-name">Phase stepper, persistent phase visibility, contextual glossary, alerts panel, phase transition CTAs, funding/recording timeline</div><div class="feature-note">What makes the product feel like a guided system, not a tool. Technically simple — emotionally critical.</div></div>
+    <span class="bucket-pill pill-light">Build Light</span>
+    <div><div class="feature-name">Shopping (saved homes, affordability, pre-approval), Offer (details workspace, checklist, contingency setup), Homes view, insurance binding, collaborator upload link, glossary, funding timeline, notifications, AI copilot (Shopping/Offer)</div><div class="feature-note">Real product surfaces — functional and useful, deliberately limited in depth.</div></div>
   </div>
   <div class="bucket-row">
-    <span class="bucket-pill pill-defer">v1.5</span>
-    <div><div class="feature-name">Loan type helper wizard, insurance view (quote comparison + coverage education), offer workflows, collaborator dashboard, glossary depth, notifications (email/SMS/push)</div><div class="feature-note">Insurance binding (binder upload + status tracking) ships thin in v1 within the Escrow dashboard. Full Insurance View is v1.5.</div></div>
+    <span class="bucket-pill pill-thin">Thin</span>
+    <div><div class="feature-name">Post-Close (celebration, deal archive, first-30-days checklist, future value prompt)</div><div class="feature-note">Gives the product completeness. Minimal implementation cost.</div></div>
   </div>
   <div class="bucket-row">
-    <span class="bucket-pill pill-warn">Deferred</span>
-    <div><div class="feature-name">Post-close phase, RPA builder, offer strength analyzer, counteroffer simulator, homes view, MLS import, brokerage admin, equity tracker, refi rate watch, ADU planner, property tax exemptions, marketplace/referral features, e-signature, mobile native app</div><div class="feature-note">Real and valuable — earn the right to build them. RPA and offer tools require legal review before any version ships.</div></div>
+    <span class="bucket-pill pill-defer">Defer</span>
+    <div><div class="feature-name">RPA builder, offer strength analyzer, counteroffer sim, full insurance product, loan type wizard, brokerage admin, marketplace, equity tracker, refi watch, ADU planner, MLS search, e-signature, mobile app</div><div class="feature-note">Part of the long-term vision. Does not appear in v1 UI.</div></div>
   </div>
 </div>
 
@@ -527,11 +524,11 @@
   <div class="success-grid">
     <div class="success-card">
       <div class="sc-num">01</div>
-      <div class="sc-text">Real buyers under contract upload real documents and return multiple times during escrow — not just testers clicking around.</div>
+      <div class="sc-text">Real buyers use the product across multiple phases — some enter at Shopping, some at Escrow. Both paths show engagement.</div>
     </div>
     <div class="success-card">
       <div class="sc-num">02</div>
-      <div class="sc-text">At least one workflow cluster feels painful to lose. Likely: document explanation + LE/CD comparison + cash-to-close clarity.</div>
+      <div class="sc-text">The core cluster feels painful to lose. Document explanation + LE/CD comparison + cash-to-close + deadline tracking is indispensable.</div>
     </div>
     <div class="success-card">
       <div class="sc-num">03</div>
@@ -539,15 +536,15 @@
     </div>
     <div class="success-card">
       <div class="sc-num">04</div>
-      <div class="sc-text">At least one realtor proactively sends the upload link to a buyer without being asked. This signal unlocks the B2B2C conversation.</div>
+      <div class="sc-text">Shopping and Offer feel like real onboarding. Users who start early build context that pays off in escrow. The handoff feels seamless.</div>
     </div>
     <div class="success-card">
       <div class="sc-num">05</div>
-      <div class="sc-text">Clear evidence for the next expansion direction: backward into offer prep, outward into B2B2C, or forward into post-close retention.</div>
+      <div class="sc-text">At least one collaborator proactively uses the upload link. This signal unlocks the B2B2C conversation.</div>
     </div>
     <div class="success-card">
       <div class="sc-num">06</div>
-      <div class="sc-text">Core workflows show consistent repeat usage: document uploads, deadline checks, AI questions tied to live deal state — not one-time novelty use.</div>
+      <div class="sc-text">Clear signal on expansion: deepen Shopping, expand Offer tools, grow B2B2C collaboration, or extend Post-Close retention.</div>
     </div>
   </div>
 </div>
@@ -571,8 +568,8 @@
 </div>
 
 <div class="doc-footer">
-  <span>HomeBuyer Pro — MVP Brief v1.1 — April 2026</span>
-  <span>Aligned to Product Spec v1.1 + MVP Scope Overlay v1.0</span>
+  <span>HomeBuyer Pro — MVP Brief v2.0 — April 2026</span>
+  <span>Aligned to Product Spec v1.2 + MVP Scope Overlay v2.0</span>
 </div>
 
 </body>

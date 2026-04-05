@@ -1,98 +1,110 @@
 # HomeBuyer Pro — Product Specification
-## Version 1.1
-### Aligned to MVP Scope Overlay v1.0
+## Version 1.2
+### Aligned to MVP Scope Overlay v2.0 — Broad Surface, Narrow Core
 
 ---
 
 ## 1. Executive Summary
 
 **Product Name:** HomeBuyer Pro
-**Product Type:** Web Application (React-based SPA)
-**Target Audience:** Homebuyers in the United States who are under contract and entering escrow
-**Primary Goal:** Give buyers clarity, organization, and confidence from offer accepted through clear to close
+**Product Type:** Web Application (Next.js)
+**Target Audience:** Homebuyers in the United States, from serious shopping through close
+**Primary Goal:** Give buyers clarity, organization, and confidence across the homebuying journey — with deepest value in escrow, closing, documents, financing, and AI-powered deal intelligence
 
 **Core Value Proposition:**
-HomeBuyer Pro v1 is a buyer-facing deal workspace that helps homebuyers navigate the 21–45 day escrow-to-close window — the period when documents arrive quickly, deadlines are active, financial numbers change, and the buyer feels the least informed.
+HomeBuyer Pro v1 is a buyer-first homebuying workspace that helps people move from serious shopping to keys in hand. The product feels complete across the journey but earns its reputation in the escrow-to-close window — where documents arrive fast, deadlines run, financial numbers change, and the buyer is least informed.
 
-The product organizes the deal, explains the deal, and keeps the buyer on track.
+The product organizes the journey, explains the deal, keeps the buyer on track, and helps them avoid expensive mistakes.
 
 **Core Promise:**
-*From offer accepted to keys in hand, you'll always know where you are, what's due, and what everything means.*
+*From serious shopping to keys in hand, you'll always know where you are, what's due, and what everything means.*
+
+**Product strategy: Broad Surface, Narrow Core**
+- Shopping and Offer exist as light but real product surfaces (acquisition, context building, deal setup)
+- Escrow, Closing, Documents, Financing, and AI Copilot are built deep (core moat, primary value proof)
+- Post-Close exists as thin continuity (completion, archive, future value signal)
 
 **What v1 is:**
-- A buyer-facing deal workspace
+- A buyer-facing workspace spanning the homebuying journey
 - A document intelligence layer
 - A financing clarity layer (LE comparison, LE vs CD, cash-to-close)
 - A deadline and contingency tracking layer
-- A deal-context AI copilot
+- A deal-context AI copilot that adapts depth to the buyer's current phase
 
 **What v1 is not:**
 - A home search portal or Zillow replacement
 - An agent replacement
 - A contract drafting tool or offer strategy engine
-- A post-close homeowner platform
-- A brokerage admin product
+- A full post-close homeowner management platform
+- A brokerage admin product or marketplace
 
-> **Governing scope rule:** The MVP Scope Overlay v1.0 is the authoritative scope document. Where this spec and the overlay conflict, the overlay wins.
+> **Governing scope rule:** The MVP Scope Overlay v2.0 is the authoritative scope document. Where this spec and the overlay conflict, the overlay wins.
 
 ---
 
 ## 2. Scope & Version Map
 
-Every feature and section in this spec is tagged with a version tier. This map governs build priority.
+Every feature in this spec is tagged with one of four build tiers. This map governs priority and implementation depth.
 
-### v1 — Build now (MVP)
-These define MVP completion. The product ships when these work.
+### Build Deep — Core moat
+Full implementation. This is where the product proves its value and builds defensibility.
 
 | Area | What ships |
 |------|-----------|
-| Deal workspace | Create deal, property address, dates, basic transaction details |
-| Five-phase progress map | Visual stepper with emotional identity; active experience centered on Escrow + Closing |
-| Document ingestion | Upload, classify, organize, summarize, extract key fields |
-| AI document explanation | Plain-English explanations grounded in uploaded docs |
-| Loan Estimate comparison | Side-by-side LE comparison |
-| LE vs CD variance review | Highlight changes, flag what's abnormal |
+| Escrow & due diligence dashboard | Full component set (Section 9.4) |
+| Closing dashboard | Full component set (Section 9.5) |
+| Document ingestion + AI intelligence | Upload, classify, organize, summarize, extract key fields, AI explanation |
+| Loan Estimate comparison | Side-by-side LE analysis |
+| LE vs CD variance review | Highlight changes, flag what's abnormal, AI narrative |
 | Cash-to-close engine | Live calculation updated as documents arrive |
 | Contingency / deadline tracker | Earnest money, inspection, appraisal, financing, disclosure deadlines |
 | Alerts and urgency states | Color-coded, prioritized, deadline-driven |
-| Inspection red-flag summary | Major findings flagging |
+| Inspection red-flag summary | AI-powered major findings flagging |
 | Title / escrow red-flag summary | Liens, easements, delays |
 | Repairs / credits tracker | Item list, negotiation status, dollar impact |
 | Wire fraud warning flow | Verbal verification, fraud prevention checklist |
-| Secure collaborator upload link | Lightweight link for agent/lender to send files into the workspace |
+| AI Copilot (Escrow/Closing) | Deal-context grounded, document-aware, action-oriented |
 
-### v1.5 — Keep light, build thin
-These exist in v1 but are deliberately thin. They get depth in v1.5.
+### Build Light — Real but limited
+Functional product surface. The user gets value; the team doesn't over-invest.
 
-| Area | What ships thin |
-|------|----------------|
-| Collaborator file intake | Inbound-only; no dashboard, no multi-user |
-| Glossary / educational support | Contextual term explanations; no standalone learning center |
-| Funding / recording timeline | Basic tracker; no county recorder API integration |
-| Document status states | Required, uploaded, signed, final; no full workflow engine |
-| Basic notifications | Urgency indicators in-app; no email/SMS/push |
-| Insurance binding | Binder upload + status tracking only; no quote cards, no comparison table, no coverage education |
-| Offer data capture | Offer data (price, EMD, contingency periods) captured in deal setup as input to Escrow; no offer workflows |
-| Shopping phase context | Lightweight presence in the phase model; not an active experience |
+| Area | What ships |
+|------|-----------|
+| Shopping phase | Saved/tracked homes, affordability context, pre-approval card, deal creation handoff |
+| Offer phase | Offer details workspace, contingency setup, offer checklist, pre-approval upload |
+| Homes view | Simple property tracking (manual entry, basic details, link to create deal) |
+| Insurance binding | Binder upload + status tracking; no quote comparison |
+| Collaborator file intake | Secure upload link, inbound-only; no collaborator dashboard |
+| Glossary / educational support | Contextual term explanations inline; no standalone center |
+| Funding / recording timeline | Basic multi-step tracker; no API integrations |
+| Notifications | In-app urgency indicators; no email/SMS/push |
+| AI Copilot (Shopping/Offer) | General education + readiness guidance; lighter grounding |
+| Secure collaborator upload link | Lightweight link for agent/lender to send files |
 
-### Deferred — Not in v1 or v1.5
-These are part of the long-term product vision. They do not drive build decisions now.
+### Thin Continuity — Visible, minimal
+Gives the product completeness and signals future value. Minimal implementation cost.
+
+| Area | What ships |
+|------|-----------|
+| Post-Close phase | Celebration screen, deal summary, document archive/export, first-30-days checklist, "homeowner tools coming soon" |
+
+### Defer — Not in v1
+Does not appear in the product UI. Part of the long-term vision.
 
 | Area | Status |
 |------|--------|
-| Shopping phase product depth | Deferred |
-| Offer strategy tools (RPA builder, offer strength analyzer, counteroffer simulator) | Deferred |
-| Full insurance comparison product | Deferred |
-| Full loan-type recommendation wizard | Deferred |
-| Realtor dashboard / brokerage admin | Deferred |
-| Marketplace / referral marketplace | Deferred |
-| Post-close dashboard (equity tracker, refi watch, ADU planner, maintenance) | Deferred |
-| Property tax exemptions | Deferred |
-| Homes view (favorites, owned properties, import from Zillow/Redfin) | Deferred |
-| Multi-user collaboration system | Deferred |
-| E-signature integration | Deferred |
-| Mobile native app | Deferred |
-| MLS/search infrastructure | Deferred |
+| RPA / contract drafting | Defer |
+| Offer strength analyzer | Defer |
+| Counteroffer simulator | Defer |
+| Full insurance comparison product | Defer |
+| Full loan-type recommendation wizard | Defer |
+| Realtor dashboard / brokerage admin | Defer |
+| Marketplace / referral features | Defer |
+| Post-close deep tools (equity tracker, refi watch, ADU planner, maintenance, property tax) | Defer |
+| MLS search infrastructure | Defer |
+| Multi-user collaboration system | Defer |
+| E-signature integration | Defer |
+| Mobile native app | Defer |
 
 ---
 
@@ -100,23 +112,31 @@ These are part of the long-term product vision. They do not drive build decision
 
 ### 3.1 Product Identity
 
-HomeBuyer Pro v1 is a **homebuyer due-diligence and transaction clarity platform**.
+HomeBuyer Pro v1 is a **buyer-first homebuying workspace** that helps people move from serious shopping to close.
 
-It is built for buyers who already have an accepted offer and are moving through escrow toward closing.
+It covers the full buyer journey but builds its moat in escrow, closing, documents, financing, and AI-powered deal intelligence.
 
 Its job:
-1. **Organize the deal** — documents, deadlines, financials in one place
+1. **Organize the journey** — properties, documents, deadlines, financials in one workspace
 2. **Explain the deal** — AI-powered plain-English summaries of every document and number
 3. **Keep the buyer on track** — contingencies, deadlines, open risks, next steps
+4. **Help the buyer avoid expensive mistakes** — red flags, variance detection, fraud prevention
 
 ### 3.2 Primary User
 
-The first ideal user is:
-- A first-time or second-time homebuyer
-- Under contract
-- Entering escrow
-- Receiving lender, title, inspection, and disclosure documents
-- Working with an agent and lender, but lacking a personal comprehension layer for the transaction
+The v1 user can enter the product at two points:
+
+**Serious shopper (earlier entry):**
+- Actively looking at homes, wants to track properties and understand affordability
+- May or may not have a pre-approval
+- Builds context in Shopping, transitions through Offer, deepens in Escrow/Closing
+
+**Buyer under contract (mid-journey entry):**
+- Already has an accepted offer, entering escrow
+- Needs document intelligence, deadline tracking, and financial clarity immediately
+- Enters at Escrow and gets full value from day one
+
+Both users are first-time or second-time buyers working with an agent and lender, but lacking a personal comprehension layer for the transaction.
 
 This is a **single-player value-first product**. The buyer gets full value on their own without requiring any professional to adopt the platform.
 
@@ -149,32 +169,47 @@ The collaborator upload link is a one-way file intake mechanism. The collaborato
 
 ## 4. Design System & Brand Identity
 
-*[v1.1 — Palette updated to premium restrained warm. The v1.0 Wheat/Bronze/Mint palette has been retired. This palette matches the seriousness of a trust-heavy escrow and financing product.]*
+*[v1.2 — Palette restored to Wheat/Bronze/Mint with updated token structure. This palette balances warmth and approachability with the seriousness of a financial product.]*
 
 ### 4.1 Color Palette
 
-**Palette identity:** Premium restrained warm. Quiet confidence, not playful. The visual language should feel like a high-end financial document, not a consumer lifestyle app.
+**Palette identity:** Warm, stress-reducing, and guided. Apple/Airbnb-inspired clarity with a calming color palette that builds trust across a high-stakes journey.
 
-| Token | Hex Code | RGB | Usage |
-|-------|----------|-----|-------|
-| **Background** | `#F7F4EE` | 247, 244, 238 | Primary page background |
-| **Surface** | `#FFFDFC` | 255, 253, 252 | Card backgrounds, elevated panels |
-| **Surface Alt** | `#F1ECE3` | 241, 236, 227 | Secondary surfaces, sidebar, section dividers |
-| **Primary Text** | `#2A2723` | 42, 39, 35 | Headings, body text, primary labels |
-| **Secondary Text** | `#6F685F` | 111, 104, 95 | Muted text, captions, timestamps, helper text |
-| **Border** | `#DDD4C7` | 221, 212, 199 | Card borders, dividers, input outlines |
-| **Primary Accent** | `#8C5A3C` | 140, 90, 60 | CTAs, links, active states, phase indicators |
-| **Accent Hover** | `#72472F` | 114, 71, 47 | Hover/pressed state for accent elements |
-| **Success** | `#617A5D` | 97, 122, 93 | Completed steps, positive indicators, on-track states |
-| **Warning** | `#C08A3C` | 192, 138, 60 | Approaching deadlines, items needing attention |
-| **Destructive** | `#B85243` | 184, 82, 67 | Overdue deadlines, red flags, critical alerts, errors |
+#### Core Brand Colors
+
+| Token | Hex Code | Usage |
+|-------|----------|-------|
+| **Background** | `#F5DEB3` (Wheat) | Main canvas background |
+| **Foreground** | `#2D3748` (Charcoal) | Primary text and headings |
+| **Muted Foreground** | `#767676` (Gray) | Secondary/muted text, captions, timestamps |
+| **Accent** | `#D38E45` (Bronze) | Primary CTA buttons, active states, interactive elements |
+| **Accent Foreground** | `#FFFFFF` (White) | Text on bronze buttons |
+| **Primary** | `#6EE7B7` (Mint Green) | Completed steps, progress indicators, positive states |
+| **Primary Foreground** | `#2D3748` (Charcoal) | Text on mint green backgrounds |
+| **Success** | `#10B981` (Green) | Success messages and confirmation states |
+| **Card** | `#FFFFFF` (White) | Main card backgrounds, elevated panels |
+| **Secondary** | `#FEFCF8` (Off-white) | Sidebar, alternative surfaces, full-width view backgrounds |
+| **Border** | `#E8DBBF` (Light tan) | Card borders, dividers, input outlines |
+| **Destructive** | `#E53E3E` (Red) | Urgent alerts, critical deadlines, errors |
+| **Warning** | `#F59E0B` (Orange) | Warning states, approaching deadlines |
+
+#### Chart Colors
+
+| Token | Hex Code | Usage |
+|-------|----------|-------|
+| **Chart 1** | `#D38E45` (Bronze) | Primary chart color |
+| **Chart 2** | `#6EE7B7` (Mint Green) | Secondary chart color |
+| **Chart 3** | `#E8B84E` (Gold) | Tertiary chart color |
+| **Chart 4** | `#767676` (Gray) | Neutral chart color |
+| **Chart 5** | `#E53E3E` (Red) | Alert chart color |
 
 #### Palette Usage Notes
 
-- **Backgrounds are layered, not flat.** Background (#F7F4EE) for the page, Surface (#FFFDFC) for cards and panels, Surface Alt (#F1ECE3) for sidebar and recessed areas. This creates subtle depth without heavy shadows.
-- **Accent is earned, not everywhere.** Primary Accent (#8C5A3C) is reserved for CTAs, active navigation, and the most important interactive element on screen. It should never compete with itself.
-- **Status colors are muted on purpose.** Success, Warning, and Destructive are desaturated compared to typical UI palettes. This keeps the product calm even when surfacing urgency. The color communicates state; the copy communicates severity.
-- **Text contrast ratios.** Primary Text (#2A2723) on Background (#F7F4EE) exceeds 10:1. Secondary Text (#6F685F) on Background exceeds 4.5:1 (WCAG AA). Primary Text on Surface (#FFFDFC) exceeds 12:1.
+- **Backgrounds are layered.** Wheat (#F5DEB3) for the page canvas, White (#FFFFFF) for cards and panels, Off-white (#FEFCF8) for sidebar and recessed areas. This creates depth without heavy shadows.
+- **Bronze is the action color.** Accent (#D38E45) is reserved for CTAs, active navigation, and the most important interactive element on screen. It should never compete with itself.
+- **Mint green signals progress.** Primary (#6EE7B7) is for completed steps, progress bars, and positive states. It is not used for CTAs.
+- **Status colors are clear.** Success (#10B981) for confirmations, Warning (#F59E0B) for approaching deadlines, Destructive (#E53E3E) for critical alerts. These are intentionally vivid to stand out against the warm canvas.
+- **Text contrast.** Foreground (#2D3748) on Background (#F5DEB3) meets WCAG AA. Muted Foreground (#767676) should only be used on White or Off-white surfaces for adequate contrast.
 
 ### 4.2 Typography
 - **Base Font Size:** 16px
@@ -191,17 +226,17 @@ The collaborator upload link is a one-way file intake mechanism. The collaborato
   - Caption/Helper: sm (0.875rem), normal, 1.5 line height — uses Secondary Text color
 
 ### 4.3 Spacing & Layout
-- **Border Radius:** 0.5rem (8px) standard for cards and inputs; 0.75rem (12px) for larger containers. Slightly tighter than v1.0 to match the restrained aesthetic.
-- **Card Shadows:** Minimal. Prefer border (#DDD4C7) over shadow for elevation. Use `shadow-sm` only for floating elements (dropdowns, modals, tooltips).
+- **Border Radius:** 0.75rem (12px) standard, rounded corners throughout.
+- **Card Shadows:** Subtle shadows (`shadow-sm`) with elevation on hover. Border (#E8DBBF) used for card boundaries.
 - **Max Content Width:** 1120px for full-width views, 1536px (6xl) for dashboard
 - **Padding:** 32px (8 units) standard for page padding
 
 ### 4.4 Design Philosophy
-- **Restrained:** Premium, trust-communicating aesthetic. The product handles sensitive financial documents and high-stakes deadlines — it should look and feel like it takes that seriously.
-- **Warm, not sterile:** The palette is warm but muted. It avoids the coldness of a banking app without drifting into casual territory.
-- **Stress-reducing through clarity:** Calm is achieved through hierarchy, whitespace, and legibility — not through bright colors or playful illustration.
+- **Minimalist:** Clean, uncluttered interfaces with generous whitespace. Apple/Airbnb-inspired clarity.
+- **Stress-reducing:** Calming color palette, gentle animations, clear hierarchy. The product handles high-stakes decisions — it should feel like a trusted guide, not add to the stress.
+- **Warm and approachable:** The Wheat/Bronze palette feels inviting without being casual. It avoids the coldness of a banking app while communicating seriousness about the buyer's financial journey.
 - **Responsive:** Mobile-first design with breakpoints at sm/md/lg/xl
-- **Accessible:** Contrast ratios meet WCAG AA across all text/background combinations. Semantic HTML, keyboard navigation, screen reader support.
+- **Accessible:** High contrast ratios, semantic HTML, keyboard navigation support. Foreground on Background meets WCAG AA.
 
 ---
 
@@ -209,18 +244,21 @@ The collaborator upload link is a one-way file intake mechanism. The collaborato
 
 ### 5.1 Technology Stack
 
-- **Framework:** React 18+ with TypeScript support
+- **Framework:** Next.js 15 (App Router) with TypeScript
+- **Deployment:** Vercel
+- **Backend:** Supabase (Postgres, Auth, Storage, RLS) + Next.js API routes for server logic
+- **AI:** OpenAI GPT-4o (extraction, classification, summarization, copilot)
+- **PDF Parsing:** `pdf-parse` for digital PDFs, GPT-4o Vision fallback for scanned/image docs
 - **Styling:** Tailwind CSS v4.0
 - **Icons:** Lucide React
 - **Animation:** Motion (formerly Framer Motion) via `motion/react`
 - **Charts:** Recharts library
-- **Form Management:** React Hook Form 7.55.0
+- **Form Management:** React Hook Form
 - **UI Components:** Custom component library with shadcn/ui patterns
-- **Build Tool:** Modern bundler (Vite-compatible)
 
 ### 5.1.1 State Architecture
 
-*[v1.1 update — the product complexity has outgrown component-level useState.]*
+*[v1.2 — the product complexity requires a deliberate split between client state and server state.]*
 
 The v1 product manages deal state, document metadata, extracted fields, deadline computations, financing comparisons, collaborator uploads, AI context assembly, and UI state. This requires a deliberate split between client state and server state.
 
@@ -228,7 +266,7 @@ The v1 product manages deal state, document metadata, extracted fields, deadline
 
 | Layer | Tool | Scope |
 |-------|------|-------|
-| **Server state** | TanStack Query (React Query) | Deal data, documents, deadlines, collaborator uploads — anything persisted in Supabase |
+| **Server state** | TanStack Query (React Query) | Saved homes, deal data, offer details, documents, deadlines, loan estimates, collaborator uploads, copilot messages — anything persisted in Supabase |
 | **Client state** | Zustand | UI state (active tab, copilot open/closed, edit mode, comparison selections) |
 | **Form state** | React Hook Form | Scoped to individual forms (deal setup, LE entry, document upload) |
 | **AI context** | Server-side assembly | Deal state + extracted fields + deadlines assembled into prompt context per request |
@@ -244,36 +282,103 @@ The v1 product manages deal state, document metadata, extracted fields, deadline
 ### 5.2 File Structure (v1)
 ```
 /
-├── App.tsx
+├── app/
+│   ├── layout.tsx              (Root layout: sidebar, stepper, copilot shell)
+│   ├── page.tsx                (Landing / marketing)
+│   ├── (auth)/
+│   │   ├── login/page.tsx
+│   │   └── signup/page.tsx
+│   ├── (app)/                  (Authenticated app shell)
+│   │   ├── layout.tsx          (App layout: sidebar + stepper + copilot)
+│   │   ├── dashboard/page.tsx  (Phase-aware dashboard)
+│   │   ├── homes/page.tsx      (Saved homes list — Shopping surface)
+│   │   ├── documents/page.tsx  (Documents view — Build Deep)
+│   │   ├── financing/page.tsx  (Financing view — Build Deep)
+│   │   └── insurance/page.tsx  (Insurance binding — Build Light)
+│   └── api/
+│       ├── documents/
+│       │   └── process/route.ts  (PDF extraction + classification)
+│       ├── copilot/
+│       │   └── chat/route.ts     (Context assembly + OpenAI)
+│       ├── deals/route.ts
+│       └── collaborate/
+│           └── [token]/route.ts  (Public collaborator upload)
 ├── components/
+│   ├── shopping/           (Saved homes, affordability, pre-approval)
+│   ├── offer/              (Offer workspace, checklist, contingency setup)
 │   ├── deal/               (Deal workspace, phase map, deal setup)
 │   ├── documents/          (Document upload, classification, viewer)
 │   ├── financing/          (LE comparison, LE vs CD, cash-to-close)
 │   ├── escrow/             (Contingency tracker, deadlines, due diligence)
 │   ├── closing/            (CD review, wire safety, funding timeline)
+│   ├── post-close/         (Completion, archive, first-30-days)
 │   ├── copilot/            (AI copilot panel, context engine)
 │   ├── collaboration/      (Secure upload link, file intake)
-│   ├── overlays/           (Edit mode, step-back system)
-│   └── ui/                 (Reusable UI primitives)
-├── styles/
-│   └── globals.css
-└── guidelines/
-    └── Guidelines.md
+│   └── ui/                 (shadcn/ui primitives)
+├── lib/
+│   ├── supabase/           (Client + server Supabase helpers)
+│   ├── ai/                 (OpenAI prompts, extraction schemas, context builder)
+│   ├── store.ts            (Zustand UI state)
+│   └── utils.ts            (cn function, formatters, date helpers)
+└── styles/
+    └── globals.css
 ```
 
 ### 5.3 Core Data Models (v1)
+
+#### SavedHome Model (Shopping — Build Light)
+```typescript
+interface SavedHome {
+  id: string;
+  userId: string;
+  address: string;
+  price?: number;
+  beds?: number;
+  baths?: number;
+  sqft?: string;
+  notes?: string;
+  imageUrl?: string;
+  status?: "interested" | "toured" | "offer-pending" | "removed";
+  createdAt: string;
+}
+```
 
 #### Deal Model
 ```typescript
 interface Deal {
   id: string;
+  userId: string;
+  savedHomeId?: string;
   propertyAddress: string;
-  contractAcceptanceDate: string;
-  closingDate: string;
   purchasePrice: number;
+  contractAcceptanceDate?: string;
+  closingDate?: string;
+  earnestMoney?: number;
+  agentName?: string;
+  agentContact?: string;
   currentPhase: "shopping" | "offer" | "escrow" | "closing" | "post-close";
   createdAt: string;
   updatedAt: string;
+}
+```
+
+#### OfferDetails Model (Offer — Build Light)
+```typescript
+interface OfferDetails {
+  id: string;
+  dealId: string;
+  offerPrice: number;
+  earnestMoney: number;
+  closingDate: string;
+  contingencyInspectionDays?: number;
+  contingencyAppraisalDays?: number;
+  contingencyFinancingDays?: number;
+  contingencyDisclosureDays?: number;
+  preApprovalDocId?: string;
+  proofOfFundsDocId?: string;
+  checklistItems: Record<string, boolean>;
+  status: "draft" | "submitted" | "accepted" | "rejected" | "countered";
+  createdAt: string;
 }
 ```
 
@@ -281,6 +386,7 @@ interface Deal {
 ```typescript
 interface LoanEstimate {
   id: string;
+  dealId: string;
   lender: string;
   product: string;
   loanAmount: number;
@@ -297,7 +403,7 @@ interface LoanEstimate {
   lockExpires?: string;
   prepayPenalty: boolean;
   isChosen?: boolean;
-  pdfAttached?: boolean;
+  pdfDocumentId?: string;
   createdAt: string;
 }
 ```
@@ -306,19 +412,23 @@ interface LoanEstimate {
 ```typescript
 interface Document {
   id: string;
+  dealId: string;
   name: string;
-  type: string;
+  filePath: string;
+  fileSize: number;
+  mimeType: string;
+  docType: string;
   category: string;
   stage: string;
   status: "required" | "missing" | "uploaded" | "signed" | "acknowledged" | "final" | "read-only";
   version?: string;
-  lastUpdated: string;
-  size: string;
-  urgent?: boolean;
-  required?: boolean;
+  extractedText?: string;
   extractedFields?: Record<string, any>;
   aiSummary?: string;
-  sourceType?: "buyer-upload" | "collaborator-upload" | "system-generated";
+  confidenceScore?: number;
+  sourceType: "buyer-upload" | "collaborator-upload" | "system-generated";
+  createdAt: string;
+  updatedAt: string;
 }
 ```
 
@@ -333,6 +443,7 @@ interface Deadline {
   status: "upcoming" | "due-soon" | "overdue" | "completed" | "waived";
   notes?: string;
   linkedDocumentIds?: string[];
+  createdAt: string;
 }
 ```
 
@@ -343,11 +454,25 @@ interface CollaboratorLink {
   dealId: string;
   recipientRole: "agent" | "lender" | "escrow" | "title" | "inspector" | "other";
   recipientEmail?: string;
-  linkUrl: string;
+  linkToken: string;
   requestedDocuments?: string[];
   expiresAt: string;
   status: "active" | "expired" | "revoked";
   uploadsReceived: number;
+  createdAt: string;
+}
+```
+
+#### CopilotMessage Model
+```typescript
+interface CopilotMessage {
+  id: string;
+  dealId: string;
+  role: "user" | "assistant";
+  content: string;
+  citations?: { documentName: string; page?: number; section?: string }[];
+  phase: "shopping" | "offer" | "escrow" | "closing" | "post-close";
+  createdAt: string;
 }
 ```
 
@@ -363,11 +488,12 @@ The build should optimize for:
 - Auditable citations or source references inside document explanation flows
 
 The system does **not** need v1 support for:
-- MLS/search infrastructure
+- MLS/search infrastructure or property data APIs
 - Full marketplace integrations
 - Deep brokerage tooling
-- Post-close data sync or homeowner analytics
+- Deep post-close analytics (equity tracking, refi monitoring)
 - Broad API integrations (Zillow, Redfin, county recorder)
+- Contract generation or e-signature
 
 ---
 
@@ -386,22 +512,25 @@ The system does **not** need v1 support for:
   - Circular step indicators (40px diameter)
   - Connected by horizontal progress bars
   - Icons: Search, FilePen, ShieldCheck, Key, LineChart
-  - Completed steps: Success (#617A5D) fill with checkmark
-  - Current step: Primary Accent (#8C5A3C) fill with icon
-  - Future steps: Secondary Text (#6F685F) with icon
-- **v1 Active Experience:** Escrow and Closing phases. Shopping and Offer appear as completed context. Post-Close appears as future state.
+  - Completed steps: Primary (#6EE7B7 Mint Green) fill with checkmark
+  - Current step: Primary (#6EE7B7 Mint Green) fill with icon
+  - Future steps: Muted Foreground (#767676) with icon
+- **v1 Active Experience:** All five phases are interactive. Shopping and Offer are light. Escrow and Closing are deep. Post-Close is thin continuity.
 
 #### Left Sidebar Navigation (v1)
 - **Component:** `Sidebar.tsx`
 - **Width:** 256px (64 units)
-- **Background:** Surface Alt (#F1ECE3)
+- **Background:** Secondary (#FEFCF8 Off-white)
 - **v1 Navigation Items:**
-  1. Dashboard (LayoutDashboard icon) — **v1**
-  2. Documents (FileText icon) — **v1**
-  3. Financing (CreditCard icon) — **v1**
-  4. ~~Homes~~ — **Deferred**
-  5. ~~Insurance~~ — **v1.5** (accessible but thin)
-- **Active State:** Primary Accent (#8C5A3C) text/icon with Surface (#FFFDFC) background
+  1. Dashboard (LayoutDashboard icon) — **Build Deep** — Phase-aware: renders Shopping, Offer, Escrow, Closing, or Post-Close dashboard based on `deal.currentPhase`
+  2. Homes (Home icon) — **Build Light** — Saved/tracked homes list. Always accessible. Functions as the persistent Shopping surface even after a deal is created.
+  3. Documents (FileText icon) — **Build Deep** — Available once a deal exists (Offer phase or later)
+  4. Financing (CreditCard icon) — **Build Deep** — Available once a deal exists (Escrow phase or later)
+  5. Insurance (Shield icon) — **Build Light** — Thin binding flow, available in Escrow/Closing
+- **Active State:** Accent (#D38E45 Bronze) text/icon with Card (#FFFFFF) background, subtle shadow
+- **Contextual visibility:** Documents, Financing, and Insurance appear grayed/locked until the buyer has a deal in the appropriate phase. Homes and Dashboard are always accessible.
+
+**Information architecture note:** The Dashboard is the phase-aware hub — it shows the right content for where the buyer is. Homes is a persistent sidebar destination for property tracking that lives outside any specific deal. When the buyer has no deal yet, Dashboard renders the Shopping dashboard (which includes a Homes summary widget). Once a deal is created, Dashboard renders the active phase dashboard. Homes remains accessible for tracking additional properties or starting new deals.
 
 #### AI Copilot Panel
 - **Component:** `AICopilot.tsx`
@@ -539,10 +668,23 @@ When the copilot reaches the edge of its allowed behavior, it must:
 | Length | Concise by default; offer to expand on request |
 | Actionability | End substantive responses with a clear next step or suggested action |
 
-### 8.7 AI-Powered Workflows (v1)
+### 8.7 Phase-Aware AI Depth
+
+The copilot adapts its behavior to the buyer's current phase:
+
+| Phase | AI Mode | Grounding Level |
+|-------|---------|-----------------|
+| Shopping | General education | Light — readiness questions, term explanations, affordability guidance. Less deal-specific context available. |
+| Offer | Offer-context guidance | Medium — explains contingencies, EMD norms, timelines. Helps buyer understand commitments. |
+| **Escrow** | **Full deal-context** | **Deep — grounded in uploaded documents, extracted fields, deadlines, open issues. Specific, actionable.** |
+| **Closing** | **Full deal-context** | **Deep — same depth as Escrow. CD comparison, wire safety, signing prep.** |
+| Post-Close | Light completion | Light — deal summary, next steps for new homeowners. |
+
+### 8.8 AI-Powered Workflows (v1)
 
 These are the specific AI-driven features that ship in v1:
 
+**Deep (Escrow/Closing):**
 1. **Document classification** — Auto-categorize uploaded files by type (LE, CD, inspection, disclosure, etc.)
 2. **Document summarization** — Generate a plain-English summary of any uploaded document
 3. **Field extraction** — Pull structured data from Loan Estimates, Closing Disclosures, inspection reports
@@ -553,86 +695,166 @@ These are the specific AI-driven features that ship in v1:
 8. **Question drafting** — Generate smart questions for the buyer to ask their agent, lender, or escrow officer
 9. **Deal status summary** — On-demand summary of where the deal stands across all tracked dimensions
 
+**Light (Shopping/Offer):**
+10. **Readiness guidance** — Answer homebuying readiness questions, explain terms, estimate affordability ranges
+11. **Offer education** — Explain contingency types, EMD norms, what to expect in each phase ahead
+
 ---
 
 ## 9. Phase-by-Phase Feature Breakdown
 
 ### Phase Treatment Summary
 
-| Phase | v1 Role | Build Depth |
-|-------|---------|-------------|
-| Shopping | Lightweight context in phase model | Deferred |
-| Offer | Limited setup context only | v1.5 |
-| **Escrow** | **Primary v1 experience** | **v1 — Full build** |
-| **Closing** | **Primary v1 experience** | **v1 — Full build** |
-| Post-Close | Future continuity in phase model | Deferred |
+| Phase | Build Tier | Role in v1 |
+|-------|-----------|------------|
+| Shopping | Build Light | Acquisition surface, context building, deal creation handoff |
+| Offer | Build Light | Offer workspace, contingency/EMD setup, checklist, pre-approval upload |
+| **Escrow** | **Build Deep** | **Primary deep experience — document intelligence, deadlines, due diligence** |
+| **Closing** | **Build Deep** | **Primary deep experience — CD review, wire safety, funding** |
+| Post-Close | Thin Continuity | Completion summary, document archive, future value signal |
 
 ---
 
-### 9.1 DEAL WORKSPACE SETUP — [v1]
+### 9.1 SHOPPING PHASE — [Build Light]
 
 #### Overview
-The entry point. The buyer creates a deal workspace by entering basic transaction details. This replaces the Shopping and Offer phases as the v1 onboarding flow.
+The product's front door for early-stage buyers. The Shopping phase gives buyers a place to track homes they're interested in, understand basic affordability, and organize their readiness before making an offer. It is real and functional, but it is not a deep search or analytics product.
 
-#### Setup Flow
-The buyer provides:
-- Property address
-- Contract acceptance date
-- Closing date
-- Purchase price
-- Earnest money amount
-- Key contingency dates (inspection, appraisal, financing, disclosure)
-
-The system generates:
-- Five-phase progress map (set to Escrow active)
-- Expected timeline with computed deadlines
-- Expected document checklist
-- Empty workspace ready for document uploads
+#### Dashboard Layout
+```
+┌──────────────────────────────────────┐
+│  Pre-Approval Status Card            │
+├──────────────────┬───────────────────┤
+│  Saved Homes     │  Affordability    │
+│  List            │  Snapshot         │
+├──────────────────┴───────────────────┤
+│  "Ready to make an offer?" CTA       │
+└──────────────────────────────────────┘
+```
 
 #### Components
-**1. Deal Setup Form** (`DealSetupForm.tsx`) — **v1**
-- Multi-step or single-page form
+
+**1. Saved Homes List** (`SavedHomesList.tsx`) — Build Light
+- Manual entry: address, price, beds/baths/sqft, notes, photo (optional)
+- Simple card or list layout
+- Quick actions: Edit, Remove, "Make an offer on this home" (transitions to Offer)
+- No MLS integration, no Zillow/Redfin import, no neighborhood analytics
+
+**2. Affordability Snapshot** (`AffordabilitySnapshot.tsx`) — Build Light
+- Simple cash-to-close estimator (purchase price, down payment %, estimated closing costs)
+- Monthly payment estimate (P&I from basic rate assumption)
+- Not a full calculator product — lightweight orientation tool
+
+**3. Pre-Approval Status Card** (`PreApprovalCard.tsx`) — Build Light
+- Upload pre-approval letter (PDF)
+- Display: lender name, approved amount, expiration date
+- Status: "Pre-approved" / "Not yet" / "Expired"
+
+**4. Shopping Alerts** — Build Light
+- Pre-approval expiration warning
+- Basic readiness reminders ("Have you talked to a lender?")
+
+#### Phase Transition
+**CTA:** "Ready to make an offer?"
+- Transitions to Offer phase
+- If a saved home is selected, pre-populates the offer form with property address and price
+
+#### What does NOT ship in Shopping
+- MLS search or property import
+- Market analytics, neighborhood comps, price trends
+- Equity appreciation forecast
+- BRBC summary or deep financial planning
+- Loan type recommendation wizard
+- Offer strength prediction
+
+---
+
+### 9.2 OFFER PHASE — [Build Light]
+
+#### Overview
+The Offer phase captures the transition from "interested buyer" to "buyer under contract." It provides a structured workspace for the buyer to organize their offer details and prepare for escrow — without deep contract-building tools.
+
+#### Dashboard Layout
+```
+┌──────────────────┬───────────────────┐
+│  Offer Details    │  Offer Checklist  │
+│  Form             │                   │
+├──────────────────┼───────────────────┤
+│  Contingency     │  Pre-Approval /   │
+│  Setup           │  Proof of Funds   │
+├──────────────────┴───────────────────┤
+│  "Offer Accepted — Move to Escrow"   │
+└──────────────────────────────────────┘
+```
+
+#### Components
+
+**1. Offer Details Form** (`OfferDetailsForm.tsx`) — Build Light
+- Property address (pre-populated from Shopping if applicable)
+- Offer price
+- Earnest money amount
+- Closing date
+- Agent name / contact
+- Basic notes
+
+**2. Offer Checklist** (`OfferChecklist.tsx`) — Build Light
+- Pre-approval letter attached (check)
+- Proof of funds uploaded (check)
+- Earnest money source identified (check)
+- Contingencies defined (check)
+- Agent contacted (check)
+- Checkbox completion tracking with progress indicator
+
+**3. Contingency Setup** (`ContingencySetup.tsx`) — Build Light
+- Define contingency periods: inspection, appraisal, financing, disclosure
+- These values feed directly into Escrow deadline computation on phase transition
+- Simple date or "days from acceptance" inputs
+
+**4. Pre-Approval / Proof of Funds Upload** (`OfferDocUpload.tsx`) — Build Light
+- Upload pre-approval letter and/or proof of funds
+- These documents appear in the Documents view once deal enters Escrow
+
+#### Phase Transition
+**CTA:** "Offer Accepted — Move to Escrow"
+- Creates the full deal workspace
+- Generates five-phase progress map (set to Escrow active)
+- Computes deadlines from contingency setup
+- Generates expected document checklist
+- Transitions buyer into the deep Escrow experience
+
+#### What does NOT ship in Offer
+- RPA / contract builder
+- Offer strength analyzer
+- Counteroffer simulator
+- Escalation clause builder
+- AI negotiation guidance
+- Detailed market comp analysis
+
+---
+
+### 9.3 DEAL WORKSPACE CREATION — [v1]
+
+#### Overview
+The deal workspace is created when the buyer transitions from Offer to Escrow (or enters directly at Escrow for mid-journey users). It is the persistent container for all deal data.
+
+**Entry path 1 (from Shopping/Offer):** Offer Accepted CTA transitions all collected data into the workspace.
+
+**Entry path 2 (direct to Escrow):** Buyer creates workspace directly by entering property address, contract acceptance date, closing date, price, EMD, and contingency dates.
+
+#### Components
+**1. Deal Setup Form** (`DealSetupForm.tsx`) — Build Deep
+- Multi-step or single-page form (for direct entry)
 - Address input with validation
 - Date pickers for key dates
 - Auto-compute deadline dates from contract acceptance
 - Save and create workspace
 
-**2. Deal Summary Card** (`DealSummaryCard.tsx`) — **v1**
+**2. Deal Summary Card** (`DealSummaryCard.tsx`) — Build Deep
 - Persistent card on dashboard
 - Property address, price, key dates
 - Days to closing countdown
 - Current phase indicator
 - Quick-edit capability
-
----
-
-### 9.2 SHOPPING PHASE — [Deferred]
-
-Present only as a completed step in the five-phase progress map. No active product experience in v1.
-
-**What exists:** A grayed-out or completed step icon in the progress stepper.
-**What does not exist:** Saved homes grid, property cards, equity forecast, BRBC summary, loan type helper card, cash-to-close estimator (shopping version), or any shopping-specific dashboard.
-
-*The full Shopping phase spec from v1.0 is preserved in the product vision archive but does not drive v1 build decisions.*
-
----
-
-### 9.3 OFFER PHASE — [Deferred as a workflow; data capture exists in v1 setup]
-
-The Offer phase has no standalone workflow or dashboard in v1. It appears in the progress stepper as a completed step (the buyer's offer was already accepted before they start using the product).
-
-**Offer data capture exists in v1 only as setup input.** During deal workspace creation (Section 9.1), the buyer enters offer-related data — purchase price, earnest money amount, contingency periods, closing date. These values feed directly into the Escrow phase workflows (deadline computation, EMD tracking, financing comparison). They are not part of an "Offer experience."
-
-**Offer workflows remain out of scope for v1:**
-- RPA Draft builder
-- Offer Checklist
-- Contingency Builder (standalone — contingency *tracking* is in Escrow)
-- Offer Strength Analyzer
-- Earnest Money Calculator (standalone — EMD *tracking* is in Escrow)
-- Counteroffer Simulator
-- Offer Alerts Panel
-
-These become candidates for v1.5 expansion backward into offer prep, contingent on 90-day success signals.
 
 ---
 
@@ -693,7 +915,7 @@ The primary v1 experience. Manages the 21–45 day period between offer acceptan
 **2. Contingency Countdown** (`ContingencyCountdown.tsx`)
 - Visual timeline
 - Days remaining per contingency
-- Color-coded urgency (Success > Warning > Destructive)
+- Color-coded urgency (Primary/green > Warning/orange > Destructive/red)
 - Automatic deadline calculations from contract dates
 - Removal/waiver tracking
 
@@ -896,22 +1118,38 @@ Handles final verifications, document signing, and fund transfer in the 3–7 da
 
 ---
 
-### 9.6 POST-CLOSE PHASE — [Deferred]
+### 9.6 POST-CLOSE PHASE — [Thin Continuity]
 
-Explicitly deferred from v1. Appears in the progress stepper as a future step to maintain the product's emotional arc ("your journey continues").
+Visible in the product to give completeness and maintain the buyer relationship. Minimal implementation.
 
-**v1 behavior on closing completion:**
-- Completion celebration screen
-- Deal summary / snapshot
-- Option to download or archive all deal documents
-- Prompt: "Post-close homeowner tools coming soon"
+#### Components
 
-**Deferred components (from v1.0 spec):**
+**1. Completion Celebration** (`CompletionCelebration.tsx`) — Thin Continuity
+- Congratulatory screen on recording complete
+- Deal snapshot: address, purchase price, closing date, total cash to close
+- Emotional payoff for the journey
+
+**2. Deal Archive** (`DealArchive.tsx`) — Thin Continuity
+- Download all deal documents (ZIP)
+- Deal summary PDF export
+- Permanent access to deal workspace in read-only mode
+
+**3. First 30 Days Checklist** (`FirstThirtyDays.tsx`) — Thin Continuity
+- Utility transfer reminders
+- Address change checklist
+- Warranty registration prompts
+- Simple checkbox list — not a deep management tool
+
+**4. Future Value Prompt** — Thin Continuity
+- "Post-close homeowner tools coming soon" card
+- Email capture for launch notification
+- Keeps the user connected for future product expansion
+
+#### Deferred from Post-Close (v1.0 archive)
 - Equity Value Tracker
 - Refi Rate Watch
 - Insurance Risk Monitor
 - Property Tax Exemptions
-- Documents Vault (ongoing)
 - Maintenance Planner
 - Renovation & ADU Planner
 - Post-Close Alerts
@@ -924,13 +1162,13 @@ Explicitly deferred from v1. Appears in the progress stepper as a future step to
 
 **Component:** `DocumentsView.tsx`
 **Access:** Sidebar navigation
-**Background:** Background (#F7F4EE)
+**Background:** Secondary (#FEFCF8 Off-white)
 **Max Width:** 1120px
 
 #### Architecture
 - Compact header (minimal height)
 - Search toggle (expandable)
-- Upload CTA (Primary Accent button)
+- Upload CTA (Accent/Bronze button)
 - Stage Essentials progress strip
 - Smart Tabs navigation
 - Document list with row design
@@ -1004,7 +1242,7 @@ Explicitly deferred from v1. Appears in the progress stepper as a future step to
 
 **Component:** `FinancingView.tsx`
 **Access:** Sidebar navigation
-**Background:** Background (#F7F4EE)
+**Background:** Secondary (#FEFCF8 Off-white)
 **Max Width:** 1120px
 
 #### v1 Scope
@@ -1019,7 +1257,7 @@ The Loan Type Helper wizard (3-step recommendation flow) is **deferred to v1.5**
 
 **1. My Loan Estimates Section** — v1
 - Grid layout (3 columns on desktop)
-- "Add Loan Estimate" CTA (Primary Accent button)
+- "Add Loan Estimate" CTA (Accent/Bronze button)
 
 **2. Loan Estimate Card** (`LoanEstimateCard.tsx`) — v1
 - Lender name + product
@@ -1046,7 +1284,7 @@ The Loan Type Helper wizard (3-step recommendation flow) is **deferred to v1.5**
   - Minimize cash to close
   - Minimize total cost (APR-based)
 - Highlights best value per column
-- Winner indicators (Success checkmarks)
+- Winner indicators (Primary/Mint checkmarks)
 
 **5. LE vs CD Variance Panel** (`LEvsCD.tsx`) — v1 (new)
 - Side-by-side comparison when both LE and CD are uploaded
@@ -1093,9 +1331,26 @@ The Loan Type Helper wizard (3-step recommendation flow) is **deferred to v1.5**
 
 ---
 
-### 10.4 HOMES VIEW — [Deferred]
+### 10.4 HOMES VIEW — [Build Light]
 
-The Homes view (favorites, owned properties, import from Redfin/Zillow) is entirely deferred. It is a Shopping-phase feature and has no role in the escrow-to-close experience.
+**Component:** `HomesView.tsx`
+**Access:** Sidebar navigation
+**Background:** Secondary (#FEFCF8 Off-white)
+
+Simple property tracking for the Shopping phase. Not a search engine.
+
+**v1 features:**
+- List of saved/tracked homes (manual entry)
+- Per-home: address, price, beds/baths/sqft, notes, photo (optional)
+- Quick actions: Edit, Remove, "Make an offer on this home"
+- "Add a home" card
+- Link to Shopping dashboard
+
+**Deferred:**
+- MLS integration or property import (Zillow, Redfin)
+- Owned properties section
+- Neighborhood analytics or market data
+- Property comparison tools
 
 ---
 
@@ -1207,11 +1462,23 @@ Located in `/components/ui/`
 
 ## 14. User Flows & Journeys
 
-### 14.1 v1 Onboarding Flow
+### 14.1 v1 Onboarding Flow — Two Entry Paths
 
+**Path A — Early entry (serious shopper):**
 ```
 1. Landing → Sign Up
-2. "I have an accepted offer" → Deal Setup
+2. "I'm shopping for a home" → Shopping dashboard
+3. Save homes, explore affordability, upload pre-approval
+4. "Ready to make an offer?" → Offer workspace
+5. Fill in offer details, contingencies, checklist
+6. "Offer Accepted" → Deal workspace created → Escrow dashboard
+7. Upload documents, track deadlines, use copilot
+```
+
+**Path B — Mid-journey entry (buyer under contract):**
+```
+1. Landing → Sign Up
+2. "I already have an accepted offer" → Deal Setup
 3. Enter property address, dates, key details
 4. Workspace created → Escrow dashboard
 5. Upload first documents (contract, LE)
@@ -1219,18 +1486,26 @@ Located in `/components/ui/`
 7. Copilot introduction: "Ask me anything about your deal"
 ```
 
-There is no Shopping or Offer flow in v1. The user enters the product with an accepted offer.
+Both paths converge at the Escrow dashboard, where the deep product experience begins.
 
-### 14.2 Core v1 Journey (Escrow → Close)
+### 14.2 Full v1 Journey (Shopping → Close)
 
 ```
-DEAL SETUP (Day 0)
-├─ Enter deal details
-├─ Upload purchase contract
-├─ AI extracts dates, deadlines, parties
-└─ Workspace populated
+SHOPPING (Days/weeks before offer)
+├─ Save homes, track properties
+├─ Upload pre-approval letter
+├─ Explore affordability
+├─ Ask copilot readiness questions
+└─ CTA: "Ready to make an offer?"
 
-ESCROW PHASE (Days 1–35)
+OFFER (1–3 days)
+├─ Enter offer details (price, EMD, contingencies)
+├─ Complete offer checklist
+├─ Upload proof of funds
+├─ Set contingency periods
+└─ CTA: "Offer Accepted — Move to Escrow"
+
+ESCROW (Days 1–35)
 ├─ Week 1: Earnest deposit tracking, initial disclosures
 ├─ Week 2: Inspections, appraisal ordered
 ├─ Week 3: Inspection findings, repair negotiations, AI red-flag summaries
@@ -1240,7 +1515,7 @@ ESCROW PHASE (Days 1–35)
 ├─ Throughout: Check deadlines, ask copilot questions
 └─ CTA: "All Contingencies Clear? Proceed to Closing"
 
-CLOSING PHASE (Days 35–42)
+CLOSING (Days 35–42)
 ├─ Day 1–3: Receive CD, 3-day wait, LE vs CD variance review
 ├─ Day 4: Final walkthrough checklist
 ├─ Day 5: Wire funds (SafeSend flow), final verifications
@@ -1248,10 +1523,11 @@ CLOSING PHASE (Days 35–42)
 ├─ Day 7: Funding → Recording → Keys
 └─ CTA: "Recording Complete!"
 
-POST-CLOSE (v1)
+POST-CLOSE
 ├─ Celebration screen
-├─ Deal summary / archive
-└─ "More tools coming soon"
+├─ Deal summary / document archive
+├─ First 30 days checklist
+└─ "Homeowner tools coming soon"
 ```
 
 ### 14.3 Document Upload Flow (v1)
@@ -1340,15 +1616,16 @@ v1 success is measured by engagement and retention, not revenue (see Section 19)
 ### 17.3 Customer Acquisition (v1)
 
 **Primary channels for beta:**
-- Direct outreach to buyers under contract (real estate communities, forums)
-- Agent referrals (agents share the product with their buyers)
-- Content marketing (escrow explainers, closing guides)
+- Direct outreach to active homebuyers (real estate communities, forums, first-time buyer groups)
+- Agent referrals (agents share the product with clients at any stage)
+- Content marketing across the journey — homebuying checklists, escrow explainers, closing guides, "what to expect" content
+- SEO-friendly landing pages for high-intent queries ("what is escrow," "loan estimate vs closing disclosure," "home buying checklist")
+- The Shopping surface gives earlier-stage buyers a reason to sign up before they have an accepted offer, widening top of funnel
 
 **Not in v1 scope:**
 - Paid advertising
-- Marketplace/referral marketplace
-- Zillow/Redfin integration
-- Full SEO content strategy
+- Marketplace / referral marketplace
+- Zillow/Redfin integration or MLS data partnerships
 
 ---
 
@@ -1392,22 +1669,20 @@ v1 success is measured by engagement and retention, not revenue (see Section 19)
 
 ## 19. 90-Day Success Definition
 
-*[Aligned directly with MVP Overlay Section 12.]*
+*[Aligned with MVP Overlay v2.0 Section 12.]*
 
 At 90 days, v1 is successful if:
 
-1. **Real usage:** Buyers under contract are uploading real documents and returning multiple times during live transactions.
-2. **Core value sticks:** The document explanation + LE/CD comparison + cash-to-close workflow cluster feels painful to lose.
+1. **Real buyers use the product across multiple phases.** Some enter at Shopping, some at Escrow. Both paths show engagement.
+2. **The core cluster feels painful to lose.** Document explanation + LE/CD comparison + cash-to-close + deadline tracking is the indispensable center.
 3. **User signal:** Users say some version of:
    - "I finally understood what was happening."
-   - "This kept me organized."
+   - "This kept me organized from the start."
    - "I caught something I would have missed."
-4. **Repeated engagement:** Deadline checks, document uploads, and AI questions show repeated usage across active deals.
-5. **Collaboration signal:** At least one collaborator proactively uses the secure upload link without heavy instruction.
-6. **Expansion signal:** The team has clear data on the next growth path:
-   - Backward into offer prep (v1.5)
-   - Outward into B2B2C collaboration (v2)
-   - Forward into post-close retention (v2+)
+4. **Repeat usage is real.** Document uploads, deadline checks, AI questions happen repeatedly across active deals — not one-time novelty.
+5. **Collaboration works.** At least one collaborator proactively uses the secure upload link without heavy instruction.
+6. **Shopping/Offer feel like real onboarding.** Users who start early build context that pays off when they enter escrow. The handoff feels seamless.
+7. **Clear expansion signal.** The team has data on what to deepen next: Shopping tools, Offer depth, B2B2C collaboration, or Post-Close retention.
 
 ### Key Metrics (v1)
 
@@ -1419,6 +1694,7 @@ At 90 days, v1 is successful if:
 | LE/CD comparison usage | 80%+ of deals with LE | Financing clarity value |
 | Deadline check frequency | Daily during active escrow | Tracking layer value |
 | Collaborator link usage | 1+ per deal | Collaboration viability |
+| Shopping → Escrow conversion | Track (no target yet) | Funnel health |
 | Deal completion rate | Track (no target yet) | End-to-end value |
 
 ---
@@ -1436,11 +1712,12 @@ At 90 days, v1 is successful if:
 
 ### 20.2 v1 Differentiators
 
-- **Buyer-first escrow clarity** — no existing product gives the buyer a unified deal workspace during escrow
+- **Full-journey buyer workspace** — no competitor covers shopping through close from the buyer's perspective
 - **AI document intelligence** — plain-English explanations grounded in the buyer's actual documents
 - **LE vs CD variance review** — automated comparison that surfaces what changed and whether it matters
-- **Deal-context copilot** — not a generic chatbot; answers are grounded in the specific deal
+- **Deal-context copilot** — not a generic chatbot; answers are grounded in the specific deal and adapt depth to the buyer's phase
 - **Deadline and risk tracking** — contingencies, deadlines, and open issues in one view
+- **Seamless phase transitions** — context builds from shopping through offer into escrow/closing without re-entering data
 
 ---
 
@@ -1483,7 +1760,7 @@ At 90 days, v1 is successful if:
 feat: Add contingency countdown component
 fix: Resolve LE comparison rounding error
 refactor: Extract deadline computation logic
-docs: Update product spec to v1.1
+docs: Update product spec to v1.2
 ```
 
 ---
@@ -1492,16 +1769,17 @@ docs: Update product spec to v1.1
 
 ### 22.1 v1 Target Architecture
 
-**Frontend:**
-- Vercel or Netlify hosting
-- CDN distribution
-- Auto-deployment from Git
+**Frontend + Server:**
+- Next.js 15 (App Router) deployed on Vercel
+- Server Components for data-heavy pages, Client Components for interactive UI
+- API routes (`app/api/`) for document processing, copilot chat, collaborator uploads
+- CDN distribution via Vercel Edge Network
+- Auto-deployment from Git (preview deployments for PRs)
 
 **Backend:**
-- Supabase (PostgreSQL + Storage + Auth + Edge Functions)
-- Document storage in Storage buckets
-- Row-level security for deal isolation
-- Edge functions for AI orchestration
+- Supabase (PostgreSQL + Storage + Auth + Row-Level Security)
+- Document storage in Storage buckets (private, scoped to deal)
+- RLS policies ensuring deal isolation by `auth.uid()`
 
 **AI Layer:**
 - LLM integration for document classification, summarization, and copilot
@@ -1550,7 +1828,7 @@ docs: Update product spec to v1.1
 
 ## 24. Glossary of Real Estate Terms
 
-*[v1 — Retained from v1.0. These terms are directly relevant to the escrow-to-close experience.]*
+*[v1 — Retained from v1.0. These terms are relevant across the homebuying journey, with particular importance during escrow and closing.]*
 
 **APR (Annual Percentage Rate):** True cost of borrowing including interest and fees
 **Contingency:** Condition that must be met for transaction to proceed
@@ -1571,7 +1849,26 @@ docs: Update product spec to v1.1
 
 ## 25. Change Log
 
-### Version 1.1 (Current — Aligned to MVP Overlay)
+### Version 1.2 (Current — Broad Surface, Narrow Core)
+
+**Strategy shift from v1.1:**
+- Replaced "escrow-only" positioning with "Broad Surface, Narrow Core" — the product feels complete across the journey but builds its moat in Escrow/Closing/Documents/Financing/AI
+- Shopping phase upgraded from Deferred to Build Light — saved homes, affordability context, pre-approval card, deal creation handoff
+- Offer phase upgraded from Deferred to Build Light — offer details workspace, contingency setup, checklist, pre-approval upload
+- Post-Close phase upgraded from Deferred to Thin Continuity — celebration, deal archive, first-30-days checklist, future value prompt
+- Homes view restored as Build Light (simple property tracking, no MLS)
+- New 4-tier build taxonomy: Build Deep / Build Light / Thin Continuity / Defer (replaces v1 / v1.5 / Deferred)
+- Product promise broadened: "From serious shopping to keys in hand..."
+- Primary user definition now supports two entry paths (serious shopper + buyer under contract)
+- AI copilot gains phase-aware depth — lighter in Shopping/Offer, deep in Escrow/Closing
+- User flows rewritten to include Shopping → Offer → Escrow → Closing → Post-Close journey
+- 90-day success definition broadened to measure cross-phase engagement and funnel health
+- Competitive positioning updated to emphasize full-journey coverage as differentiator
+- All Build Deep features (Escrow, Closing, Documents, Financing, AI) unchanged from v1.1 — no scope reduction in core
+- Palette restored to Wheat/Bronze/Mint (#F5DEB3, #D38E45, #6EE7B7) with updated token structure including chart colors, success (#10B981), warning (#F59E0B), destructive (#E53E3E)
+- Design philosophy updated: warm, stress-reducing, Apple/Airbnb-inspired — replacing "premium restrained warm"
+
+### Version 1.1 (Previous — Escrow-to-Close Focus)
 
 **Scope changes from v1.0:**
 - Rewrote Executive Summary to reflect escrow-to-close focus (removed "entire home buying journey" framing)
@@ -1616,41 +1913,49 @@ This spec exists alongside two other governing documents:
 
 | Document | Purpose | Authority |
 |----------|---------|-----------|
-| **MVP Scope Overlay v1.0** | Decision layer — what to build, what not to build, what's in/out | Highest. If conflict, overlay wins. |
-| **Product Spec v1.1** (this document) | Product reference — aligned to overlay decisions | Detailed reference for product, design, and engineering. |
-| **Build Plan** (forthcoming) | Execution doc — sprint breakdown, task order, dependencies | Derived from overlay + this spec. |
+| **MVP Scope Overlay v2.0** | Decision layer — Broad Surface, Narrow Core. What to build deep, light, thin, or defer. | Highest. If conflict, overlay wins. |
+| **Product Spec v1.2** (this document) | Product reference — aligned to overlay decisions | Detailed reference for product, design, and engineering. |
+| **Build Plan** | Execution doc — sprint breakdown, task order, dependencies | Derived from overlay + this spec. |
 
 ---
 
-## Appendix A: v1.0 Archive Reference
+## Appendix A: Deferred Feature Archive
 
-The following v1.0 sections are preserved as long-term product vision but are **not v1 build scope**. They are retained in the v1.0 spec document for future reference.
+The following features are part of the long-term product vision but are **not v1 build scope**. They are preserved for future reference.
 
-- Section 5.1: Shopping Phase (full component spec)
-- Section 5.2: Offer Phase (full component spec)
-- Section 5.5: Post-Close Phase (full component spec)
-- Section 6.1: Homes View (full spec)
-- Section 6.4: Insurance View (full spec)
-- Section 7.4: Smart Comparisons (properties, insurance quotes, contractor bids)
-- Section 10: Future Enhancements (marketplace, mobile app, enterprise licensing, advanced analytics)
-- Section 17: Full business model with referral fees, enterprise licensing, data insights
+- Full Shopping depth: MLS integration, property import, market analytics, neighborhood comps, equity forecast
+- Full Offer depth: RPA builder, offer strength analyzer, counteroffer simulator, escalation clauses
+- Full Post-Close depth: equity tracker, refi rate watch, insurance risk monitor, maintenance planner, ADU planner, property tax
+- Full Insurance depth: quote comparison, coverage education, carrier analysis
+- Full Loan Type Helper: 3-step recommendation wizard, personalized loan type algorithm
+- Marketplace features: lender matching, agent referrals, service provider directory
+- Enterprise: brokerage admin, white-label, multi-user collaboration, e-signature integration
+- Mobile native app
 
 ---
 
 ## Appendix B: Color Reference Card
 
 ```
-Background:      #F7F4EE  rgb(247, 244, 238)  Page background
-Surface:         #FFFDFC  rgb(255, 253, 252)  Cards, elevated panels
-Surface Alt:     #F1ECE3  rgb(241, 236, 227)  Sidebar, recessed areas
-Primary Text:    #2A2723  rgb(42, 39, 35)     Headings, body text
-Secondary Text:  #6F685F  rgb(111, 104, 95)   Muted text, captions
-Border:          #DDD4C7  rgb(221, 212, 199)  Borders, dividers
-Primary Accent:  #8C5A3C  rgb(140, 90, 60)    CTAs, links, active states
-Accent Hover:    #72472F  rgb(114, 71, 47)    Hover/pressed accent
-Success:         #617A5D  rgb(97, 122, 93)    Completed, on-track
-Warning:         #C08A3C  rgb(192, 138, 60)   Approaching deadlines
-Destructive:     #B85243  rgb(184, 82, 67)    Overdue, critical alerts
+Background:        #F5DEB3  Wheat           Main canvas
+Foreground:        #2D3748  Charcoal        Primary text, headings
+Muted Foreground:  #767676  Gray            Secondary text, captions
+Accent:            #D38E45  Bronze          CTAs, active states
+Accent Foreground: #FFFFFF  White           Text on bronze
+Primary:           #6EE7B7  Mint Green      Completed steps, progress
+Primary Foreground:#2D3748  Charcoal        Text on mint
+Success:           #10B981  Green           Success messages
+Card:              #FFFFFF  White           Card backgrounds
+Secondary:         #FEFCF8  Off-white       Sidebar, alt surfaces
+Border:            #E8DBBF  Light tan       Borders, dividers
+Destructive:       #E53E3E  Red             Critical alerts, errors
+Warning:           #F59E0B  Orange          Warning states
+
+Chart 1:           #D38E45  Bronze
+Chart 2:           #6EE7B7  Mint Green
+Chart 3:           #E8B84E  Gold
+Chart 4:           #767676  Gray
+Chart 5:           #E53E3E  Red
 ```
 
 ## Appendix C: Icon Mapping
@@ -1689,13 +1994,13 @@ Toast notifications: 3000ms (auto-dismiss)
 
 ## Document Information
 
-**Document Version:** 1.1
-**Last Updated:** April 4, 2026
-**Aligned To:** MVP Scope Overlay v1.0
-**Purpose:** Product reference document for HomeBuyer Pro v1 — escrow-to-close buyer deal workspace
+**Document Version:** 1.2
+**Last Updated:** April 5, 2026
+**Aligned To:** MVP Scope Overlay v2.0 — Broad Surface, Narrow Core
+**Purpose:** Product reference document for HomeBuyer Pro v1 — buyer-first homebuying workspace, serious shopping through close
 **Audience:** Product managers, developers, designers, stakeholders
-**Scope Authority:** MVP Scope Overlay v1.0 governs. Where this spec and the overlay conflict, the overlay wins.
+**Scope Authority:** MVP Scope Overlay v2.0 governs. Where this spec and the overlay conflict, the overlay wins.
 
 ---
 
-*End of Product Specification Document v1.1*
+*End of Product Specification Document v1.2*
