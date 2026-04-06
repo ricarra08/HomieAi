@@ -38,9 +38,12 @@ export function DocumentRow({ doc }: { doc: Document }) {
   const status = statusConfig[doc.status] ?? statusConfig["uploaded"];
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => openViewer(doc.id)}
-      className="w-full flex items-center gap-4 py-3 px-4 rounded-lg hover:bg-muted/50 transition-colors text-left"
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openViewer(doc.id); } }}
+      className="w-full flex items-center gap-4 py-3 px-4 rounded-lg hover:bg-muted/50 transition-colors text-left cursor-pointer"
     >
       <FileText className="w-5 h-5 text-muted-foreground shrink-0" />
       <div className="flex-1 min-w-0">
@@ -60,6 +63,6 @@ export function DocumentRow({ doc }: { doc: Document }) {
       >
         <MoreHorizontal className="w-4 h-4" />
       </button>
-    </button>
+    </div>
   );
 }

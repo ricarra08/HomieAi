@@ -1,16 +1,19 @@
 "use client";
 
+import { useRouter, usePathname } from "next/navigation";
 import { useUIStore } from "@/lib/store";
 import { LayoutDashboard, FileText, CreditCard, ChevronLeft, ChevronRight } from "lucide-react";
 
 const navItems = [
-  { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
-  { id: "documents" as const, label: "Documents", icon: FileText },
-  { id: "financing" as const, label: "Financing", icon: CreditCard },
+  { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+  { id: "documents" as const, label: "Documents", icon: FileText, href: "/documents" },
+  { id: "financing" as const, label: "Financing", icon: CreditCard, href: "/financing" },
 ];
 
 export function Sidebar() {
-  const { activeSidebarItem, setActiveSidebarItem, sidebarCollapsed, toggleSidebar } = useUIStore();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { setActiveSidebarItem, sidebarCollapsed, toggleSidebar } = useUIStore();
 
   return (
     <div className="relative shrink-0">
@@ -33,12 +36,15 @@ export function Sidebar() {
         <nav className={`flex-1 space-y-1 ${sidebarCollapsed ? "px-2" : "px-4"}`}>
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = activeSidebarItem === item.id;
+            const isActive = pathname === item.href;
 
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveSidebarItem(item.id)}
+                onClick={() => {
+                  setActiveSidebarItem(item.id);
+                  router.push(item.href);
+                }}
                 title={sidebarCollapsed ? item.label : undefined}
                 className={`w-full flex items-center rounded-lg text-base font-medium transition-colors ${
                   sidebarCollapsed

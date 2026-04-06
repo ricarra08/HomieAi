@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import * as pdfParse from "pdf-parse";
+import { extractText } from "unpdf";
 import OpenAI from "openai";
 
 function getSupabaseAdmin() {
@@ -66,40 +66,42 @@ export async function POST(request: NextRequest) {
     // Step 1: Extract text
     let extractedText = "";
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const parse = (pdfParse as any).default ?? pdfParse;
-      const pdfData = await parse(buffer);
-      extractedText = pdfData.text.trim();
-    } catch {
+      const uint8 = new Uint8Array(buffer);
+      const { text } = await extractText(uint8);
+      extractedText = (Array.isArray(text) ? text.join("\n") : text).trim();
+    } catch (e) {
+      console.log("[doc-process] text extraction failed:", e);
       extractedText = "";
     }
 
-    // Step 2: If text extraction failed or too short, try GPT-4o Vision
+    console.log(`[doc-process] pdf-parse extracted ${extractedText.length} chars`);
+
+    // Step 2: If text extraction failed or too short, try GPT-4o text reconstruction
     if (extractedText.length < MIN_TEXT_LENGTH) {
+      console.log("[doc-process] Text too short, trying GPT-4o text reconstruction...");
       try {
-        const base64 = buffer.toString("base64");
-        const visionResponse = await openai.chat.completions.create({
+        const partialText = extractedText || "(no text could be extracted from this PDF)";
+        const reconstructResponse = await openai.chat.completions.create({
           model: "gpt-4o",
           max_tokens: 4096,
           messages: [
             {
+              role: "system",
+              content: "You are a document text extractor. The user will provide partial or garbled text extracted from a real estate PDF document. Reconstruct and return the readable text content. If the text is empty or unusable, say UNREADABLE.",
+            },
+            {
               role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: "Extract all readable text from this document image. Return the text content only, no commentary.",
-                },
-                {
-                  type: "image_url",
-                  image_url: { url: `data:application/pdf;base64,${base64}` },
-                },
-              ],
+              content: `Partial text from PDF (${buffer.length} bytes, filename: ${doc.name}):\n\n${partialText}`,
             },
           ],
         });
-        extractedText = visionResponse.choices[0]?.message?.content?.trim() ?? "";
-      } catch {
-        // Vision fallback failed — mark as needing manual review
+        const result = reconstructResponse.choices[0]?.message?.content?.trim() ?? "";
+        if (result && result !== "UNREADABLE") {
+          extractedText = result;
+        }
+        console.log(`[doc-process] Reconstruction produced ${extractedText.length} chars`);
+      } catch (e) {
+        console.log("[doc-process] Text reconstruction failed:", e);
       }
     }
 
@@ -141,18 +143,22 @@ Stage mapping:
             },
             {
               role: "user",
-              content: extractedText.slice(0, 3000),
+              content: extractedText.slice(0, 6000),
             },
           ],
         });
 
-        const parsed = JSON.parse(classifyResponse.choices[0]?.message?.content ?? "{}");
+        const raw = classifyResponse.choices[0]?.message?.content ?? "{}";
+        console.log("[doc-process] Classification response:", raw);
+        const parsed = JSON.parse(raw);
         docType = parsed.doc_type ?? "other";
         category = parsed.category ?? "other";
         stage = parsed.stage ?? "escrow";
-      } catch {
-        // Classification failed — keep defaults
+      } catch (e) {
+        console.log("[doc-process] Classification failed:", e);
       }
+    } else {
+      console.log("[doc-process] Skipping classification — insufficient text");
     }
 
     // Step 4: Update document with extraction results
