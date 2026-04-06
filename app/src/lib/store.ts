@@ -19,6 +19,18 @@ interface UIState {
   activeDealId: string | null;
   setActiveDealId: (id: string | null) => void;
 
+  // Selected home (Shopping → Offer handoff)
+  selectedHomeId: string | null;
+  setSelectedHomeId: (id: string | null) => void;
+
+  // Buyer context
+  ownsCurrentHome: boolean | null;
+  setOwnsCurrentHome: (owns: boolean) => void;
+
+  // Direct entry mode (shows DealSetupForm instead of phase dashboard)
+  showDirectSetup: boolean;
+  setShowDirectSetup: (show: boolean) => void;
+
   // LE comparison selections (Financing view — max 3)
   selectedLEIds: string[];
   toggleLESelection: (id: string) => void;
@@ -47,6 +59,18 @@ export const useUIStore = create<UIState>((set) => ({
   // Active deal context
   activeDealId: null,
   setActiveDealId: (id) => set({ activeDealId: id }),
+
+  // Selected home
+  selectedHomeId: null,
+  setSelectedHomeId: (id) => set({ selectedHomeId: id }),
+
+  // Buyer context
+  ownsCurrentHome: null,
+  setOwnsCurrentHome: (owns) => set({ ownsCurrentHome: owns }),
+
+  // Direct entry mode
+  showDirectSetup: false,
+  setShowDirectSetup: (show) => set({ showDirectSetup: show }),
 
   // LE comparison selections
   selectedLEIds: [],

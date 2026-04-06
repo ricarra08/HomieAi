@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
+import { ViewEditCard } from "@/components/ui/view-edit-card";
 import { AddPropertyDialog } from "./AddPropertyDialog";
 import { useSavedHomes } from "@/lib/hooks/queries";
 import { useDeleteSavedHome } from "@/lib/hooks/mutations";
@@ -10,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import type { SavedHome } from "@/lib/types";
 
 function formatPrice(price: number | null): string {
@@ -20,7 +22,7 @@ function formatPrice(price: number | null): string {
 function SavedHomeRow({ home, userId, onMoveToOffer }: {
   home: SavedHome;
   userId: string;
-  onMoveToOffer: () => void;
+  onMoveToOffer: (home: SavedHome) => void;
 }) {
   const deleteHome = useDeleteSavedHome(userId);
 
@@ -42,7 +44,7 @@ function SavedHomeRow({ home, userId, onMoveToOffer }: {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onMoveToOffer()}
+          onClick={() => onMoveToOffer(home)}
           className="text-accent border-accent hover:bg-accent/10"
         >
           Move to Offer
@@ -60,8 +62,17 @@ function SavedHomeRow({ home, userId, onMoveToOffer }: {
 
 export function ShoppingView({ userId }: { userId: string }) {
   const { data: homes, isLoading } = useSavedHomes(userId);
-  const setCurrentPhase = useUIStore((s) => s.setCurrentPhase);
+  const { setCurrentPhase, setSelectedHomeId, ownsCurrentHome, setOwnsCurrentHome, setShowDirectSetup } = useUIStore();
 
+  // Buy Box state (editable, persisted locally for now)
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
+  const [bedsMin, setBedsMin] = useState("");
+  const [bedsMax, setBedsMax] = useState("");
+  const [targetArea, setTargetArea] = useState("");
+  const [buyBoxSaved, setBuyBoxSaved] = useState(false);
+
+  // Affordability state
   const [purchasePrice, setPurchasePrice] = useState("400000");
   const [downPaymentPct, setDownPaymentPct] = useState("20");
 
@@ -71,7 +82,8 @@ export function ShoppingView({ userId }: { userId: string }) {
   const estimatedClosingCosts = price * 0.03;
   const estimatedCashToClose = downPayment + estimatedClosingCosts;
 
-  function handleMoveToOffer() {
+  function handleMoveToOffer(home: SavedHome) {
+    setSelectedHomeId(home.id);
     setCurrentPhase("offer");
   }
 
@@ -87,22 +99,63 @@ export function ShoppingView({ userId }: { userId: string }) {
         <AddPropertyDialog userId={userId} />
       </div>
 
-      <CollapsibleCard title="Your Buy Box" subtitle="Target property criteria">
-        <div className="grid grid-cols-3 gap-6">
-          <div>
-            <span className="text-sm text-muted-foreground">Price Range</span>
-            <p className="text-base font-medium text-foreground">$350K - $450K</p>
+      <ViewEditCard
+        title="Your Buy Box"
+        subtitle="Target property criteria"
+        saved={buyBoxSaved}
+        onSave={() => { setBuyBoxSaved(true); toast.success("Buy box saved"); }}
+        saveLabel="Save Buy Box"
+        renderView={() => (
+          <div className="grid grid-cols-3 gap-6">
+            <div>
+              <span className="text-sm text-muted-foreground">Price Range</span>
+              <p className="text-base font-medium text-foreground">
+                {priceMin || priceMax
+                  ? `${priceMin ? `$${Number(priceMin).toLocaleString()}` : "Any"} – ${priceMax ? `$${Number(priceMax).toLocaleString()}` : "Any"}`
+                  : "Not set"}
+              </p>
+            </div>
+            <div>
+              <span className="text-sm text-muted-foreground">Bedrooms</span>
+              <p className="text-base font-medium text-foreground">
+                {bedsMin || bedsMax ? `${bedsMin || "Any"} – ${bedsMax || "Any"}` : "Not set"}
+              </p>
+            </div>
+            <div>
+              <span className="text-sm text-muted-foreground">Target Area</span>
+              <p className="text-base font-medium text-foreground">{targetArea || "Not set"}</p>
+            </div>
           </div>
-          <div>
-            <span className="text-sm text-muted-foreground">Bedrooms</span>
-            <p className="text-base font-medium text-foreground">3 - 4</p>
-          </div>
-          <div>
-            <span className="text-sm text-muted-foreground">Target Area</span>
-            <p className="text-base font-medium text-foreground">Springfield</p>
-          </div>
-        </div>
-      </CollapsibleCard>
+        )}
+        renderEdit={() => (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <span className="text-sm text-muted-foreground">Min Price</span>
+                <Input type="number" placeholder="350000" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} className="text-base" />
+              </div>
+              <div className="space-y-1">
+                <span className="text-sm text-muted-foreground">Max Price</span>
+                <Input type="number" placeholder="450000" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} className="text-base" />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <span className="text-sm text-muted-foreground">Min Beds</span>
+                <Input type="number" placeholder="3" value={bedsMin} onChange={(e) => setBedsMin(e.target.value)} className="text-base" />
+              </div>
+              <div className="space-y-1">
+                <span className="text-sm text-muted-foreground">Max Beds</span>
+                <Input type="number" placeholder="4" value={bedsMax} onChange={(e) => setBedsMax(e.target.value)} className="text-base" />
+              </div>
+              <div className="space-y-1">
+                <span className="text-sm text-muted-foreground">Target Area</span>
+                <Input placeholder="Springfield" value={targetArea} onChange={(e) => setTargetArea(e.target.value)} className="text-base" />
+              </div>
+            </div>
+          </>
+        )}
+      />
 
       <CollapsibleCard
         title="Saved Homes"
@@ -117,7 +170,7 @@ export function ShoppingView({ userId }: { userId: string }) {
                 key={home.id}
                 home={home}
                 userId={userId}
-                onMoveToOffer={() => handleMoveToOffer()}
+                onMoveToOffer={handleMoveToOffer}
               />
             ))}
           </div>
@@ -162,6 +215,39 @@ export function ShoppingView({ userId }: { userId: string }) {
         </div>
       </CollapsibleCard>
 
+      <CollapsibleCard title="About You" subtitle="Help us tailor your experience">
+        <div className="space-y-3">
+          <p className="text-base text-foreground">Do you currently own a home?</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setOwnsCurrentHome(true)}
+              className={`px-4 py-2 rounded-lg text-base font-medium transition-all cursor-pointer ${
+                ownsCurrentHome === true
+                  ? "bg-accent text-accent-foreground shadow-sm hover:bg-accent/90"
+                  : "border border-border text-foreground hover:bg-muted hover:border-accent/40 hover:shadow-sm"
+              }`}
+            >
+              Yes, I own
+            </button>
+            <button
+              onClick={() => setOwnsCurrentHome(false)}
+              className={`px-4 py-2 rounded-lg text-base font-medium transition-all cursor-pointer ${
+                ownsCurrentHome === false
+                  ? "bg-accent text-accent-foreground shadow-sm hover:bg-accent/90"
+                  : "border border-border text-foreground hover:bg-muted hover:border-accent/40 hover:shadow-sm"
+              }`}
+            >
+              No, first-time buyer
+            </button>
+          </div>
+          {ownsCurrentHome === true && (
+            <p className="text-sm text-muted-foreground">
+              A &quot;Sale of Current Home&quot; contingency option will be available when you make an offer.
+            </p>
+          )}
+        </div>
+      </CollapsibleCard>
+
       <CollapsibleCard title="Market Snapshot" subtitle="Light neighborhood insights">
         <div className="grid grid-cols-3 gap-6">
           <div>
@@ -178,6 +264,18 @@ export function ShoppingView({ userId }: { userId: string }) {
           </div>
         </div>
       </CollapsibleCard>
+
+      <div className="bg-card rounded-xl border border-border shadow-sm p-6 text-center space-y-3">
+        <p className="text-base text-foreground font-medium">Already have an accepted offer?</p>
+        <p className="text-sm text-muted-foreground">Skip straight to your escrow and closing workspace</p>
+        <Button
+          onClick={() => setShowDirectSetup(true)}
+          variant="outline"
+          className="text-accent border-accent hover:bg-accent/10"
+        >
+          Go to Deal Setup
+        </Button>
+      </div>
     </div>
   );
 }

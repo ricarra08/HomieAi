@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface CollapsibleCardProps {
-  title: string;
+  title: React.ReactNode;
   subtitle?: string;
   defaultOpen?: boolean;
   children: React.ReactNode;
@@ -24,7 +24,7 @@ export function CollapsibleCard({
     <div className="bg-card rounded-xl border border-border shadow-sm">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-6 text-left"
+        className="w-full flex items-center justify-between p-6 text-left rounded-t-xl hover:bg-muted/40 transition-colors"
       >
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-semibold text-foreground">{title}</h3>

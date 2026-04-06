@@ -191,8 +191,27 @@ Button radius is always `rounded-lg` (8px). Never `rounded-md` or `rounded-full`
 
 ## Component Patterns
 
+### ViewEditCard
+Dual-state card with view mode and edit mode. Used for any data the user enters then reviews.
+```tsx
+<ViewEditCard
+  title="Section Name"
+  subtitle="Description"
+  saved={isSaved}
+  onSave={() => { setSaved(true); toast.success("Saved"); }}
+  saveLabel="Save"
+  renderView={() => <ReadOnlyDisplay />}
+  renderEdit={() => <FormInputs />}
+/>
+```
+- **Edit mode** (default when `saved=false`): renders `renderEdit()` + Save/Cancel buttons
+- **View mode** (when `saved=true`): renders `renderView()` + "Edit" pencil link in header
+- Card owns the edit/save/cancel toggle; parent owns the data and save handler
+- Collapsible (expand/collapse) built in
+- File: `components/ui/view-edit-card.tsx`
+
 ### CollapsibleCard
-Used in Shopping, Offer, Closing, Post-Close:
+Used for display-only collapsible sections (Shopping, Offer, Closing, Post-Close):
 ```
 bg-card rounded-xl border border-border shadow-sm
 ```

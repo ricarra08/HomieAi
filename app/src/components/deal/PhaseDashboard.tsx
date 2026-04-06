@@ -5,6 +5,7 @@ import { useUIStore } from "@/lib/store";
 import { ShoppingView } from "@/components/shopping/ShoppingView";
 import { OfferView } from "@/components/offer/OfferView";
 import { DealSummaryCard } from "@/components/deal/DealSummaryCard";
+import { DealSetupForm } from "@/components/deal/DealSetupForm";
 import { createClient } from "@/lib/supabase/client";
 
 function EscrowDashboard({ dealId }: { dealId: string | null }) {
@@ -47,7 +48,7 @@ function PostCloseDashboard() {
 }
 
 export function PhaseDashboard() {
-  const { currentPhase, activeDealId } = useUIStore();
+  const { currentPhase, activeDealId, showDirectSetup, setShowDirectSetup } = useUIStore();
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,6 +60,10 @@ export function PhaseDashboard() {
 
   if (!userId) {
     return <div className="text-base text-muted-foreground p-10 text-center">Loading...</div>;
+  }
+
+  if (showDirectSetup) {
+    return <DealSetupForm userId={userId} onComplete={() => setShowDirectSetup(false)} />;
   }
 
   switch (currentPhase) {
