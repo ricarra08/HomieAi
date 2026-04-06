@@ -42,9 +42,12 @@ export function ViewEditCard({
 
   return (
     <div className="bg-card rounded-xl border border-border shadow-sm">
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-6 text-left rounded-t-xl hover:bg-muted/40 transition-colors"
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(!open); } }}
+        className="w-full flex items-center justify-between p-6 text-left rounded-t-xl hover:bg-muted/40 transition-colors cursor-pointer"
       >
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-semibold text-foreground">{title}</h3>
@@ -69,7 +72,7 @@ export function ViewEditCard({
             {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </div>
         </div>
-      </button>
+      </div>
       {open && (
         <div className="px-6 pb-6 pt-0">
           {saved && !editing ? (
