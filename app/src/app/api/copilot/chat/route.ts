@@ -37,7 +37,7 @@ function parseCitations(content: string): { documentName: string; page?: number;
       });
     }
   }
-  return citations.length > 0 ? citations : [];
+  return citations;
 }
 
 export async function POST(request: NextRequest) {
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
 
           if (fullContent) {
             const citations = parseCitations(fullContent);
-            await supabaseAdmin.from("copilot_messages").insert({
+            const { error: insertError } = await supabaseAdmin.from("copilot_messages").insert({
               user_id: userId,
               deal_id: dealId,
               role: "assistant",
@@ -105,6 +105,9 @@ export async function POST(request: NextRequest) {
               citations: citations.length > 0 ? citations : null,
               phase,
             });
+            if (insertError) {
+              console.error("[copilot] Failed to save assistant message:", insertError);
+            }
           }
         } catch (err) {
           console.error("[copilot] Stream error:", err);

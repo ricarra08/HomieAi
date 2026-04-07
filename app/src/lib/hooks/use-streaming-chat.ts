@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { copilotKeys } from "./query-keys";
 import type { Phase } from "@/lib/types";
@@ -22,6 +22,15 @@ export function useStreamingChat(): UseStreamingChatReturn {
   const [isStreaming, setIsStreaming] = useState(false);
   const qc = useQueryClient();
   const abortRef = useRef<AbortController | null>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      abortRef.current?.abort();
+    };
+  }, []);
 
   const sendMessage = useCallback(
     async (params: {
@@ -59,15 +68,17 @@ export function useStreamingChat(): UseStreamingChatReturn {
           if (done) break;
           const text = decoder.decode(value, { stream: true });
           accumulated += text;
-          setStreamingContent(accumulated);
+          if (mountedRef.current) setStreamingContent(accumulated);
         }
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
           console.error("[streaming-chat] Error:", err);
         }
       } finally {
-        setIsStreaming(false);
-        setStreamingContent("");
+        if (mountedRef.current) {
+          setIsStreaming(false);
+          setStreamingContent("");
+        }
         qc.invalidateQueries({ queryKey: copilotKeys.messages(params.dealId) });
       }
     },

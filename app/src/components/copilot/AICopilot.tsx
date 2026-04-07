@@ -7,7 +7,7 @@ import { useCopilotMessages } from "@/lib/hooks/queries";
 import { useSendCopilotMessage } from "@/lib/hooks/mutations";
 import { useStreamingChat } from "@/lib/hooks/use-streaming-chat";
 import { createClient } from "@/lib/supabase/client";
-import { MessageCircle, X, Maximize2, Send, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const PHASE_QUICK_ACTIONS: Record<Phase, string[]> = {
@@ -125,17 +125,19 @@ export function AICopilotPanel() {
 
   const handleSendRef = useRef<(text: string) => void>(() => {});
 
-  handleSendRef.current = (text: string) => {
-    const content = text.trim();
-    if (!content || !userId || isStreaming) return;
-    setInput("");
-    sendUserMsg.mutate(content);
-    const history = (messages ?? []).slice(-20).map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    }));
-    sendMessage({ message: content, dealId: activeDealId, userId, phase: currentPhase, history });
-  };
+  useEffect(() => {
+    handleSendRef.current = (text: string) => {
+      const content = text.trim();
+      if (!content || !userId || isStreaming) return;
+      setInput("");
+      sendUserMsg.mutate(content);
+      const history = (messages ?? []).slice(-20).map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      }));
+      sendMessage({ message: content, dealId: activeDealId, userId, phase: currentPhase, history });
+    };
+  }, [userId, isStreaming, messages, activeDealId, currentPhase, sendUserMsg, sendMessage]);
 
   useEffect(() => {
     function handlePrefill(e: Event) {
@@ -159,17 +161,12 @@ export function AICopilotPanel() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-4 border-b border-border">
         <h2 className="text-xl font-semibold">Homie</h2>
-        <div className="flex items-center gap-1">
-          <button className="p-1.5 rounded hover:bg-muted text-muted-foreground">
-            <Maximize2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setCopilotOpen(false)}
-            className="p-1.5 rounded hover:bg-muted text-muted-foreground"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          onClick={() => setCopilotOpen(false)}
+          className="p-1.5 rounded hover:bg-muted text-muted-foreground"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Messages */}
@@ -248,13 +245,13 @@ export function AICopilotPanel() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask Homie anything..."
-            disabled={isStreaming}
+            disabled={isStreaming || !userId}
             className="flex-1 text-base px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-50"
           />
           <Button
             type="submit"
             size="icon"
-            disabled={isStreaming || !input.trim()}
+            disabled={isStreaming || !input.trim() || !userId}
             className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 shadow-sm disabled:opacity-50"
           >
             {isStreaming ? (
@@ -269,7 +266,7 @@ export function AICopilotPanel() {
             <button
               key={action}
               onClick={() => handleSend(action)}
-              disabled={isStreaming}
+              disabled={isStreaming || !userId}
               className="text-sm px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:bg-muted transition-colors disabled:opacity-50"
             >
               {action}

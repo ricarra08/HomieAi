@@ -169,13 +169,19 @@ export function OfferView({ userId }: OfferViewProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <span className="text-sm text-muted-foreground">Offer Price</span>
-              <Input type="number" value={offerPrice} onChange={(e) => setOfferPrice(e.target.value)} placeholder={selectedHome?.price?.toString() ?? "0"} className="text-base" />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">$</span>
+                <Input type="number" value={offerPrice} onChange={(e) => setOfferPrice(e.target.value)} placeholder={selectedHome?.price?.toString() ?? "0"} className="text-base pl-7" />
+              </div>
             </div>
             <div className="space-y-1">
               <span className="text-sm text-muted-foreground">
                 <TermTooltip term="Earnest Money Deposit" definition="A good-faith deposit showing you're serious about buying. Typically 1–3% of the purchase price. Held in escrow and applied to your closing costs." />
               </span>
-              <Input type="number" value={earnestMoney} onChange={(e) => setEarnestMoney(e.target.value)} placeholder="5000" className="text-base" />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">$</span>
+                <Input type="number" value={earnestMoney} onChange={(e) => setEarnestMoney(e.target.value)} placeholder="5000" className="text-base pl-7" />
+              </div>
             </div>
             <div className="space-y-1">
               <span className="text-sm text-muted-foreground">Down Payment %</span>

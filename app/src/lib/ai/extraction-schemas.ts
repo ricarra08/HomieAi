@@ -104,6 +104,7 @@ const closingDisclosureSchema: ResponseFormatJSONSchema["json_schema"] = {
       lender_fees: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
       third_party_fees: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
       pmi_monthly: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      estimated_total_closing: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
       prorations: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
       seller_credits: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
       recording_fees: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
@@ -114,7 +115,7 @@ const closingDisclosureSchema: ResponseFormatJSONSchema["json_schema"] = {
     required: [
       "lender_name", "loan_product", "loan_amount", "interest_rate",
       "apr", "monthly_pi", "cash_to_close", "final_cash_to_close",
-      "lender_fees", "third_party_fees", "pmi_monthly",
+      "lender_fees", "third_party_fees", "pmi_monthly", "estimated_total_closing",
       "prorations", "seller_credits", "recording_fees", "transfer_taxes",
       "prepaid_items", "initial_escrow",
     ],

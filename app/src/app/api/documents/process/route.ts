@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
           ],
         });
         const result = reconstructResponse.choices[0]?.message?.content?.trim() ?? "";
-        if (result && result !== "UNREADABLE") {
+        if (result && !result.toUpperCase().startsWith("UNREADABLE")) {
           extractedText = result;
         }
         console.log(`[doc-process] Reconstruction produced ${extractedText.length} chars`);
@@ -213,7 +213,7 @@ Stage mapping:
     // --- Step 4: Staged save — classification results + status: processing ---
     const confidenceScore = extractedText.length >= MIN_TEXT_LENGTH ? 0.8 : 0.3;
 
-    await supabaseAdmin
+    const { error: classifyUpdateError } = await supabaseAdmin
       .from("documents")
       .update({
         extracted_text: extractedText || null,
@@ -224,6 +224,11 @@ Stage mapping:
         status: "processing",
       })
       .eq("id", documentId);
+
+    if (classifyUpdateError) {
+      console.error("[doc-process] Classification save failed:", classifyUpdateError);
+      return NextResponse.json({ error: "Failed to save classification" }, { status: 500 });
+    }
 
     // --- Step 5: Field extraction (Tier 1) + Summarization in parallel ---
     let extractedFields: Record<string, unknown> | null = null;

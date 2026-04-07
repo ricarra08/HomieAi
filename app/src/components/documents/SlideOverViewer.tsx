@@ -6,6 +6,8 @@ import { ArrowLeft, Download, FileText, Sparkles, Lightbulb, Loader2 } from "luc
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useUIStore } from "@/lib/store";
+import { useQueryClient } from "@tanstack/react-query";
+import { documentKeys } from "@/lib/hooks/query-keys";
 import { createClient } from "@/lib/supabase/client";
 import type { Document } from "@/lib/types";
 
@@ -30,12 +32,21 @@ function formatFieldKey(key: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function formatFieldValue(value: unknown): string {
+const CURRENCY_FIELDS = new Set([
+  "purchase_price", "earnest_money", "loan_amount", "cash_to_close",
+  "final_cash_to_close", "estimated_total_closing", "lender_fees",
+  "third_party_fees", "pmi_monthly", "monthly_pi", "prorations",
+  "seller_credits", "recording_fees", "transfer_taxes", "prepaid_items",
+  "initial_escrow", "estimated_cost", "agreed_cost", "annual_premium",
+  "coverage_dwelling", "deductible",
+]);
+
+function formatFieldValue(value: unknown, fieldKey?: string): string {
   if (value == null) return "—";
   if (typeof value === "boolean") return value ? "Yes" : "No";
   if (typeof value === "number") {
-    if (value >= 1000) return `$${value.toLocaleString()}`;
-    return String(value);
+    if (fieldKey && CURRENCY_FIELDS.has(fieldKey)) return `$${value.toLocaleString()}`;
+    return value.toLocaleString();
   }
   if (Array.isArray(value)) {
     if (value.length === 0) return "—";
@@ -73,7 +84,7 @@ function ExtractedFieldsPanel({ doc }: { doc: Document }) {
     .map((key) => ({
       key,
       label: formatFieldKey(key),
-      value: formatFieldValue(fields[key].value),
+      value: formatFieldValue(fields[key].value, key),
       confidence: fields[key].confidence as string | undefined,
     }));
 
@@ -116,6 +127,7 @@ function DraftQuestionPanel({ doc }: { doc: Document }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ documentId: doc.id }),
       });
+      if (!res.ok) throw new Error(`Draft question failed: ${res.status}`);
       const data = await res.json();
       setQuestions(data.questions ?? []);
       setFetched(true);
@@ -186,6 +198,7 @@ function DraftQuestionPanel({ doc }: { doc: Document }) {
 
 export function DocumentDetailView({ doc }: { doc: Document }) {
   const closeViewer = useUIStore((s) => s.closeViewer);
+  const qc = useQueryClient();
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -314,7 +327,10 @@ export function DocumentDetailView({ doc }: { doc: Document }) {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ documentId: doc.id }),
+                      }).then(() => {
+                        qc.invalidateQueries({ queryKey: documentKeys.list(doc.deal_id) });
                       });
+                      qc.invalidateQueries({ queryKey: documentKeys.list(doc.deal_id) });
                     }}
                     className="text-sm text-accent hover:underline mt-1"
                   >

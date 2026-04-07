@@ -132,11 +132,17 @@ export function ShoppingView({ userId }: { userId: string }) {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <span className="text-sm text-muted-foreground">Min Price</span>
-                <Input type="number" placeholder="350000" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} className="text-base" />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">$</span>
+                  <Input type="number" placeholder="350000" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} className="text-base pl-7" />
+                </div>
               </div>
               <div className="space-y-1">
                 <span className="text-sm text-muted-foreground">Max Price</span>
-                <Input type="number" placeholder="450000" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} className="text-base" />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">$</span>
+                  <Input type="number" placeholder="450000" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} className="text-base pl-7" />
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4">
@@ -186,12 +192,15 @@ export function ShoppingView({ userId }: { userId: string }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <span className="text-sm text-muted-foreground">Purchase Price</span>
-              <Input
-                type="number"
-                value={purchasePrice}
-                onChange={(e) => setPurchasePrice(e.target.value)}
-                className="text-base"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">$</span>
+                <Input
+                  type="number"
+                  value={purchasePrice}
+                  onChange={(e) => setPurchasePrice(e.target.value)}
+                  className="text-base pl-7"
+                />
+              </div>
             </div>
             <div className="space-y-1">
               <span className="text-sm text-muted-foreground">Down Payment %</span>

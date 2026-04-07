@@ -181,6 +181,12 @@ export async function assembleContext(dealId: string | null, phase: Phase, userI
     supabase.from("repair_items").select("*").eq("deal_id", dealId).order("created_at", { ascending: false }),
   ]);
 
+  if (dealRes.error) console.error("[context-engine] Failed to fetch deal:", dealRes.error);
+  if (docsRes.error) console.error("[context-engine] Failed to fetch documents:", docsRes.error);
+  if (deadlinesRes.error) console.error("[context-engine] Failed to fetch deadlines:", deadlinesRes.error);
+  if (lesRes.error) console.error("[context-engine] Failed to fetch loan estimates:", lesRes.error);
+  if (repairsRes.error) console.error("[context-engine] Failed to fetch repairs:", repairsRes.error);
+
   const deal = dealRes.data as Deal | null;
   if (!deal) return "";
 
