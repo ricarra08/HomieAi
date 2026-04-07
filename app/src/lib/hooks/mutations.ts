@@ -312,6 +312,25 @@ export function useCreateLoanEstimate(dealId: string) {
   });
 }
 
+export function useUpdateLoanEstimate(dealId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { leId: string; updates: Record<string, unknown> }) => {
+      const { data, error } = await supabase
+        .from("loan_estimates")
+        .update(params.updates)
+        .eq("id", params.leId)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: loanEstimateKeys.list(dealId) });
+    },
+  });
+}
+
 export function useSetChosenLE(dealId: string) {
   const qc = useQueryClient();
   return useMutation({

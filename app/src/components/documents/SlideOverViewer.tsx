@@ -140,8 +140,9 @@ function DraftQuestionPanel({ doc }: { doc: Document }) {
 
   function handleSendToCopilot(question: string) {
     setCopilotOpen(true);
-    const event = new CustomEvent("copilot:prefill", { detail: question });
-    window.dispatchEvent(event);
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("copilot:prefill", { detail: question }));
+    }, 100);
   }
 
   if (!doc.ai_summary && !doc.extracted_fields) return null;

@@ -4,6 +4,7 @@ import { extractText } from "unpdf";
 import OpenAI from "openai";
 import { isTier1, EXTRACTION_SCHEMAS, type Tier1DocType } from "@/lib/ai/extraction-schemas";
 import { getExtractionSystemPrompt, getSummarizationSystemPrompt, TEXT_LIMITS } from "@/lib/ai/prompts";
+import { mapExtractedToLE } from "@/lib/ai/le-auto-populate";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -289,6 +290,45 @@ Stage mapping:
       return NextResponse.json({ error: "Failed to update document" }, { status: 500 });
     }
 
+    // --- Step 7: Auto-populate loan_estimates if LE extracted ---
+    let leAutoCreated = false;
+    if (docType === "loan_estimate" && extractedFields && doc.deal_id) {
+      try {
+        const leRow = mapExtractedToLE(extractedFields, documentId!, doc.deal_id);
+
+        const { data: existingLE } = await supabaseAdmin
+          .from("loan_estimates")
+          .select("id")
+          .eq("pdf_document_id", documentId!)
+          .maybeSingle();
+
+        if (existingLE) {
+          const { error: updateErr } = await supabaseAdmin
+            .from("loan_estimates")
+            .update(leRow)
+            .eq("id", existingLE.id);
+          if (updateErr) {
+            console.error("[doc-process] Auto-update LE failed:", updateErr);
+          } else {
+            leAutoCreated = true;
+            console.log("[doc-process] Updated existing loan_estimates row");
+          }
+        } else {
+          const { error: insertErr } = await supabaseAdmin
+            .from("loan_estimates")
+            .insert(leRow);
+          if (insertErr) {
+            console.error("[doc-process] Auto-populate LE failed:", insertErr);
+          } else {
+            leAutoCreated = true;
+            console.log("[doc-process] Auto-populated loan_estimates row");
+          }
+        }
+      } catch (e) {
+        console.error("[doc-process] Auto-populate LE error:", e);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       documentId,
@@ -299,6 +339,7 @@ Stage mapping:
       confidenceScore,
       fieldsExtracted: extractedFields !== null,
       summarized: aiSummary !== null && aiSummary.length > 0,
+      leAutoCreated,
       status: finalStatus,
     });
   } catch (error) {

@@ -1,4 +1,5 @@
 import type { LoanEstimate, Deadline, OfferDetails } from "./types";
+import { parseLoanTermYears } from "./utils";
 
 /**
  * Standard amortization: monthly principal & interest payment.
@@ -78,6 +79,16 @@ export function computeDaysRemaining(targetDate: string | null): number | null {
  * LE vs CD variance — compares key financial fields.
  * Returns an array of field-level deltas with tolerance check.
  */
+function unwrapCDValue(cdFields: Record<string, unknown>, key: string): number | null {
+  const raw = cdFields[key];
+  if (typeof raw === "number") return raw;
+  if (raw && typeof raw === "object" && "value" in raw) {
+    const v = (raw as { value: unknown }).value;
+    return typeof v === "number" ? v : null;
+  }
+  return null;
+}
+
 export function computeLEVariance(
   le: LoanEstimate,
   cdFields: Record<string, unknown> | null
@@ -86,7 +97,7 @@ export function computeLEVariance(
 
   const fieldsToCompare: { key: string; label: string }[] = [
     { key: "loan_amount", label: "Loan Amount" },
-    { key: "rate", label: "Interest Rate" },
+    { key: "interest_rate", label: "Interest Rate" },
     { key: "apr", label: "APR" },
     { key: "lender_fees", label: "Lender Fees" },
     { key: "third_party_fees", label: "Third-Party Fees" },
@@ -94,17 +105,35 @@ export function computeLEVariance(
     { key: "pmi_monthly", label: "Monthly PMI" },
   ];
 
+  const leKeyMap: Record<string, keyof LoanEstimate> = {
+    loan_amount: "loan_amount",
+    interest_rate: "rate",
+    apr: "apr",
+    lender_fees: "lender_fees",
+    third_party_fees: "third_party_fees",
+    cash_to_close: "cash_to_close",
+    pmi_monthly: "pmi_monthly",
+  };
+
   return fieldsToCompare
     .map(({ key, label }) => {
-      const leValue = (le[key as keyof LoanEstimate] as number) ?? 0;
-      const cdValue = (cdFields[key] as number) ?? 0;
+      const leValue = (le[leKeyMap[key]] as number) ?? 0;
+      const cdValue = unwrapCDValue(cdFields, key);
+      if (cdValue === null) return null;
       const delta = cdValue - leValue;
       const absDelta = Math.abs(delta);
       const toleranceOk = absDelta <= 100 || (leValue > 0 && (absDelta / leValue) <= 0.1);
 
       return { field: label, leValue, cdValue, delta, toleranceOk };
     })
-    .filter((row) => row.delta !== 0);
+    .filter((row): row is NonNullable<typeof row> => row !== null && row.delta !== 0);
+}
+
+export function computeTotalLoanCost(le: LoanEstimate, termYears?: number): number {
+  const term = termYears ?? parseLoanTermYears(le.product);
+  const monthlyPI = computeMonthlyPI(le.loan_amount, le.rate, term);
+  const totalMonthly = monthlyPI + (le.pmi_monthly ?? 0);
+  return totalMonthly * (term * 12) + (le.cash_to_close ?? 0);
 }
 
 /**

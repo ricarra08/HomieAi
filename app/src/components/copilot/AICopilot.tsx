@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { useUIStore, type Phase } from "@/lib/store";
 import { useCopilotMessages } from "@/lib/hooks/queries";
@@ -35,6 +36,20 @@ const PHASE_QUICK_ACTIONS: Record<Phase, string[]> = {
     "What should new homeowners do?",
     "Explain my mortgage",
     "Home maintenance tips",
+  ],
+};
+
+const PAGE_QUICK_ACTIONS: Record<string, string[]> = {
+  "/financing": [
+    "Compare my loan estimates",
+    "Explain APR vs interest rate",
+    "Is my rate competitive?",
+    "What fees can I negotiate?",
+  ],
+  "/documents": [
+    "Explain this document",
+    "What are my deadlines?",
+    "Summarize my uploaded docs",
   ],
 };
 
@@ -96,6 +111,7 @@ export function AICopilotButton() {
 
 export function AICopilotPanel() {
   const { copilotOpen, setCopilotOpen, activeDealId, currentPhase } = useUIStore();
+  const pathname = usePathname();
   const [input, setInput] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -150,7 +166,8 @@ export function AICopilotPanel() {
 
   if (!copilotOpen) return null;
 
-  const quickActions = PHASE_QUICK_ACTIONS[currentPhase] ?? PHASE_QUICK_ACTIONS.escrow;
+  const pageActions = Object.entries(PAGE_QUICK_ACTIONS).find(([path]) => pathname?.startsWith(path));
+  const quickActions = pageActions?.[1] ?? PHASE_QUICK_ACTIONS[currentPhase] ?? PHASE_QUICK_ACTIONS.escrow;
 
   function handleSend(text?: string) {
     handleSendRef.current((text ?? input).trim() ? (text ?? input) : "");
