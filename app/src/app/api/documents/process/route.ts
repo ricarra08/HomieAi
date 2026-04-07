@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { extractText } from "unpdf";
 import OpenAI from "openai";
+import { isTier1, EXTRACTION_SCHEMAS, type Tier1DocType } from "@/lib/ai/extraction-schemas";
+import { getExtractionSystemPrompt, getSummarizationSystemPrompt, TEXT_LIMITS } from "@/lib/ai/prompts";
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 function getSupabaseAdmin() {
   return createClient(
@@ -30,19 +35,63 @@ const CLASSIFICATION_TAXONOMY = [
 
 const MIN_TEXT_LENGTH = 50;
 
-export const dynamic = "force-dynamic";
+async function extractFields(
+  openai: OpenAI,
+  docType: Tier1DocType,
+  text: string
+): Promise<Record<string, unknown>> {
+  const schema = EXTRACTION_SCHEMAS[docType];
+  const systemPrompt = getExtractionSystemPrompt(docType);
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    temperature: 0,
+    response_format: { type: "json_schema", json_schema: schema },
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: text.slice(0, TEXT_LIMITS.extraction) },
+    ],
+  });
+
+  const raw = response.choices[0]?.message?.content ?? "{}";
+  return JSON.parse(raw);
+}
+
+async function summarizeDocument(
+  openai: OpenAI,
+  docType: string,
+  text: string
+): Promise<string> {
+  const systemPrompt = getSummarizationSystemPrompt(docType);
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    temperature: 0.3,
+    max_tokens: 1500,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: text.slice(0, TEXT_LIMITS.summarization) },
+    ],
+  });
+
+  return response.choices[0]?.message?.content?.trim() ?? "";
+}
 
 export async function POST(request: NextRequest) {
+  const supabaseAdmin = getSupabaseAdmin();
+  let documentId: string | undefined;
+
   try {
-    const { documentId } = await request.json();
+    const body = await request.json();
+    documentId = body.documentId;
 
     if (!documentId) {
       return NextResponse.json({ error: "documentId is required" }, { status: 400 });
     }
 
-    const supabaseAdmin = getSupabaseAdmin();
     const openai = getOpenAI();
 
+    // --- Fetch document metadata ---
     const { data: doc, error: docError } = await supabaseAdmin
       .from("documents")
       .select("*")
@@ -53,6 +102,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
+    // --- Download PDF ---
     const { data: fileData, error: fileError } = await supabaseAdmin.storage
       .from("deal-documents")
       .download(doc.file_path);
@@ -63,7 +113,7 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await fileData.arrayBuffer());
 
-    // Step 1: Extract text
+    // --- Step 1: Extract text ---
     let extractedText = "";
     try {
       const uint8 = new Uint8Array(buffer);
@@ -71,14 +121,13 @@ export async function POST(request: NextRequest) {
       extractedText = (Array.isArray(text) ? text.join("\n") : text).trim();
     } catch (e) {
       console.log("[doc-process] text extraction failed:", e);
-      extractedText = "";
     }
 
-    console.log(`[doc-process] pdf-parse extracted ${extractedText.length} chars`);
+    console.log(`[doc-process] extracted ${extractedText.length} chars`);
 
-    // Step 2: If text extraction failed or too short, try GPT-4o text reconstruction
+    // --- Step 2: GPT-4o reconstruction fallback for scanned/image PDFs ---
     if (extractedText.length < MIN_TEXT_LENGTH) {
-      console.log("[doc-process] Text too short, trying GPT-4o text reconstruction...");
+      console.log("[doc-process] Text too short, trying GPT-4o reconstruction...");
       try {
         const partialText = extractedText || "(no text could be extracted from this PDF)";
         const reconstructResponse = await openai.chat.completions.create({
@@ -101,11 +150,11 @@ export async function POST(request: NextRequest) {
         }
         console.log(`[doc-process] Reconstruction produced ${extractedText.length} chars`);
       } catch (e) {
-        console.log("[doc-process] Text reconstruction failed:", e);
+        console.log("[doc-process] Reconstruction failed:", e);
       }
     }
 
-    // Step 3: Classify document
+    // --- Step 3: Classify document ---
     let docType = "other";
     let category = "other";
     let stage = "escrow";
@@ -113,7 +162,7 @@ export async function POST(request: NextRequest) {
     if (extractedText.length >= MIN_TEXT_LENGTH) {
       try {
         const classifyResponse = await openai.chat.completions.create({
-          model: "gpt-4o",
+          model: "gpt-4o-mini",
           temperature: 0,
           response_format: { type: "json_object" },
           messages: [
@@ -143,13 +192,13 @@ Stage mapping:
             },
             {
               role: "user",
-              content: extractedText.slice(0, 6000),
+              content: extractedText.slice(0, TEXT_LIMITS.classification),
             },
           ],
         });
 
         const raw = classifyResponse.choices[0]?.message?.content ?? "{}";
-        console.log("[doc-process] Classification response:", raw);
+        console.log("[doc-process] Classification:", raw);
         const parsed = JSON.parse(raw);
         docType = parsed.doc_type ?? "other";
         category = parsed.category ?? "other";
@@ -161,10 +210,10 @@ Stage mapping:
       console.log("[doc-process] Skipping classification — insufficient text");
     }
 
-    // Step 4: Update document with extraction results
+    // --- Step 4: Staged save — classification results + status: processing ---
     const confidenceScore = extractedText.length >= MIN_TEXT_LENGTH ? 0.8 : 0.3;
 
-    const { error: updateError } = await supabaseAdmin
+    await supabaseAdmin
       .from("documents")
       .update({
         extracted_text: extractedText || null,
@@ -172,11 +221,66 @@ Stage mapping:
         category,
         stage,
         confidence_score: confidenceScore,
-        status: extractedText.length >= MIN_TEXT_LENGTH ? "uploaded" : "uploaded",
+        status: "processing",
+      })
+      .eq("id", documentId);
+
+    // --- Step 5: Field extraction (Tier 1) + Summarization in parallel ---
+    let extractedFields: Record<string, unknown> | null = null;
+    let aiSummary: string | null = null;
+    let finalStatus: "processed" | "failed" = "failed";
+
+    if (extractedText.length >= MIN_TEXT_LENGTH) {
+      const tier1 = isTier1(docType);
+
+      const jobs: Promise<{ type: "extraction" | "summary"; result: unknown }>[] = [];
+
+      if (tier1) {
+        jobs.push(
+          extractFields(openai, docType as Tier1DocType, extractedText)
+            .then((r) => ({ type: "extraction" as const, result: r }))
+        );
+      }
+
+      jobs.push(
+        summarizeDocument(openai, docType, extractedText)
+          .then((r) => ({ type: "summary" as const, result: r }))
+      );
+
+      const results = await Promise.allSettled(jobs);
+
+      for (const settled of results) {
+        if (settled.status === "fulfilled") {
+          if (settled.value.type === "extraction") {
+            extractedFields = settled.value.result as Record<string, unknown>;
+            console.log("[doc-process] Extraction complete");
+          } else {
+            aiSummary = settled.value.result as string;
+            console.log(`[doc-process] Summary: ${(aiSummary ?? "").length} chars`);
+          }
+        } else {
+          console.log(`[doc-process] ${settled.reason}`);
+        }
+      }
+
+      const anySucceeded = extractedFields !== null || (aiSummary && aiSummary.length > 0);
+      finalStatus = anySucceeded ? "processed" : "failed";
+    } else {
+      finalStatus = "processed";
+    }
+
+    // --- Step 6: Final save ---
+    const { error: updateError } = await supabaseAdmin
+      .from("documents")
+      .update({
+        extracted_fields: extractedFields,
+        ai_summary: aiSummary,
+        status: finalStatus,
       })
       .eq("id", documentId);
 
     if (updateError) {
+      console.error("[doc-process] Final update failed:", updateError);
       return NextResponse.json({ error: "Failed to update document" }, { status: 500 });
     }
 
@@ -188,9 +292,24 @@ Stage mapping:
       stage,
       textLength: extractedText.length,
       confidenceScore,
+      fieldsExtracted: extractedFields !== null,
+      summarized: aiSummary !== null && aiSummary.length > 0,
+      status: finalStatus,
     });
   } catch (error) {
-    console.error("Document processing error:", error);
+    console.error("[doc-process] Unhandled error:", error);
+
+    if (documentId) {
+      try {
+        await supabaseAdmin
+          .from("documents")
+          .update({ status: "failed" })
+          .eq("id", documentId);
+      } catch {
+        // best-effort status update
+      }
+    }
+
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -60,7 +60,7 @@ export interface Document {
   doc_type: string | null;
   category: string | null;
   stage: string | null;
-  status: "required" | "missing" | "uploaded" | "signed" | "acknowledged" | "final" | "read-only";
+  status: "required" | "missing" | "uploaded" | "processing" | "processed" | "failed" | "signed" | "acknowledged" | "final" | "read-only";
   version: string | null;
   extracted_text: string | null;
   extracted_fields: Record<string, unknown> | null;
