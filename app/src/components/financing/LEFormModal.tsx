@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,63 +34,30 @@ interface LEFormModalProps {
 }
 
 export function LEFormModal({ dealId, open, onClose, editingLE }: LEFormModalProps) {
+  if (!open) return null;
+  return <LEFormContent key={editingLE?.id ?? "new"} dealId={dealId} onClose={onClose} editingLE={editingLE} />;
+}
+
+function LEFormContent({ dealId, onClose, editingLE }: Omit<LEFormModalProps, "open">) {
   const createLE = useCreateLoanEstimate(dealId);
   const updateLE = useUpdateLoanEstimate(dealId);
   const isEditing = !!editingLE;
 
-  const [lender, setLender] = useState("");
-  const [product, setProduct] = useState("30-year fixed");
-  const [loanAmount, setLoanAmount] = useState("");
-  const [rate, setRate] = useState("");
-  const [apr, setApr] = useState("");
-  const [downPayment, setDownPayment] = useState("");
-  const [points, setPoints] = useState("");
-  const [lenderFees, setLenderFees] = useState("");
-  const [thirdPartyFees, setThirdPartyFees] = useState("");
-  const [pmiMonthly, setPmiMonthly] = useState("");
-  const [cashToClose, setCashToClose] = useState("");
-  const [lockStatus, setLockStatus] = useState<"locked" | "floating">("floating");
-  const [lockExpires, setLockExpires] = useState("");
-  const [impounds, setImpounds] = useState(false);
-  const [prepayPenalty, setPrepayPenalty] = useState(false);
-
-  useEffect(() => {
-    if (editingLE) {
-      setLender(editingLE.lender);
-      setProduct(editingLE.product);
-      setLoanAmount(String(editingLE.loan_amount));
-      setRate(String(editingLE.rate));
-      setApr(editingLE.apr != null ? String(editingLE.apr) : "");
-      setDownPayment(editingLE.down_payment != null ? String(editingLE.down_payment) : "");
-      setPoints(editingLE.points != null ? String(editingLE.points) : "");
-      setLenderFees(editingLE.lender_fees != null ? String(editingLE.lender_fees) : "");
-      setThirdPartyFees(editingLE.third_party_fees != null ? String(editingLE.third_party_fees) : "");
-      setPmiMonthly(editingLE.pmi_monthly != null ? String(editingLE.pmi_monthly) : "");
-      setCashToClose(editingLE.cash_to_close != null ? String(editingLE.cash_to_close) : "");
-      setLockStatus(editingLE.lock_status ?? "floating");
-      setLockExpires(editingLE.lock_expires ?? "");
-      setImpounds(editingLE.impounds);
-      setPrepayPenalty(editingLE.prepay_penalty);
-    } else {
-      setLender("");
-      setProduct("30-year fixed");
-      setLoanAmount("");
-      setRate("");
-      setApr("");
-      setDownPayment("");
-      setPoints("");
-      setLenderFees("");
-      setThirdPartyFees("");
-      setPmiMonthly("");
-      setCashToClose("");
-      setLockStatus("floating");
-      setLockExpires("");
-      setImpounds(false);
-      setPrepayPenalty(false);
-    }
-  }, [editingLE, open]);
-
-  if (!open) return null;
+  const [lender, setLender] = useState(editingLE?.lender ?? "");
+  const [product, setProduct] = useState(editingLE?.product ?? "30-year fixed");
+  const [loanAmount, setLoanAmount] = useState(editingLE ? String(editingLE.loan_amount) : "");
+  const [rate, setRate] = useState(editingLE ? String(editingLE.rate) : "");
+  const [apr, setApr] = useState(editingLE?.apr != null ? String(editingLE.apr) : "");
+  const [downPayment, setDownPayment] = useState(editingLE?.down_payment != null ? String(editingLE.down_payment) : "");
+  const [points, setPoints] = useState(editingLE?.points != null ? String(editingLE.points) : "");
+  const [lenderFees, setLenderFees] = useState(editingLE?.lender_fees != null ? String(editingLE.lender_fees) : "");
+  const [thirdPartyFees, setThirdPartyFees] = useState(editingLE?.third_party_fees != null ? String(editingLE.third_party_fees) : "");
+  const [pmiMonthly, setPmiMonthly] = useState(editingLE?.pmi_monthly != null ? String(editingLE.pmi_monthly) : "");
+  const [cashToClose, setCashToClose] = useState(editingLE?.cash_to_close != null ? String(editingLE.cash_to_close) : "");
+  const [lockStatus, setLockStatus] = useState<"locked" | "floating">(editingLE?.lock_status ?? "floating");
+  const [lockExpires, setLockExpires] = useState(editingLE?.lock_expires ?? "");
+  const [impounds, setImpounds] = useState(editingLE?.impounds ?? false);
+  const [prepayPenalty, setPrepayPenalty] = useState(editingLE?.prepay_penalty ?? false);
 
   const isPending = createLE.isPending || updateLE.isPending;
 
