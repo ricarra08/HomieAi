@@ -178,7 +178,7 @@ Category mapping:
 - loan_estimate → "financing"
 - closing_disclosure → "closing"
 - inspection_report → "inspections"
-- appraisal → "inspections"
+- appraisal → "appraisal"
 - title_report → "escrow_title"
 - disclosure → "disclosures"
 - insurance_binder → "insurance"

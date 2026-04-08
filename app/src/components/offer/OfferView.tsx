@@ -38,6 +38,7 @@ export function OfferView({ userId }: OfferViewProps) {
   const [downPaymentPct, setDownPaymentPct] = useState("20");
   const [closingDays, setClosingDays] = useState("30");
   const [acceptanceDate, setAcceptanceDate] = useState("");
+  const [offerExpiration, setOfferExpiration] = useState("");
 
   // Contingency confirmed states
   const [confirmedContingencies, setConfirmedContingencies] = useState<
@@ -64,7 +65,7 @@ export function OfferView({ userId }: OfferViewProps) {
     "Proof of funds uploaded": proofOfFundsUploaded,
     "Earnest money confirmed": earnestMoneyConfirmed,
     "Contingencies defined": hasAnyConfirmedContingency,
-    "Offer expiration date set": false,
+    "Offer expiration date set": !!offerExpiration,
   };
   const checklistComplete = Object.values(checklist).filter(Boolean).length;
   const checklistTotal = Object.keys(checklist).length;
@@ -82,11 +83,39 @@ export function OfferView({ userId }: OfferViewProps) {
         current_phase: "escrow",
         earnest_money_amount: Number(earnestMoney) || undefined,
         saved_home_id: selectedHomeId ?? undefined,
+        contract_acceptance_date: acceptanceDate || undefined,
+        closing_date: closingDays && acceptanceDate
+          ? (() => { const d = new Date(acceptanceDate); d.setDate(d.getDate() + Number(closingDays)); return d.toISOString().split("T")[0]; })()
+          : undefined,
       },
       {
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           setActiveDealId(data.id);
           setCurrentPhase("escrow");
+
+          const base = acceptanceDate ? new Date(acceptanceDate) : null;
+          if (base) {
+            function addDays(d: Date, days: number): string {
+              const r = new Date(d);
+              r.setDate(r.getDate() + days);
+              return r.toISOString().split("T")[0];
+            }
+
+            const c = confirmedContingencies;
+            const inspDays = c.inspection?.enabled === false ? null : (c.inspection?.days ?? 10);
+            const apprDays = c.appraisal?.enabled === false ? null : (c.appraisal?.days ?? 17);
+            const loanDays = c.loan?.enabled === false ? null : (c.loan?.days ?? 21);
+
+            const deadlines: { deal_id: string; name: string; type: string; due_date: string }[] = [];
+            if (inspDays) deadlines.push({ deal_id: data.id, name: "Inspection Contingency", type: "inspection", due_date: addDays(base, inspDays) });
+            if (apprDays) deadlines.push({ deal_id: data.id, name: "Appraisal Contingency", type: "appraisal", due_date: addDays(base, apprDays) });
+            if (loanDays) deadlines.push({ deal_id: data.id, name: "Financing Contingency", type: "financing", due_date: addDays(base, loanDays) });
+            if (closingDays) deadlines.push({ deal_id: data.id, name: "Closing Date", type: "closing", due_date: addDays(base, Number(closingDays)) });
+            if (deadlines.length > 0) {
+              const { createClient } = await import("@/lib/supabase/client");
+              await createClient().from("deadlines").insert(deadlines);
+            }
+          }
         },
       }
     );
@@ -163,6 +192,14 @@ export function OfferView({ userId }: OfferViewProps) {
                 </p>
               </div>
             )}
+            {offerExpiration && (
+              <div>
+                <span className="text-sm text-muted-foreground">Offer Expiration</span>
+                <p className="text-base font-medium text-foreground">
+                  {new Date(offerExpiration).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                </p>
+              </div>
+            )}
           </div>
         )}
         renderEdit={() => (
@@ -193,17 +230,23 @@ export function OfferView({ userId }: OfferViewProps) {
               </span>
               <Input type="number" value={closingDays} onChange={(e) => setClosingDays(e.target.value)} placeholder="30" className="text-base" />
             </div>
-            <div className="space-y-1 col-span-2">
-              <span className="text-sm text-muted-foreground">Offer Acceptance Date (used to compute deadlines)</span>
+            <div className="space-y-1">
+              <span className="text-sm text-muted-foreground">Offer Acceptance Date</span>
               <Input type="date" value={acceptanceDate} onChange={(e) => setAcceptanceDate(e.target.value)} className="text-base" />
+            </div>
+            <div className="space-y-1">
+              <span className="text-sm text-muted-foreground">
+                <TermTooltip term="Offer Expiration Date" definition="The date your offer expires if the seller hasn't responded. Typically 24–72 hours after submission. After this date, you're no longer bound by the offer terms." />
+              </span>
+              <Input type="date" value={offerExpiration} onChange={(e) => setOfferExpiration(e.target.value)} className="text-base" />
             </div>
           </div>
         )}
       />
 
       <CollapsibleCard
-        title={<TermTooltip term="Contingencies" definition="Conditions that must be met for the sale to go through. If a contingency isn't satisfied, you can back out and keep your earnest money." />}
-        subtitle="Protect your earnest money"
+        title="Contingencies"
+        subtitle="Conditions that protect your earnest money"
       >
         <div>
           <ContingencyRow
@@ -363,11 +406,6 @@ export function OfferView({ userId }: OfferViewProps) {
         </div>
       </div>
 
-      <Button
-        className="w-full bg-accent text-accent-foreground shadow-sm hover:bg-accent/90 text-base py-6 font-medium"
-      >
-        Review &amp; Submit Offer
-      </Button>
     </div>
   );
 }

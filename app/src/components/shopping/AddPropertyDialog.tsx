@@ -73,13 +73,17 @@ export function AddPropertyDialog({ userId }: AddPropertyDialogProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="price">Price</Label>
-              <Input
-                id="price"
-                type="number"
-                placeholder="425000"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">$</span>
+                <Input
+                  id="price"
+                  type="number"
+                  placeholder="425000"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="pl-7"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="sqft">Sqft</Label>

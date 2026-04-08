@@ -8,6 +8,7 @@ import {
   deadlineKeys,
   loanEstimateKeys,
   repairItemKeys,
+  insuranceKeys,
   copilotKeys,
 } from "./query-keys";
 import type { Phase } from "@/lib/types";
@@ -429,6 +430,55 @@ export function useSendCopilotMessage(
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: copilotKeys.messages(dealId) });
+    },
+  });
+}
+
+// -- Insurance --
+
+export function useCreateInsuranceInfo(dealId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (info: {
+      carrier: string;
+      policy_type?: string;
+      annual_premium?: number;
+      coverage_dwelling?: number;
+      deductible?: number;
+      effective_date?: string;
+      mortgagee_clause?: string;
+      binder_status?: string;
+      binder_document_id?: string;
+    }) => {
+      const { data, error } = await supabase
+        .from("insurance_info")
+        .insert({ ...info, deal_id: dealId })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: insuranceKeys.list(dealId) });
+    },
+  });
+}
+
+export function useUpdateInsuranceInfo(dealId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { infoId: string; updates: Record<string, unknown> }) => {
+      const { data, error } = await supabase
+        .from("insurance_info")
+        .update(params.updates)
+        .eq("id", params.infoId)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: insuranceKeys.list(dealId) });
     },
   });
 }

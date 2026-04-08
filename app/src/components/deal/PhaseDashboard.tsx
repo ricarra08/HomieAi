@@ -6,16 +6,61 @@ import { ShoppingView } from "@/components/shopping/ShoppingView";
 import { OfferView } from "@/components/offer/OfferView";
 import { DealSummaryCard } from "@/components/deal/DealSummaryCard";
 import { DealSetupForm } from "@/components/deal/DealSetupForm";
+import { ContingencyCountdown } from "@/components/escrow/ContingencyCountdown";
+import { EarnestMoneyTracker } from "@/components/escrow/EarnestMoneyTracker";
+import { AppraisalStatus } from "@/components/escrow/AppraisalStatus";
+import { InspectionChecklist } from "@/components/escrow/InspectionChecklist";
+import { RedFlagSummary } from "@/components/escrow/RedFlagSummary";
+import { RepairTracker } from "@/components/escrow/RepairTracker";
+import { EscrowAlerts } from "@/components/escrow/EscrowAlerts";
+import { LoanProgress } from "@/components/escrow/LoanProgress";
+import { DisclosureTracker } from "@/components/escrow/DisclosureTracker";
+import { EscrowCashToClose } from "@/components/escrow/EscrowCashToClose";
 import { createClient } from "@/lib/supabase/client";
 
-function EscrowDashboard({ dealId }: { dealId: string | null }) {
+function EscrowDashboard({ dealId, userId }: { dealId: string | null; userId: string }) {
+  if (!dealId) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-3xl font-semibold tracking-tight">Escrow & Due Diligence</h2>
+        <div className="text-base text-muted-foreground bg-card rounded-xl border border-border shadow-sm p-10 text-center">
+          Create a deal first to access the escrow dashboard.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-semibold tracking-tight">Escrow &amp; Due Diligence</h2>
-      {dealId && <DealSummaryCard dealId={dealId} />}
-      <div className="text-base text-muted-foreground bg-card rounded-xl border border-border shadow-sm p-10 text-center">
-        Escrow dashboard components — Phase 4 build
+      <div>
+        <h2 className="text-3xl font-semibold tracking-tight">Escrow & Due Diligence</h2>
+        <p className="text-base text-muted-foreground mt-1">Track contingencies, inspections, and closing progress</p>
       </div>
+
+      <DealSummaryCard dealId={dealId} />
+
+      <EscrowAlerts dealId={dealId} />
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+        <ContingencyCountdown dealId={dealId} />
+        <EarnestMoneyTracker dealId={dealId} userId={userId} />
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+        <InspectionChecklist dealId={dealId} />
+        <AppraisalStatus dealId={dealId} />
+      </div>
+
+      <RedFlagSummary dealId={dealId} />
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+        <RepairTracker dealId={dealId} />
+        <LoanProgress dealId={dealId} />
+      </div>
+
+      <DisclosureTracker dealId={dealId} />
+
+      <EscrowCashToClose dealId={dealId} />
     </div>
   );
 }
@@ -72,7 +117,7 @@ export function PhaseDashboard() {
     case "offer":
       return <OfferView userId={userId} />;
     case "escrow":
-      return <EscrowDashboard dealId={activeDealId} />;
+      return <EscrowDashboard dealId={activeDealId} userId={userId} />;
     case "closing":
       return <ClosingDashboard />;
     case "post-close":

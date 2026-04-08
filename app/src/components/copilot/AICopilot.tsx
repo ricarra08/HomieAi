@@ -51,6 +51,12 @@ const PAGE_QUICK_ACTIONS: Record<string, string[]> = {
     "What are my deadlines?",
     "Summarize my uploaded docs",
   ],
+  "/dashboard": [
+    "What are my upcoming deadlines?",
+    "Summarize my inspection findings",
+    "Is my earnest money confirmed?",
+    "What documents am I missing?",
+  ],
 };
 
 function formatTime(dateStr: string): string {

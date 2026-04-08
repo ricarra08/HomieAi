@@ -89,14 +89,11 @@ export function ShoppingView({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-semibold tracking-tight">Shopping</h2>
-          <p className="text-base text-muted-foreground mt-1">
-            Track homes and prepare your buy box
-          </p>
-        </div>
-        <AddPropertyDialog userId={userId} />
+      <div>
+        <h2 className="text-3xl font-semibold tracking-tight">Shopping</h2>
+        <p className="text-base text-muted-foreground mt-1">
+          Track homes and prepare your buy box
+        </p>
       </div>
 
       <ViewEditCard
@@ -185,6 +182,9 @@ export function ShoppingView({ userId }: { userId: string }) {
             No homes saved yet. Add a property to start tracking.
           </div>
         )}
+        <div className="flex justify-end mt-4 pt-4 border-t border-border">
+          <AddPropertyDialog userId={userId} />
+        </div>
       </CollapsibleCard>
 
       <CollapsibleCard title="Affordability Estimate" subtitle="Quick cash-to-close estimate">

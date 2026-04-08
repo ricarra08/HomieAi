@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCreateDeal } from "@/lib/hooks/mutations";
 import { useUIStore } from "@/lib/store";
+import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -81,9 +82,27 @@ export function DealSetupForm({
         earnest_money_amount: earnestMoney ? Number(earnestMoney) : undefined,
       },
       {
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           uiStore.setActiveDealId(data.id);
           uiStore.setCurrentPhase("escrow");
+
+          if (acceptanceDate) {
+            const base = new Date(acceptanceDate);
+            function addDays(d: Date, days: number): string {
+              const r = new Date(d);
+              r.setDate(r.getDate() + days);
+              return r.toISOString().split("T")[0];
+            }
+            const deadlines: { deal_id: string; name: string; type: string; due_date: string }[] = [];
+            if (Number(inspectionDays)) deadlines.push({ deal_id: data.id, name: "Inspection Contingency", type: "inspection", due_date: addDays(base, Number(inspectionDays)) });
+            if (Number(appraisalDays)) deadlines.push({ deal_id: data.id, name: "Appraisal Contingency", type: "appraisal", due_date: addDays(base, Number(appraisalDays)) });
+            if (Number(loanDays)) deadlines.push({ deal_id: data.id, name: "Financing Contingency", type: "financing", due_date: addDays(base, Number(loanDays)) });
+            if (closingDate) deadlines.push({ deal_id: data.id, name: "Closing Date", type: "closing", due_date: closingDate });
+            if (deadlines.length > 0) {
+              await createClient().from("deadlines").insert(deadlines);
+            }
+          }
+
           onComplete?.();
         },
       }
@@ -146,28 +165,34 @@ export function DealSetupForm({
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="price">Purchase Price</Label>
-            <Input
-              id="price"
-              type="number"
-              placeholder="900000"
-              value={purchasePrice}
-              onChange={(e) => setPurchasePrice(e.target.value)}
-              required
-              className="text-base"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">$</span>
+              <Input
+                id="price"
+                type="number"
+                placeholder="900000"
+                value={purchasePrice}
+                onChange={(e) => setPurchasePrice(e.target.value)}
+                required
+                className="text-base pl-7"
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="emd">
               <TermTooltip term="Earnest Money Deposit" definition="A good-faith deposit showing you're serious about buying. Typically 1–3% of the purchase price. Held in escrow and applied to your closing costs." />
             </Label>
-            <Input
-              id="emd"
-              type="number"
-              placeholder="18000"
-              value={earnestMoney}
-              onChange={(e) => setEarnestMoney(e.target.value)}
-              className="text-base"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">$</span>
+              <Input
+                id="emd"
+                type="number"
+                placeholder="18000"
+                value={earnestMoney}
+                onChange={(e) => setEarnestMoney(e.target.value)}
+                className="text-base pl-7"
+              />
+            </div>
           </div>
         </div>
 
