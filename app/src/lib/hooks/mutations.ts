@@ -196,8 +196,9 @@ export function useUploadDocument(dealId: string) {
       docType?: string;
       category?: string;
       stage?: string;
+      inspectionSubtype?: string;
     }) => {
-      const { file, sourceType = "buyer-upload", docType, category, stage } = params;
+      const { file, sourceType = "buyer-upload", docType, category, stage, inspectionSubtype } = params;
       const filePath = `${dealId}/${crypto.randomUUID()}/${file.name}`;
 
       const { error: uploadError } = await supabase.storage
@@ -217,6 +218,9 @@ export function useUploadDocument(dealId: string) {
       if (docType) row.doc_type = docType;
       if (category) row.category = category;
       if (stage) row.stage = stage;
+      if (inspectionSubtype) {
+        row.extracted_fields = { _inspection_slot: inspectionSubtype };
+      }
 
       const { data, error: insertError } = await supabase
         .from("documents")

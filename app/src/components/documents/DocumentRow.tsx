@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, MoreHorizontal, Check, RefreshCw, Eye, Tags, Trash2 } from "lucide-react";
+import { FileText, MoreHorizontal, Check, RefreshCw, Eye, Tags, Trash2, ClipboardList } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useUIStore } from "@/lib/store";
 import { useUpdateDocument, useDeleteDocument } from "@/lib/hooks/mutations";
+import {
+  INSPECTION_SUBTYPES,
+  INSPECTION_SUBTYPE_LABELS,
+  isInspectionSubtype,
+} from "@/lib/documents/inspection-subtype";
 import type { Document } from "@/lib/types";
 
 function formatFileSize(bytes: number | null): string {
@@ -129,7 +134,25 @@ export function DocumentRow({ doc }: { doc: Document }) {
   }
 
   function handleReclassify(docType: string, category: string) {
-    updateDoc.mutate({ documentId: doc.id, updates: { doc_type: docType, category } });
+    const updates: Record<string, unknown> = { doc_type: docType, category };
+    if (doc.doc_type === "inspection_report" && docType !== "inspection_report") {
+      const prior = (doc.extracted_fields && typeof doc.extracted_fields === "object" && !Array.isArray(doc.extracted_fields))
+        ? { ...(doc.extracted_fields as Record<string, unknown>) }
+        : {};
+      delete prior._inspection_slot;
+      delete prior.inspection_type;
+      updates.extracted_fields = Object.keys(prior).length > 0 ? prior : null;
+    }
+    updateDoc.mutate({ documentId: doc.id, updates });
+  }
+
+  function handleSetInspectionSubtype(subtype: string) {
+    const prior = (doc.extracted_fields && typeof doc.extracted_fields === "object" && !Array.isArray(doc.extracted_fields))
+      ? { ...(doc.extracted_fields as Record<string, unknown>) }
+      : {};
+    prior._inspection_slot = subtype;
+    prior.inspection_type = { value: subtype, confidence: 1 };
+    updateDoc.mutate({ documentId: doc.id, updates: { extracted_fields: prior } });
   }
 
   function handleDelete() {
@@ -201,6 +224,32 @@ export function DocumentRow({ doc }: { doc: Document }) {
               ))}
             </DropdownMenuSubContent>
           </DropdownMenuSub>
+
+          {doc.doc_type === "inspection_report" && (
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <ClipboardList className="w-4 h-4 mr-2" />
+                Inspection type
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="w-48">
+                {INSPECTION_SUBTYPES.map((st) => {
+                  const fields = doc.extracted_fields as Record<string, { value: unknown }> | null;
+                  const currentSlot = (fields?._inspection_slot as unknown as string) ?? fields?.inspection_type?.value;
+                  const isActive = currentSlot === st || (!currentSlot && st === "general");
+                  return (
+                    <DropdownMenuItem
+                      key={st}
+                      onClick={() => handleSetInspectionSubtype(st)}
+                      className={isActive ? "bg-accent/10 text-accent" : ""}
+                    >
+                      {INSPECTION_SUBTYPE_LABELS[st]}
+                      {isActive && <Check className="w-3 h-3 ml-auto" />}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          )}
 
           <DropdownMenuSeparator />
 

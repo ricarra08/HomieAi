@@ -5,6 +5,7 @@ import OpenAI from "openai";
 import { isTier1, EXTRACTION_SCHEMAS, type Tier1DocType } from "@/lib/ai/extraction-schemas";
 import { getExtractionSystemPrompt, getSummarizationSystemPrompt, TEXT_LIMITS } from "@/lib/ai/prompts";
 import { mapExtractedToLE } from "@/lib/ai/le-auto-populate";
+import { isInspectionSubtype } from "@/lib/documents/inspection-subtype";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -281,11 +282,28 @@ Stage mapping:
       finalStatus = "processed";
     }
 
-    // --- Step 6: Final save ---
+    // --- Step 6: Final save (merge prior extracted_fields with AI output) ---
+    const priorFields = (doc.extracted_fields && typeof doc.extracted_fields === "object" && !Array.isArray(doc.extracted_fields))
+      ? (doc.extracted_fields as Record<string, unknown>)
+      : {};
+    const aiFields = (extractedFields && typeof extractedFields === "object")
+      ? extractedFields
+      : {};
+    const mergedFields: Record<string, unknown> = { ...priorFields, ...aiFields };
+
+    if (docType === "inspection_report") {
+      const slot = mergedFields._inspection_slot;
+      if (typeof slot === "string" && isInspectionSubtype(slot)) {
+        mergedFields.inspection_type = { value: slot, confidence: 1 };
+      }
+    }
+
+    const finalFields = Object.keys(mergedFields).length > 0 ? mergedFields : null;
+
     const { error: updateError } = await supabaseAdmin
       .from("documents")
       .update({
-        extracted_fields: extractedFields,
+        extracted_fields: finalFields,
         ai_summary: aiSummary,
         status: finalStatus,
       })

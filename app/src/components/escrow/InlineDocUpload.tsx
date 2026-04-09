@@ -11,6 +11,7 @@ interface UploadHints {
   docType: string;
   category: string;
   stage?: string;
+  inspectionSubtype?: string;
 }
 
 interface InlineDocUploadProps {
@@ -34,6 +35,7 @@ export function InlineDocUpload({ dealId, existingDoc, allDocs, label, acceptTyp
       docType: uploadHints?.docType,
       category: uploadHints?.category,
       stage: uploadHints?.stage,
+      inspectionSubtype: uploadHints?.inspectionSubtype,
     }, {
       onSuccess: (data) => setUploadedDocId(data.id),
     });

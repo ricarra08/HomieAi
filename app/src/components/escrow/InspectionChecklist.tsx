@@ -6,22 +6,18 @@ import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { InlineDocUpload } from "./InlineDocUpload";
 import { useUIStore } from "@/lib/store";
+import {
+  INSPECTION_SUBTYPES,
+  INSPECTION_SUBTYPE_LABELS,
+  isInspectionSubtype,
+} from "@/lib/documents/inspection-subtype";
 import type { Document } from "@/lib/types";
-
-const INSPECTION_TYPES = ["general", "pest", "roof", "hvac", "foundation"] as const;
-
-const TYPE_LABELS: Record<string, string> = {
-  general: "General Home Inspection",
-  pest: "Pest / Termite",
-  roof: "Roof Inspection",
-  hvac: "HVAC Inspection",
-  foundation: "Foundation Inspection",
-};
 
 function getInspectionType(doc: Document): string {
   const fields = doc.extracted_fields as Record<string, { value: unknown }> | null;
   const raw = fields?.inspection_type?.value;
   if (typeof raw === "string") {
+    if (isInspectionSubtype(raw)) return raw;
     const lower = raw.toLowerCase();
     if (lower.includes("pest") || lower.includes("termite")) return "pest";
     if (lower.includes("roof")) return "roof";
@@ -53,7 +49,10 @@ export function InspectionChecklist({ dealId, inspectionDocs, allDocs }: Inspect
   const { setCopilotOpen } = useUIStore();
 
   const docsByType = new Map<string, Document>();
-  for (const doc of inspectionDocs) {
+  const sorted = [...inspectionDocs].sort(
+    (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+  );
+  for (const doc of sorted) {
     const type = getInspectionType(doc);
     if (!docsByType.has(type)) docsByType.set(type, doc);
   }
@@ -76,7 +75,7 @@ export function InspectionChecklist({ dealId, inspectionDocs, allDocs }: Inspect
       subtitle={`${completedCount} completed${totalFindings > 0 ? ` · ${totalFindings} findings` : ""}`}
     >
       <div className="space-y-3">
-        {INSPECTION_TYPES.map((type) => {
+        {INSPECTION_SUBTYPES.map((type) => {
           const doc = docsByType.get(type);
           const isComplete = doc?.status === "processed";
           const majorCount = doc ? getMajorCount(doc) : 0;
@@ -90,7 +89,7 @@ export function InspectionChecklist({ dealId, inspectionDocs, allDocs }: Inspect
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-medium ${isComplete ? "text-foreground" : "text-muted-foreground"}`}>
-                    {TYPE_LABELS[type]}
+                    {INSPECTION_SUBTYPE_LABELS[type]}
                   </p>
                   {isComplete && (
                     <div className="flex items-center gap-2 mt-0.5">
@@ -118,8 +117,8 @@ export function InspectionChecklist({ dealId, inspectionDocs, allDocs }: Inspect
                   dealId={dealId}
                   existingDoc={doc ?? null}
                   allDocs={allDocs}
-                  label={`Drop ${TYPE_LABELS[type].toLowerCase()} report`}
-                  uploadHints={{ docType: "inspection_report", category: "inspections", stage: "escrow" }}
+                  label={`Drop ${INSPECTION_SUBTYPE_LABELS[type].toLowerCase()} report`}
+                  uploadHints={{ docType: "inspection_report", category: "inspections", stage: "escrow", inspectionSubtype: type }}
                 />
               </div>
             </div>
