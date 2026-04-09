@@ -39,7 +39,9 @@ Extract every requested field from the document text. For each field:
     purchase_contract: `Focus on: property details, parties, dates, financial terms (price, earnest money), contingency periods (inspection, appraisal, financing, disclosure), and involved professionals (agents, escrow, title).`,
     loan_estimate: `Focus on: lender info, loan product, amounts, rates (interest rate, APR), monthly payment, closing costs breakdown (lender fees, third-party fees), points/credits, PMI, impounds, lock status, and down payment.`,
     closing_disclosure: `Focus on: final loan terms, actual closing costs vs estimates, cash to close, prorations, seller credits, recording fees, transfer taxes, prepaid items, and initial escrow deposits.`,
-    inspection_report: `Focus on: inspector details, date, type of inspection, major findings (with severity and estimated repair costs), minor findings, system conditions (HVAC, electrical, plumbing, roof, foundation), recommended actions, and overall condition assessment.`,
+    inspection_report: `Focus on: inspector details, date, type of inspection, major findings (with severity and estimated repair costs), minor findings, system conditions (HVAC, electrical, plumbing, roof, foundation), recommended actions, and overall condition assessment.
+
+IMPORTANT: For the "inspection_type" field, return EXACTLY one of these values: "general", "pest", "roof", "hvac", "foundation". Use "general" for standard whole-home inspections. Use the specific type only if the report is exclusively about that system.`,
   };
 
   return `${shared}\n\n${typeSpecific[docType] ?? ""}`.trim();

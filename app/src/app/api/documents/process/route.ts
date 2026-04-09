@@ -160,7 +160,13 @@ export async function POST(request: NextRequest) {
     let category = "other";
     let stage = "escrow";
 
-    if (extractedText.length >= MIN_TEXT_LENGTH) {
+    const preClassified = doc.doc_type && doc.doc_type !== "other";
+    if (preClassified) {
+      docType = doc.doc_type;
+      category = doc.category ?? "other";
+      stage = doc.stage ?? "escrow";
+      console.log(`[doc-process] Pre-classified as ${docType}/${category}, skipping AI classification`);
+    } else if (extractedText.length >= MIN_TEXT_LENGTH) {
       try {
         const classifyResponse = await openai.chat.completions.create({
           model: "gpt-4o-mini",

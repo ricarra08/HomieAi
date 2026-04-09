@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
-import { useRepairItems } from "@/lib/hooks/queries";
 import { useCreateRepairItem, useUpdateRepairItem } from "@/lib/hooks/mutations";
 import { formatCurrency } from "@/lib/utils";
 import type { RepairItem } from "@/lib/types";
@@ -16,14 +15,6 @@ const SEVERITY_STYLES: Record<string, string> = {
   major: "bg-destructive/10 text-destructive",
   minor: "bg-amber-50 text-amber-700",
   cosmetic: "bg-muted text-muted-foreground",
-};
-
-const RESOLUTION_LABELS: Record<string, string> = {
-  repair: "Repair",
-  credit: "Credit",
-  "as-is": "As-Is",
-  pending: "Pending",
-  disputed: "Disputed",
 };
 
 function RepairRow({ item, dealId }: { item: RepairItem; dealId: string }) {
@@ -60,24 +51,24 @@ function RepairRow({ item, dealId }: { item: RepairItem; dealId: string }) {
         <option value="declined">Declined</option>
         <option value="completed">Completed</option>
       </select>
-      {item.resolution && (
-        <Badge className="bg-muted text-muted-foreground text-xs shrink-0">
-          {RESOLUTION_LABELS[item.resolution] ?? item.resolution}
-        </Badge>
-      )}
     </div>
   );
 }
 
-export function RepairTracker({ dealId }: { dealId: string }) {
-  const { data: repairs, isLoading } = useRepairItems(dealId);
+interface RepairTrackerProps {
+  dealId: string;
+  repairItems: RepairItem[];
+  isLoading?: boolean;
+}
+
+export function RepairTracker({ dealId, repairItems, isLoading }: RepairTrackerProps) {
   const createRepair = useCreateRepairItem(dealId);
   const [showAdd, setShowAdd] = useState(false);
   const [desc, setDesc] = useState("");
   const [cost, setCost] = useState("");
 
-  const totalEstimated = (repairs ?? []).reduce((s, r) => s + (r.estimated_cost ?? 0), 0);
-  const totalAgreed = (repairs ?? []).reduce((s, r) => s + (r.agreed_cost ?? 0), 0);
+  const totalEstimated = repairItems.reduce((s, r) => s + (r.estimated_cost ?? 0), 0);
+  const totalAgreed = repairItems.reduce((s, r) => s + (r.agreed_cost ?? 0), 0);
 
   function handleAdd() {
     if (!desc.trim()) return;
@@ -90,14 +81,14 @@ export function RepairTracker({ dealId }: { dealId: string }) {
   return (
     <CollapsibleCard
       title="Repairs & Credits"
-      subtitle={repairs ? `${repairs.length} item${repairs.length !== 1 ? "s" : ""}` : "Loading..."}
+      subtitle={`${repairItems.length} item${repairItems.length !== 1 ? "s" : ""}`}
     >
       <div className="space-y-3">
         {isLoading ? (
           <div className="h-20 bg-muted rounded-lg animate-pulse" />
-        ) : repairs && repairs.length > 0 ? (
+        ) : repairItems.length > 0 ? (
           <>
-            {repairs.map((item) => <RepairRow key={item.id} item={item} dealId={dealId} />)}
+            {repairItems.map((item) => <RepairRow key={item.id} item={item} dealId={dealId} />)}
             <div className="flex items-center justify-between pt-3 border-t border-border text-sm">
               <span className="text-muted-foreground">Total Estimated</span>
               <span className="font-medium text-foreground">{formatCurrency(totalEstimated)}</span>

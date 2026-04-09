@@ -1,9 +1,19 @@
 "use client";
 
-import { FileText, MoreHorizontal, Check, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { FileText, MoreHorizontal, Check, RefreshCw, Eye, Tags, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useUIStore } from "@/lib/store";
-import { useQueryClient } from "@tanstack/react-query";
-import { documentKeys } from "@/lib/hooks/query-keys";
+import { useUpdateDocument, useDeleteDocument } from "@/lib/hooks/mutations";
 import type { Document } from "@/lib/types";
 
 function formatFileSize(bytes: number | null): string {
@@ -47,7 +57,6 @@ function ProcessingStepper({ status }: { status: string }) {
 
         return (
           <div key={label} className="flex items-center gap-1">
-            {/* Step dot/icon */}
             <div className="flex items-center gap-1.5">
               {done ? (
                 <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
@@ -76,7 +85,6 @@ function ProcessingStepper({ status }: { status: string }) {
                 {label}
               </span>
             </div>
-            {/* Connector line */}
             {!isLast && (
               <div
                 className={`w-4 h-0.5 rounded-full ${
@@ -91,9 +99,25 @@ function ProcessingStepper({ status }: { status: string }) {
   );
 }
 
+const DOC_TYPE_TAXONOMY: { value: string; label: string; category: string }[] = [
+  { value: "purchase_contract", label: "Purchase Contract", category: "offer" },
+  { value: "loan_estimate", label: "Loan Estimate", category: "financing" },
+  { value: "closing_disclosure", label: "Closing Disclosure", category: "closing" },
+  { value: "inspection_report", label: "Inspection Report", category: "inspections" },
+  { value: "appraisal", label: "Appraisal", category: "appraisal" },
+  { value: "title_report", label: "Title Report", category: "escrow_title" },
+  { value: "disclosure", label: "Disclosure", category: "disclosures" },
+  { value: "insurance_binder", label: "Insurance Binder", category: "insurance" },
+  { value: "pre_approval", label: "Pre-Approval", category: "offer" },
+  { value: "proof_of_funds", label: "Proof of Funds", category: "offer" },
+  { value: "other", label: "Other", category: "other" },
+];
+
 export function DocumentRow({ doc }: { doc: Document }) {
   const openViewer = useUIStore((s) => s.openViewer);
-  const qc = useQueryClient();
+  const updateDoc = useUpdateDocument(doc.deal_id);
+  const deleteDoc = useDeleteDocument(doc.deal_id);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   function handleRetry(e: React.MouseEvent) {
     e.stopPropagation();
@@ -101,9 +125,16 @@ export function DocumentRow({ doc }: { doc: Document }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ documentId: doc.id }),
-    }).then(() => {
-      qc.invalidateQueries({ queryKey: documentKeys.list(doc.deal_id) });
     });
+  }
+
+  function handleReclassify(docType: string, category: string) {
+    updateDoc.mutate({ documentId: doc.id, updates: { doc_type: docType, category } });
+  }
+
+  function handleDelete() {
+    deleteDoc.mutate({ documentId: doc.id, filePath: doc.file_path });
+    setConfirmDelete(false);
   }
 
   const showStepper = ["uploaded", "processing", "processed", "signed", "acknowledged", "final"].includes(doc.status);
@@ -138,12 +169,60 @@ export function DocumentRow({ doc }: { doc: Document }) {
       ) : showStepper ? (
         <ProcessingStepper status={doc.status} />
       ) : null}
-      <button
-        onClick={(e) => e.stopPropagation()}
-        className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted"
-      >
-        <MoreHorizontal className="w-4 h-4" />
-      </button>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted"
+        >
+          <MoreHorizontal className="w-4 h-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48" onClick={(e) => e.stopPropagation()}>
+          <DropdownMenuItem onClick={() => openViewer(doc.id)}>
+            <Eye className="w-4 h-4 mr-2" />
+            View
+          </DropdownMenuItem>
+
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <Tags className="w-4 h-4 mr-2" />
+              Reclassify
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent className="w-48">
+              {DOC_TYPE_TAXONOMY.map((t) => (
+                <DropdownMenuItem
+                  key={t.value}
+                  onClick={() => handleReclassify(t.value, t.category)}
+                  className={doc.doc_type === t.value ? "bg-accent/10 text-accent" : ""}
+                >
+                  {t.label}
+                  {doc.doc_type === t.value && <Check className="w-3 h-3 ml-auto" />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+
+          <DropdownMenuSeparator />
+
+          {confirmDelete ? (
+            <DropdownMenuItem
+              onClick={handleDelete}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Confirm Delete
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem
+              onClick={(e) => { e.preventDefault(); setConfirmDelete(true); }}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

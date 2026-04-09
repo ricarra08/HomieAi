@@ -3,7 +3,6 @@
 import { Clock, Check, X as XIcon, MessageCircle } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
-import { useDeadlines } from "@/lib/hooks/queries";
 import { useUpdateDeadlineStatus } from "@/lib/hooks/mutations";
 import { computeDeadlineUrgency, computeDaysRemaining } from "@/lib/computed";
 import { useUIStore } from "@/lib/store";
@@ -38,10 +37,7 @@ function DeadlineRow({ deadline, dealId }: { deadline: Deadline; dealId: string 
 
   return (
     <div className={`flex items-center gap-4 py-3 border-b border-border last:border-0 ${isDone ? "opacity-50" : ""}`}>
-      {/* Status dot */}
       <div className={`w-3 h-3 rounded-full shrink-0 ${urgencyBg[urgency]}`} />
-
-      {/* Info */}
       <div className="flex-1 min-w-0">
         <p className={`text-base font-medium ${isDone ? "line-through text-muted-foreground" : "text-foreground"}`}>
           {deadline.name}
@@ -59,8 +55,6 @@ function DeadlineRow({ deadline, dealId }: { deadline: Deadline; dealId: string 
           {isDone && <span>{urgency === "waived" ? "Waived" : "Completed"}</span>}
         </div>
       </div>
-
-      {/* Progress bar */}
       {!isDone && days !== null && (
         <div className="w-20 h-1.5 bg-border rounded-full overflow-hidden shrink-0">
           <div
@@ -69,8 +63,6 @@ function DeadlineRow({ deadline, dealId }: { deadline: Deadline; dealId: string 
           />
         </div>
       )}
-
-      {/* Actions */}
       {!isDone && (
         <div className="flex items-center gap-1 shrink-0">
           <Button
@@ -97,12 +89,17 @@ function DeadlineRow({ deadline, dealId }: { deadline: Deadline; dealId: string 
   );
 }
 
-export function ContingencyCountdown({ dealId }: { dealId: string }) {
-  const { data: deadlines, isLoading } = useDeadlines(dealId);
+interface ContingencyCountdownProps {
+  dealId: string;
+  deadlines: Deadline[];
+  isLoading?: boolean;
+}
+
+export function ContingencyCountdown({ dealId, deadlines, isLoading }: ContingencyCountdownProps) {
   const { setCopilotOpen } = useUIStore();
 
-  const active = (deadlines ?? []).filter((d) => d.status !== "completed" && d.status !== "waived");
-  const done = (deadlines ?? []).filter((d) => d.status === "completed" || d.status === "waived");
+  const active = deadlines.filter((d) => d.status !== "completed" && d.status !== "waived");
+  const done = deadlines.filter((d) => d.status === "completed" || d.status === "waived");
 
   function handleAskHomie() {
     setCopilotOpen(true);
@@ -122,7 +119,7 @@ export function ContingencyCountdown({ dealId }: { dealId: string }) {
         <div className="space-y-3">
           {[1, 2, 3].map((i) => <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />)}
         </div>
-      ) : deadlines && deadlines.length > 0 ? (
+      ) : deadlines.length > 0 ? (
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Clock className="w-4 h-4 text-muted-foreground" />

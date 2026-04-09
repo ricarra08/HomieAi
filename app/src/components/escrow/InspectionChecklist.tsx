@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { InlineDocUpload } from "./InlineDocUpload";
-import { useDocuments } from "@/lib/hooks/queries";
 import { useUIStore } from "@/lib/store";
 import type { Document } from "@/lib/types";
 
@@ -22,7 +21,13 @@ const TYPE_LABELS: Record<string, string> = {
 function getInspectionType(doc: Document): string {
   const fields = doc.extracted_fields as Record<string, { value: unknown }> | null;
   const raw = fields?.inspection_type?.value;
-  if (typeof raw === "string") return raw.toLowerCase();
+  if (typeof raw === "string") {
+    const lower = raw.toLowerCase();
+    if (lower.includes("pest") || lower.includes("termite")) return "pest";
+    if (lower.includes("roof")) return "roof";
+    if (lower.includes("hvac") || lower.includes("heating") || lower.includes("cooling")) return "hvac";
+    if (lower.includes("foundation") || lower.includes("structural")) return "foundation";
+  }
   return "general";
 }
 
@@ -38,13 +43,14 @@ function getCondition(doc: Document): string | null {
   return typeof v === "string" ? v : null;
 }
 
-export function InspectionChecklist({ dealId }: { dealId: string }) {
-  const { data: documents } = useDocuments(dealId);
-  const { setCopilotOpen } = useUIStore();
+interface InspectionChecklistProps {
+  dealId: string;
+  inspectionDocs: Document[];
+  allDocs: Document[];
+}
 
-  const inspectionDocs = (documents ?? []).filter(
-    (d) => d.doc_type === "inspection_report"
-  );
+export function InspectionChecklist({ dealId, inspectionDocs, allDocs }: InspectionChecklistProps) {
+  const { setCopilotOpen } = useUIStore();
 
   const docsByType = new Map<string, Document>();
   for (const doc of inspectionDocs) {
@@ -107,12 +113,13 @@ export function InspectionChecklist({ dealId }: { dealId: string }) {
                 </div>
               </div>
 
-              {/* Inline doc upload/link per type */}
               <div className="ml-8">
                 <InlineDocUpload
                   dealId={dealId}
                   existingDoc={doc ?? null}
+                  allDocs={allDocs}
                   label={`Drop ${TYPE_LABELS[type].toLowerCase()} report`}
+                  uploadHints={{ docType: "inspection_report", category: "inspections", stage: "escrow" }}
                 />
               </div>
             </div>

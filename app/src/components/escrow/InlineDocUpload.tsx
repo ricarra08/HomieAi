@@ -7,54 +7,78 @@ import { useUploadDocument } from "@/lib/hooks/mutations";
 import { useUIStore } from "@/lib/store";
 import type { Document } from "@/lib/types";
 
+interface UploadHints {
+  docType: string;
+  category: string;
+  stage?: string;
+}
+
 interface InlineDocUploadProps {
   dealId: string;
   existingDoc?: Document | null;
+  allDocs: Document[];
   label: string;
   acceptTypes?: string;
+  uploadHints?: UploadHints;
 }
 
-export function InlineDocUpload({ dealId, existingDoc, label, acceptTypes = ".pdf" }: InlineDocUploadProps) {
+export function InlineDocUpload({ dealId, existingDoc, allDocs, label, acceptTypes = ".pdf", uploadHints }: InlineDocUploadProps) {
   const upload = useUploadDocument(dealId);
   const openViewer = useUIStore((s) => s.openViewer);
   const [dragging, setDragging] = useState(false);
+  const [uploadedDocId, setUploadedDocId] = useState<string | null>(null);
+
+  const handleUpload = useCallback((file: File) => {
+    upload.mutate({
+      file,
+      docType: uploadHints?.docType,
+      category: uploadHints?.category,
+      stage: uploadHints?.stage,
+    }, {
+      onSuccess: (data) => setUploadedDocId(data.id),
+    });
+  }, [upload, uploadHints]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file) upload.mutate({ file });
-  }, [upload]);
+    if (file) handleUpload(file);
+  }, [handleUpload]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) upload.mutate({ file });
-  }, [upload]);
+    if (file) handleUpload(file);
+  }, [handleUpload]);
 
-  if (existingDoc) {
-    const isProcessing = existingDoc.status === "processing";
-    const isProcessed = existingDoc.status === "processed";
+  const pendingDoc = uploadedDocId && !existingDoc
+    ? allDocs.find((d) => d.id === uploadedDocId) ?? null
+    : null;
+
+  const doc = existingDoc ?? pendingDoc;
+
+  if (doc) {
+    const isProcessing = doc.status === "processing" || doc.status === "uploaded";
+    const isProcessed = doc.status === "processed";
 
     return (
       <div className="space-y-3">
-        {/* Document chip */}
         <button
-          onClick={() => openViewer(existingDoc.id)}
+          onClick={() => openViewer(doc.id)}
           className="w-full flex items-center gap-2 p-2.5 rounded-lg border border-border hover:bg-muted/50 transition-colors text-left"
         >
           <FileText className="w-4 h-4 text-accent shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">{existingDoc.name}</p>
+            <p className="text-sm font-medium text-foreground truncate">{doc.name}</p>
             <p className="text-xs text-muted-foreground">
-              {isProcessing ? "Analyzing document..." : isProcessed ? "Tap to view details" : existingDoc.status === "failed" ? "Analysis failed — tap to retry" : "Processing..."}
+              {doc.status === "failed" ? "Analysis failed — tap to retry" : isProcessing ? "Analyzing document..." : isProcessed ? "Tap to view details" : "Processing..."}
             </p>
           </div>
-          {(isProcessing || existingDoc.status === "uploaded") && <Loader2 className="w-4 h-4 animate-spin text-amber-600 shrink-0" />}
-          {existingDoc.status === "failed" && <span className="text-xs text-destructive font-medium shrink-0">Failed</span>}
+          {isProcessing && <Loader2 className="w-4 h-4 animate-spin text-amber-600 shrink-0" />}
+          {doc.status === "failed" && <span className="text-xs text-destructive font-medium shrink-0">Failed</span>}
         </button>
 
-        {/* Inline AI summary when processed */}
-        {isProcessed && existingDoc.ai_summary && (
+        {isProcessed && doc.ai_summary && (
           <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
             <div className="flex items-center gap-1.5 mb-2">
               <Sparkles className="w-3.5 h-3.5 text-accent" />
@@ -69,11 +93,11 @@ export function InlineDocUpload({ dealId, existingDoc, label, acceptTypes = ".pd
                   li: ({ children }) => <li>{children}</li>,
                 }}
               >
-                {existingDoc.ai_summary.slice(0, 500)}
+                {doc.ai_summary.slice(0, 500)}
               </ReactMarkdown>
             </div>
             <button
-              onClick={() => openViewer(existingDoc.id)}
+              onClick={() => openViewer(doc.id)}
               className="text-xs text-accent hover:underline mt-1 font-medium"
             >
               Read full summary →

@@ -190,8 +190,14 @@ export function useUpdateOfferDetails(dealId: string) {
 export function useUploadDocument(dealId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (params: { file: File; sourceType?: string }) => {
-      const { file, sourceType = "buyer-upload" } = params;
+    mutationFn: async (params: {
+      file: File;
+      sourceType?: string;
+      docType?: string;
+      category?: string;
+      stage?: string;
+    }) => {
+      const { file, sourceType = "buyer-upload", docType, category, stage } = params;
       const filePath = `${dealId}/${crypto.randomUUID()}/${file.name}`;
 
       const { error: uploadError } = await supabase.storage
@@ -199,17 +205,22 @@ export function useUploadDocument(dealId: string) {
         .upload(filePath, file);
       if (uploadError) throw uploadError;
 
+      const row: Record<string, unknown> = {
+        deal_id: dealId,
+        name: file.name,
+        file_path: filePath,
+        file_size: file.size,
+        mime_type: file.type,
+        status: "uploaded",
+        source_type: sourceType,
+      };
+      if (docType) row.doc_type = docType;
+      if (category) row.category = category;
+      if (stage) row.stage = stage;
+
       const { data, error: insertError } = await supabase
         .from("documents")
-        .insert({
-          deal_id: dealId,
-          name: file.name,
-          file_path: filePath,
-          file_size: file.size,
-          mime_type: file.type,
-          status: "uploaded",
-          source_type: sourceType,
-        })
+        .insert(row)
         .select()
         .single();
       if (insertError) throw insertError;
@@ -224,6 +235,42 @@ export function useUploadDocument(dealId: string) {
       });
 
       return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: documentKeys.list(dealId) });
+    },
+  });
+}
+
+export function useUpdateDocument(dealId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { documentId: string; updates: Record<string, unknown> }) => {
+      const { data, error } = await supabase
+        .from("documents")
+        .update(params.updates)
+        .eq("id", params.documentId)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: documentKeys.list(dealId) });
+    },
+  });
+}
+
+export function useDeleteDocument(dealId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { documentId: string; filePath: string }) => {
+      await supabase.storage.from("deal-documents").remove([params.filePath]);
+      const { error } = await supabase
+        .from("documents")
+        .delete()
+        .eq("id", params.documentId);
+      if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: documentKeys.list(dealId) });

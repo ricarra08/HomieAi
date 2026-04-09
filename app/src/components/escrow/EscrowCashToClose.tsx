@@ -3,31 +3,30 @@
 import { DollarSign, ArrowRight } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
-import { useLoanEstimates, useDocuments, useDeal } from "@/lib/hooks/queries";
 import { computeMonthlyPI, computeCashToClose } from "@/lib/computed";
 import { formatCurrency } from "@/lib/utils";
 import { useUIStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
+import type { LoanEstimate, Deal, Document } from "@/lib/types";
 
-export function EscrowCashToClose({ dealId }: { dealId: string }) {
-  const { data: estimates } = useLoanEstimates(dealId);
-  const { data: documents } = useDocuments(dealId);
-  const { data: deal } = useDeal(dealId);
+interface EscrowCashToCloseProps {
+  chosenLE: LoanEstimate | null;
+  deal: Deal | null;
+  cdDocument: Document | null;
+}
+
+export function EscrowCashToClose({ chosenLE, deal, cdDocument }: EscrowCashToCloseProps) {
   const { setActiveSidebarItem } = useUIStore();
   const router = useRouter();
 
-  const chosen = estimates?.find((le) => le.is_chosen);
-  if (!chosen || !deal) return null;
+  if (!chosenLE || !deal) return null;
 
-  const monthlyPI = computeMonthlyPI(chosen.loan_amount, chosen.rate);
-  const totalMonthly = monthlyPI + (chosen.pmi_monthly ?? 0);
+  const monthlyPI = computeMonthlyPI(chosenLE.loan_amount, chosenLE.rate);
+  const totalMonthly = monthlyPI + (chosenLE.pmi_monthly ?? 0);
   const earnestMoney = deal.earnest_money_amount ?? 0;
-  const cashToClose = computeCashToClose(chosen, { earnestMoney });
+  const cashToClose = computeCashToClose(chosenLE, { earnestMoney });
 
-  const cdDoc = documents?.find(
-    (d) => d.doc_type === "closing_disclosure" && d.status === "processed" && d.extracted_fields
-  );
-  const cdFields = cdDoc?.extracted_fields as Record<string, unknown> | null;
+  const cdFields = cdDocument?.extracted_fields as Record<string, unknown> | null;
   let cdCashToClose: number | null = null;
   if (cdFields) {
     const raw = cdFields.final_cash_to_close ?? cdFields.cash_to_close;
@@ -46,7 +45,7 @@ export function EscrowCashToClose({ dealId }: { dealId: string }) {
   }
 
   return (
-    <CollapsibleCard title="Cash to Close Summary" subtitle={chosen.lender}>
+    <CollapsibleCard title="Cash to Close Summary" subtitle={chosenLE.lender}>
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -65,7 +64,7 @@ export function EscrowCashToClose({ dealId }: { dealId: string }) {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Rate</span>
-            <span className="font-medium">{chosen.rate}%</span>
+            <span className="font-medium">{chosenLE.rate}%</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Total Monthly</span>
@@ -73,7 +72,7 @@ export function EscrowCashToClose({ dealId }: { dealId: string }) {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Loan Amount</span>
-            <span className="font-medium">{formatCurrency(chosen.loan_amount)}</span>
+            <span className="font-medium">{formatCurrency(chosenLE.loan_amount)}</span>
           </div>
         </div>
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUIStore } from "@/lib/store";
+import { useEscrowData } from "@/lib/hooks/use-escrow-data";
 import { ShoppingView } from "@/components/shopping/ShoppingView";
 import { OfferView } from "@/components/offer/OfferView";
 import { DealSummaryCard } from "@/components/deal/DealSummaryCard";
@@ -30,6 +31,23 @@ function EscrowDashboard({ dealId, userId }: { dealId: string | null; userId: st
     );
   }
 
+  return <EscrowDashboardContent dealId={dealId} userId={userId} />;
+}
+
+function EscrowDashboardContent({ dealId, userId }: { dealId: string; userId: string }) {
+  const data = useEscrowData(dealId);
+
+  if (data.isLoading) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-3xl font-semibold tracking-tight">Escrow & Due Diligence</h2>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => <div key={i} className="h-32 bg-card rounded-xl border border-border shadow-sm animate-pulse" />)}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -39,28 +57,28 @@ function EscrowDashboard({ dealId, userId }: { dealId: string | null; userId: st
 
       <DealSummaryCard dealId={dealId} />
 
-      <EscrowAlerts dealId={dealId} />
+      <EscrowAlerts data={data} />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-        <ContingencyCountdown dealId={dealId} />
-        <EarnestMoneyTracker dealId={dealId} userId={userId} />
+        <ContingencyCountdown dealId={dealId} deadlines={data.deadlines} />
+        {data.deal && <EarnestMoneyTracker deal={data.deal} userId={userId} />}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-        <InspectionChecklist dealId={dealId} />
-        <AppraisalStatus dealId={dealId} />
+        <InspectionChecklist dealId={dealId} inspectionDocs={data.inspectionDocs} allDocs={data.documents} />
+        <AppraisalStatus dealId={dealId} appraisalDoc={data.appraisalDoc} deal={data.deal} allDocs={data.documents} />
       </div>
 
-      <RedFlagSummary dealId={dealId} />
+      <RedFlagSummary dealId={dealId} inspectionDocs={data.inspectionDocs} repairItems={data.repairItems} />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-        <RepairTracker dealId={dealId} />
-        <LoanProgress dealId={dealId} />
+        <RepairTracker dealId={dealId} repairItems={data.repairItems} />
+        <LoanProgress chosenLE={data.chosenLE} documents={data.documents} />
       </div>
 
-      <DisclosureTracker dealId={dealId} />
+      <DisclosureTracker dealId={dealId} disclosureDocs={data.disclosureDocs} allDocs={data.documents} />
 
-      <EscrowCashToClose dealId={dealId} />
+      <EscrowCashToClose chosenLE={data.chosenLE} deal={data.deal} cdDocument={data.cdDocument} />
     </div>
   );
 }

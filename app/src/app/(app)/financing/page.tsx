@@ -29,10 +29,6 @@ export default function FinancingPage() {
     ? documents?.find((d) => d.id === viewerDocId)
     : null;
 
-  if (activeDoc) {
-    return <DocumentDetailView doc={activeDoc} />;
-  }
-
   if (!activeDealId) {
     return (
       <div className="space-y-6">
@@ -81,7 +77,8 @@ export default function FinancingPage() {
 
   return (
     <>
-      <div className="space-y-6 pb-16">
+      {activeDoc && <DocumentDetailView doc={activeDoc} />}
+      <div className={`space-y-6 pb-16 ${activeDoc ? "hidden" : ""}`}>
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -156,16 +153,18 @@ export default function FinancingPage() {
       </div>
 
       {/* Sticky footer */}
-      {chosenLE && (
+      {chosenLE && !activeDoc && (
         <CashToCloseFooter chosenLE={chosenLE} cdCashToClose={cdCashToClose} />
       )}
 
-      <LEFormModal
-        dealId={activeDealId}
-        open={formOpen}
-        onClose={handleCloseForm}
-        editingLE={editingLE}
-      />
+      {!activeDoc && (
+        <LEFormModal
+          dealId={activeDealId}
+          open={formOpen}
+          onClose={handleCloseForm}
+          editingLE={editingLE}
+        />
+      )}
     </>
   );
 }

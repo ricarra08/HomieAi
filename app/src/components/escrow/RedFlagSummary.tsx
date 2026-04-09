@@ -5,10 +5,10 @@ import { AlertTriangle, MessageCircle, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
-import { useDocuments, useRepairItems } from "@/lib/hooks/queries";
 import { useCreateRepairItem } from "@/lib/hooks/mutations";
 import { useUIStore } from "@/lib/store";
 import { formatCurrency } from "@/lib/utils";
+import type { Document, RepairItem } from "@/lib/types";
 
 interface Finding {
   description: string;
@@ -24,19 +24,21 @@ const SEVERITY_STYLES: Record<string, string> = {
   cosmetic: "bg-muted text-muted-foreground",
 };
 
-export function RedFlagSummary({ dealId }: { dealId: string }) {
-  const { data: documents } = useDocuments(dealId);
-  const { data: repairs } = useRepairItems(dealId);
+interface RedFlagSummaryProps {
+  dealId: string;
+  inspectionDocs: Document[];
+  repairItems: RepairItem[];
+}
+
+export function RedFlagSummary({ dealId, inspectionDocs, repairItems }: RedFlagSummaryProps) {
   const createRepair = useCreateRepairItem(dealId);
   const { setCopilotOpen } = useUIStore();
   const [addedFindings, setAddedFindings] = useState<Set<string>>(new Set());
 
-  const inspectionDocs = (documents ?? []).filter(
-    (d) => d.doc_type === "inspection_report" && d.status === "processed" && d.extracted_fields
-  );
+  const processedDocs = inspectionDocs.filter((d) => d.status === "processed" && d.extracted_fields);
 
   const allFindings: (Finding & { docName: string; docId: string })[] = [];
-  for (const doc of inspectionDocs) {
+  for (const doc of processedDocs) {
     const fields = doc.extracted_fields as Record<string, { value: unknown }>;
     const majors = fields?.major_findings?.value;
     if (Array.isArray(majors)) {
@@ -50,8 +52,7 @@ export function RedFlagSummary({ dealId }: { dealId: string }) {
 
   const totalCost = allFindings.reduce((sum, f) => sum + (f.estimated_cost ?? 0), 0);
   const criticalCount = allFindings.filter((f) => f.severity === "critical" || f.severity === "major").length;
-
-  const existingDescriptions = new Set((repairs ?? []).map((r) => r.description));
+  const existingDescriptions = new Set(repairItems.map((r) => r.description));
 
   function handleCreateRepair(finding: Finding, docId: string, index: number) {
     createRepair.mutate(
@@ -83,7 +84,6 @@ export function RedFlagSummary({ dealId }: { dealId: string }) {
       subtitle={`${allFindings.length} major finding${allFindings.length !== 1 ? "s" : ""} found`}
     >
       <div className="space-y-4">
-        {/* Summary bar */}
         <div className="flex items-center justify-between bg-destructive/5 rounded-lg px-4 py-3">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-destructive" />
@@ -98,7 +98,6 @@ export function RedFlagSummary({ dealId }: { dealId: string }) {
           )}
         </div>
 
-        {/* Findings list */}
         {allFindings.map((f, i) => (
           <div key={i} className="flex items-start gap-3 py-2 border-b border-border last:border-0">
             <Badge className={`${SEVERITY_STYLES[f.severity] ?? SEVERITY_STYLES.minor} text-xs shrink-0 mt-0.5`}>
@@ -132,7 +131,6 @@ export function RedFlagSummary({ dealId }: { dealId: string }) {
           </div>
         ))}
 
-        {/* Actions */}
         <Button
           variant="outline"
           size="sm"

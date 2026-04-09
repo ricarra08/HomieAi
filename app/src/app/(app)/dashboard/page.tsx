@@ -13,9 +13,12 @@ export default function DashboardPage() {
     ? documents?.find((d) => d.id === viewerDocId)
     : null;
 
-  if (activeDoc) {
-    return <DocumentDetailView doc={activeDoc} />;
-  }
-
-  return <PhaseDashboard />;
+  return (
+    <>
+      {activeDoc && <DocumentDetailView doc={activeDoc} />}
+      <div className={activeDoc ? "hidden" : ""}>
+        <PhaseDashboard />
+      </div>
+    </>
+  );
 }

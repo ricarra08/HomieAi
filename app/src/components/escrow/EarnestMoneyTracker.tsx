@@ -3,9 +3,9 @@
 import { DollarSign, Check } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
-import { useDeal } from "@/lib/hooks/queries";
 import { useUpdateDeal } from "@/lib/hooks/mutations";
 import { formatCurrency } from "@/lib/utils";
+import type { Deal } from "@/lib/types";
 
 const STATUS_STEPS = ["pending", "sent", "confirmed", "held"] as const;
 
@@ -54,11 +54,13 @@ function StatusStepper({ current }: { current: string | null }) {
   );
 }
 
-export function EarnestMoneyTracker({ dealId, userId }: { dealId: string; userId: string }) {
-  const { data: deal } = useDeal(dealId);
-  const updateDeal = useUpdateDeal(dealId, userId);
+interface EarnestMoneyTrackerProps {
+  deal: Deal;
+  userId: string;
+}
 
-  if (!deal) return null;
+export function EarnestMoneyTracker({ deal, userId }: EarnestMoneyTrackerProps) {
+  const updateDeal = useUpdateDeal(deal.id, userId);
 
   const status = deal.earnest_money_status ?? "pending";
 
@@ -72,7 +74,6 @@ export function EarnestMoneyTracker({ dealId, userId }: { dealId: string; userId
   return (
     <CollapsibleCard title="Earnest Money Deposit" subtitle="Track your good-faith deposit">
       <div className="space-y-4">
-        {/* Amount */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <DollarSign className="w-5 h-5 text-accent" />
@@ -83,10 +84,8 @@ export function EarnestMoneyTracker({ dealId, userId }: { dealId: string; userId
           </span>
         </div>
 
-        {/* Status stepper */}
         <StatusStepper current={status} />
 
-        {/* Escrow company */}
         {(deal.escrow_company || deal.escrow_contact) && (
           <div className="bg-muted/50 rounded-lg p-3">
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Escrow Company</p>
@@ -95,7 +94,6 @@ export function EarnestMoneyTracker({ dealId, userId }: { dealId: string; userId
           </div>
         )}
 
-        {/* Action */}
         {nextLabel && (
           <Button
             onClick={advanceStatus}
@@ -105,7 +103,6 @@ export function EarnestMoneyTracker({ dealId, userId }: { dealId: string; userId
             {updateDeal.isPending ? "Updating..." : nextLabel}
           </Button>
         )}
-
       </div>
     </CollapsibleCard>
   );

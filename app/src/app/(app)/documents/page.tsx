@@ -26,11 +26,10 @@ function DocumentsContent({ dealId }: { dealId: string }) {
     ? documents?.find((d) => d.id === viewerDocId)
     : null;
 
-  if (activeDoc) {
-    return <DocumentDetailView doc={activeDoc} />;
-  }
-
   return (
+    <>
+    {activeDoc && <DocumentDetailView doc={activeDoc} />}
+    <div className={activeDoc ? "hidden" : ""}>
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -73,6 +72,8 @@ function DocumentsContent({ dealId }: { dealId: string }) {
         </div>
       )}
     </div>
+    </div>
+    </>
   );
 }
 

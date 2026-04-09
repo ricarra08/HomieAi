@@ -5,10 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { InlineDocUpload } from "./InlineDocUpload";
-import { useDocuments, useDeal } from "@/lib/hooks/queries";
 import { useUIStore } from "@/lib/store";
 import { formatCurrency } from "@/lib/utils";
-import type { Document } from "@/lib/types";
+import type { Document, Deal } from "@/lib/types";
 
 function getAppraisedValue(doc: Document): number | null {
   const fields = doc.extracted_fields as Record<string, { value: unknown }> | null;
@@ -17,12 +16,16 @@ function getAppraisedValue(doc: Document): number | null {
   return typeof v === "number" ? v : null;
 }
 
-export function AppraisalStatus({ dealId }: { dealId: string }) {
-  const { data: documents } = useDocuments(dealId);
-  const { data: deal } = useDeal(dealId);
+interface AppraisalStatusProps {
+  dealId: string;
+  appraisalDoc: Document | null;
+  deal: Deal | null;
+  allDocs: Document[];
+}
+
+export function AppraisalStatus({ dealId, appraisalDoc, deal, allDocs }: AppraisalStatusProps) {
   const { setCopilotOpen } = useUIStore();
 
-  const appraisalDoc = documents?.find((d) => d.doc_type === "appraisal") ?? null;
   const isProcessed = appraisalDoc?.status === "processed";
   const appraisedValue = isProcessed && appraisalDoc ? getAppraisedValue(appraisalDoc) : null;
   const purchasePrice = deal?.purchase_price ?? 0;
@@ -43,10 +46,8 @@ export function AppraisalStatus({ dealId }: { dealId: string }) {
   return (
     <CollapsibleCard title="Appraisal" subtitle="Property valuation">
       <div className="space-y-4">
-        {/* Document upload/link */}
-        <InlineDocUpload dealId={dealId} existingDoc={appraisalDoc} label="Drop appraisal report here" />
+        <InlineDocUpload dealId={dealId} existingDoc={appraisalDoc} allDocs={allDocs} label="Drop appraisal report here" uploadHints={{ docType: "appraisal", category: "appraisal", stage: "escrow" }} />
 
-        {/* Gap analysis when extracted */}
         {appraisedValue != null && (
           <>
             <div className="flex items-center justify-between">
@@ -77,7 +78,6 @@ export function AppraisalStatus({ dealId }: { dealId: string }) {
           </>
         )}
 
-        {/* Status when no doc or not yet extracted */}
         {!appraisalDoc && (
           <Badge className="bg-amber-50 text-amber-700 text-xs">Awaiting Appraisal</Badge>
         )}

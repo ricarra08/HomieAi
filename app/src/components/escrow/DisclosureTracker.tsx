@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { InlineDocUpload } from "./InlineDocUpload";
-import { useDocuments } from "@/lib/hooks/queries";
+import type { Document } from "@/lib/types";
 
 const REQUIRED_DISCLOSURES = [
   { key: "tds", label: "Transfer Disclosure Statement (TDS)" },
@@ -13,19 +13,17 @@ const REQUIRED_DISCLOSURES = [
   { key: "hoa", label: "HOA Documents (if applicable)" },
 ];
 
-export function DisclosureTracker({ dealId }: { dealId: string }) {
-  const { data: documents } = useDocuments(dealId);
+interface DisclosureTrackerProps {
+  dealId: string;
+  disclosureDocs: Document[];
+  allDocs: Document[];
+}
 
-  const disclosureDocs = (documents ?? []).filter(
-    (d) => d.category === "disclosures" || d.doc_type === "disclosure"
-  );
-
-  const uploadedCount = disclosureDocs.length;
-
+export function DisclosureTracker({ dealId, disclosureDocs, allDocs }: DisclosureTrackerProps) {
   return (
     <CollapsibleCard
       title="Disclosures"
-      subtitle={`${uploadedCount} uploaded`}
+      subtitle={`${disclosureDocs.length} uploaded`}
     >
       <div className="space-y-3">
         {REQUIRED_DISCLOSURES.map((disc) => {
@@ -52,6 +50,8 @@ export function DisclosureTracker({ dealId }: { dealId: string }) {
                 <InlineDocUpload
                   dealId={dealId}
                   existingDoc={matchingDoc ?? null}
+                  allDocs={allDocs}
+                  uploadHints={{ docType: "disclosure", category: "disclosures", stage: "escrow" }}
                   label={`Drop ${disc.label.split("(")[0].trim().toLowerCase()}`}
                 />
               </div>
@@ -59,7 +59,6 @@ export function DisclosureTracker({ dealId }: { dealId: string }) {
           );
         })}
 
-        {/* Extra uploaded disclosures not in the required list */}
         {disclosureDocs
           .filter((d) => !REQUIRED_DISCLOSURES.some((r) => d.name.toLowerCase().includes(r.key)))
           .map((doc) => (
@@ -71,7 +70,7 @@ export function DisclosureTracker({ dealId }: { dealId: string }) {
                 <p className="text-sm font-medium text-foreground flex-1">{doc.name}</p>
               </div>
               <div className="ml-8">
-                <InlineDocUpload dealId={dealId} existingDoc={doc} label="Additional disclosure" />
+                <InlineDocUpload dealId={dealId} existingDoc={doc} allDocs={allDocs} label="Additional disclosure" uploadHints={{ docType: "disclosure", category: "disclosures", stage: "escrow" }} />
               </div>
             </div>
           ))}
