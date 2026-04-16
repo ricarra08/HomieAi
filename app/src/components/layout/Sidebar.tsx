@@ -2,7 +2,19 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { useUIStore } from "@/lib/store";
-import { LayoutDashboard, FileText, CreditCard, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutDashboard, FileText, CreditCard, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+  DropdownMenuGroup,
+} from "@/components/ui/dropdown-menu";
 
 const navItems = [
   { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -14,6 +26,24 @@ export function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const { setActiveSidebarItem, sidebarCollapsed, toggleSidebar } = useUIStore();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setUserEmail(data.user?.email ?? null);
+    });
+  }, []);
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
+
+  const initials = userEmail
+    ? userEmail.slice(0, 2).toUpperCase()
+    : "U";
 
   return (
     <div className="relative shrink-0">
@@ -62,6 +92,48 @@ export function Sidebar() {
             );
           })}
         </nav>
+
+        <div className={`border-t border-sidebar-border ${sidebarCollapsed ? "px-2 py-3" : "px-4 py-3"}`}>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={`w-full flex items-center rounded-lg text-base font-medium transition-colors text-sidebar-foreground hover:bg-muted ${
+                sidebarCollapsed
+                  ? "justify-center p-2"
+                  : "gap-3 px-3 py-2"
+              }`}
+              title={sidebarCollapsed ? (userEmail ?? "Account") : undefined}
+            >
+              <Avatar size="sm">
+                <AvatarFallback className="text-xs font-medium">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              {!sidebarCollapsed && (
+                <span className="truncate text-sm text-sidebar-foreground">
+                  {userEmail ?? "Account"}
+                </span>
+              )}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              side="right"
+              sideOffset={8}
+              align="end"
+            >
+              {userEmail && (
+                <>
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>{userEmail}</DropdownMenuLabel>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="w-4 h-4" />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </aside>
 
       <button
