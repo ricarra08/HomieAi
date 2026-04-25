@@ -21,9 +21,10 @@ interface InlineDocUploadProps {
   label: string;
   acceptTypes?: string;
   uploadHints?: UploadHints;
+  onDocUploaded?: (docId: string) => void;
 }
 
-export function InlineDocUpload({ dealId, existingDoc, allDocs, label, acceptTypes = ".pdf", uploadHints }: InlineDocUploadProps) {
+export function InlineDocUpload({ dealId, existingDoc, allDocs, label, acceptTypes = ".pdf", uploadHints, onDocUploaded }: InlineDocUploadProps) {
   const upload = useUploadDocument(dealId);
   const openViewer = useUIStore((s) => s.openViewer);
   const [dragging, setDragging] = useState(false);
@@ -37,9 +38,12 @@ export function InlineDocUpload({ dealId, existingDoc, allDocs, label, acceptTyp
       stage: uploadHints?.stage,
       inspectionSubtype: uploadHints?.inspectionSubtype,
     }, {
-      onSuccess: (data) => setUploadedDocId(data.id),
+      onSuccess: (data) => {
+        setUploadedDocId(data.id);
+        onDocUploaded?.(data.id);
+      },
     });
-  }, [upload, uploadHints]);
+  }, [upload, uploadHints, onDocUploaded]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();

@@ -241,7 +241,14 @@ export function useUploadDocument(dealId: string) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ documentId: data.id }),
-      }).then(() => {
+      }).then(async (res) => {
+        if (!res.ok) {
+          console.error(`[upload] Document processing failed for ${data.id}: ${res.status}`);
+        }
+        // Always invalidate so the UI picks up status changes (including "failed")
+        qc.invalidateQueries({ queryKey: documentKeys.list(dealId) });
+      }).catch((err) => {
+        console.error(`[upload] Document processing request failed for ${data.id}:`, err);
         qc.invalidateQueries({ queryKey: documentKeys.list(dealId) });
       });
 
@@ -375,10 +382,12 @@ export function useUpdateLoanEstimate(dealId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (params: { leId: string; updates: Record<string, unknown> }) => {
+      if (!params.leId) throw new Error("leId is required for update");
       const { data, error } = await supabase
         .from("loan_estimates")
         .update(params.updates)
         .eq("id", params.leId)
+        .eq("deal_id", dealId)
         .select()
         .single();
       if (error) throw error;

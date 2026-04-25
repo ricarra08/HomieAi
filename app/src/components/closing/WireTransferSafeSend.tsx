@@ -30,11 +30,17 @@ export function WireTransferSafeSend({ data, dealId, userId }: { data: ClosingDa
     ? (allDocs ?? []).find((d) => d.id === meta.wire_receipt_doc_id) ?? null
     : null;
 
+  const canMarkWired = allVerified && !!receiptDoc;
+
   function toggleStep(index: number) {
     const updated = [...meta.wire_verified_steps] as [boolean, boolean, boolean];
     updated[index] = !updated[index];
     const patch: Partial<ClosingMetadata> = { ...meta, wire_verified_steps: updated };
     updateDeal.mutate({ closing_metadata: patch });
+  }
+
+  function handleReceiptUploaded(docId: string) {
+    updateDeal.mutate({ closing_metadata: { ...meta, wire_receipt_doc_id: docId } });
   }
 
   function markWired() {
@@ -88,6 +94,7 @@ export function WireTransferSafeSend({ data, dealId, userId }: { data: ClosingDa
             allDocs={allDocs ?? []}
             label="Upload wire receipt"
             uploadHints={{ docType: "other", category: "closing", stage: "closing" }}
+            onDocUploaded={handleReceiptUploaded}
           />
         )}
 
@@ -99,12 +106,16 @@ export function WireTransferSafeSend({ data, dealId, userId }: { data: ClosingDa
         ) : (
           <Button
             onClick={markWired}
-            disabled={!allVerified}
+            disabled={!canMarkWired}
             className="w-full gap-1.5"
-            variant={allVerified ? "default" : "outline"}
+            variant={canMarkWired ? "default" : "outline"}
           >
             <Shield className="w-3.5 h-3.5" />
-            {allVerified ? "Mark as Wired" : "Complete all verification steps first"}
+            {!allVerified
+              ? "Complete all verification steps first"
+              : !receiptDoc
+                ? "Upload wire receipt before marking as wired"
+                : "Mark as Wired"}
           </Button>
         )}
       </div>
