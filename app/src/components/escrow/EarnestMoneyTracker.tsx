@@ -1,11 +1,12 @@
 "use client";
 
-import { DollarSign, Check } from "lucide-react";
+import { DollarSign, Check, Clock } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
 import { useUpdateDeal } from "@/lib/hooks/mutations";
+import { computeDaysRemaining } from "@/lib/computed";
 import { formatCurrency } from "@/lib/utils";
-import type { Deal } from "@/lib/types";
+import type { Deal, Deadline } from "@/lib/types";
 
 const STATUS_STEPS = ["pending", "sent", "confirmed", "held"] as const;
 
@@ -57,9 +58,24 @@ function StatusStepper({ current }: { current: string | null }) {
 interface EarnestMoneyTrackerProps {
   deal: Deal;
   userId: string;
+  emdDeadline?: Deadline | null;
 }
 
-export function EarnestMoneyTracker({ deal, userId }: EarnestMoneyTrackerProps) {
+function computeEmdDueDate(deal: Deal, emdDeadline?: Deadline | null): string | null {
+  if (emdDeadline) return emdDeadline.due_date;
+  if (!deal.contract_acceptance_date) return null;
+  // Default: EMD due 3 business days after acceptance
+  const start = new Date(deal.contract_acceptance_date);
+  let bizDays = 0;
+  while (bizDays < 3) {
+    start.setDate(start.getDate() + 1);
+    const day = start.getDay();
+    if (day !== 0 && day !== 6) bizDays++;
+  }
+  return start.toISOString().split("T")[0];
+}
+
+export function EarnestMoneyTracker({ deal, userId, emdDeadline }: EarnestMoneyTrackerProps) {
   const updateDeal = useUpdateDeal(deal.id, userId);
 
   const status = deal.earnest_money_status ?? "pending";
@@ -85,6 +101,22 @@ export function EarnestMoneyTracker({ deal, userId }: EarnestMoneyTrackerProps) 
         </div>
 
         <StatusStepper current={status} />
+
+        {status !== "confirmed" && status !== "held" && (() => {
+          const emdDue = computeEmdDueDate(deal, emdDeadline);
+          if (!emdDue) return null;
+          const days = computeDaysRemaining(emdDue);
+          if (days === null) return null;
+          const dueDate = new Date(emdDue).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          return (
+            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${days <= 3 ? "bg-destructive/5" : "bg-amber-50"}`}>
+              <Clock className={`w-4 h-4 ${days <= 3 ? "text-destructive" : "text-amber-600"}`} />
+              <span className={`text-sm font-medium ${days <= 3 ? "text-destructive" : "text-amber-700"}`}>
+                {days <= 0 ? "EMD deposit overdue!" : `Due by ${dueDate} (${days} day${days !== 1 ? "s" : ""} left)`}
+              </span>
+            </div>
+          );
+        })()}
 
         {(deal.escrow_company || deal.escrow_contact) && (
           <div className="bg-muted/50 rounded-lg p-3">

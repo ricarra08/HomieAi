@@ -8,6 +8,7 @@ import { DocumentRow } from "@/components/documents/DocumentRow";
 import { SmartTabs, type DocumentTabId } from "@/components/documents/SmartTabs";
 import { StageEssentials } from "@/components/documents/StageEssentials";
 import { DocumentDetailView } from "@/components/documents/SlideOverViewer";
+import { CollaboratorLinkDialog } from "@/components/documents/CollaboratorLinkDialog";
 
 function DocumentsContent({ dealId }: { dealId: string }) {
   const [activeTab, setActiveTab] = useState<DocumentTabId>("all");
@@ -38,6 +39,7 @@ function DocumentsContent({ dealId }: { dealId: string }) {
             Upload, organize, and understand your deal documents
           </p>
         </div>
+        <CollaboratorLinkDialog dealId={dealId} />
       </div>
 
       <StageEssentials documents={documents ?? []} />

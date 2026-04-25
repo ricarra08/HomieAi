@@ -111,6 +111,8 @@ export async function POST(request: NextRequest) {
           }
         } catch (err) {
           console.error("[copilot] Stream error:", err);
+          const errMsg = err instanceof Error ? err.message : "Unknown error";
+          controller.enqueue(encoder.encode(`\n\n---\n⚠️ Sorry, something went wrong while generating a response. Please try again. (${errMsg})`));
         } finally {
           controller.close();
         }

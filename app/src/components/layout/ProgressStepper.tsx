@@ -40,7 +40,7 @@ export function ProgressStepper() {
                     state === "completed"
                       ? "bg-primary text-primary-foreground"
                       : state === "current"
-                        ? "bg-primary text-primary-foreground"
+                        ? "bg-accent text-accent-foreground"
                         : "bg-card text-muted-foreground border border-border"
                   }`}
                 >
@@ -64,9 +64,12 @@ export function ProgressStepper() {
               {!isLast && (
                 <div
                   className={`flex-1 h-[2px] mx-4 rounded-full ${
-                    getStepState(steps[i + 1].id, currentPhase) !== "future"
-                      ? "bg-primary"
-                      : "bg-border"
+                    (() => {
+                      const nextState = getStepState(steps[i + 1].id, currentPhase);
+                      if (nextState === "completed") return "bg-primary";
+                      if (nextState === "current") return "bg-accent";
+                      return "bg-border";
+                    })()
                   }`}
                 />
               )}

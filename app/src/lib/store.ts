@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export type Phase = "shopping" | "offer" | "escrow" | "closing" | "post-close";
 
@@ -43,7 +44,7 @@ interface UIState {
   closeViewer: () => void;
 }
 
-export const useUIStore = create<UIState>((set) => ({
+export const useUIStore = create<UIState>()(persist((set) => ({
   // Layout & navigation
   currentPhase: "shopping",
   setCurrentPhase: (phase) => set({ currentPhase: phase }),
@@ -89,4 +90,10 @@ export const useUIStore = create<UIState>((set) => ({
   viewerOpen: false,
   openViewer: (docId) => set({ viewerDocId: docId, viewerOpen: true }),
   closeViewer: () => set({ viewerDocId: null, viewerOpen: false }),
+}), {
+  name: "homieai-ui",
+  partialize: (state) => ({
+    activeDealId: state.activeDealId,
+    currentPhase: state.currentPhase,
+  }),
 }));

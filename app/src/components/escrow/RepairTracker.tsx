@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Plus, Wrench } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,26 @@ const SEVERITY_STYLES: Record<string, string> = {
 
 function RepairRow({ item, dealId }: { item: RepairItem; dealId: string }) {
   const updateRepair = useUpdateRepairItem(dealId);
+  const [editingCost, setEditingCost] = useState(false);
+  const [costValue, setCostValue] = useState(item.agreed_cost?.toString() ?? "");
+  const costInputRef = useRef<HTMLInputElement>(null);
+  const showCostInput = item.status === "agreed" || item.status === "completed";
+
+  function handleStatusChange(newStatus: string) {
+    updateRepair.mutate({ itemId: item.id, updates: { status: newStatus } });
+    if ((newStatus === "agreed" || newStatus === "completed") && item.agreed_cost == null) {
+      setEditingCost(true);
+      setTimeout(() => costInputRef.current?.focus(), 50);
+    }
+  }
+
+  function handleCostSave() {
+    const parsed = parseFloat(costValue);
+    if (!isNaN(parsed) && parsed >= 0) {
+      updateRepair.mutate({ itemId: item.id, updates: { agreed_cost: parsed } });
+    }
+    setEditingCost(false);
+  }
 
   return (
     <div className="flex items-start gap-3 py-3 border-b border-border last:border-0">
@@ -35,14 +55,47 @@ function RepairRow({ item, dealId }: { item: RepairItem; dealId: string }) {
           {item.estimated_cost != null && (
             <span className="text-xs text-muted-foreground">Est. {formatCurrency(item.estimated_cost)}</span>
           )}
-          {item.agreed_cost != null && (
-            <span className="text-xs text-primary font-medium">Agreed: {formatCurrency(item.agreed_cost)}</span>
+          {showCostInput && !editingCost && item.agreed_cost != null && (
+            <button
+              onClick={() => { setEditingCost(true); setTimeout(() => costInputRef.current?.focus(), 50); }}
+              className="text-xs text-primary font-medium hover:underline"
+            >
+              Agreed: {formatCurrency(item.agreed_cost)}
+            </button>
+          )}
+          {showCostInput && !editingCost && item.agreed_cost == null && (
+            <button
+              onClick={() => { setEditingCost(true); setTimeout(() => costInputRef.current?.focus(), 50); }}
+              className="text-xs text-accent font-medium hover:underline"
+            >
+              + Add agreed cost
+            </button>
           )}
         </div>
+        {showCostInput && editingCost && (
+          <div className="flex items-center gap-2 mt-2">
+            <div className="relative w-28">
+              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">$</span>
+              <input
+                ref={costInputRef}
+                type="number"
+                value={costValue}
+                onChange={(e) => setCostValue(e.target.value)}
+                onBlur={handleCostSave}
+                onKeyDown={(e) => { if (e.key === "Enter") handleCostSave(); if (e.key === "Escape") setEditingCost(false); }}
+                placeholder="0"
+                className="w-full text-xs px-2 py-1 pl-5 rounded-lg border border-border bg-background"
+              />
+            </div>
+            <button onClick={handleCostSave} className="text-xs text-primary font-medium hover:underline">
+              Save
+            </button>
+          </div>
+        )}
       </div>
       <select
         value={item.status}
-        onChange={(e) => updateRepair.mutate({ itemId: item.id, updates: { status: e.target.value } })}
+        onChange={(e) => handleStatusChange(e.target.value)}
         className="text-xs px-2 py-1 rounded-lg border border-border bg-background shrink-0"
       >
         <option value="pending">Pending</option>

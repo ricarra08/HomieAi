@@ -128,13 +128,13 @@ export function LEComparisonTable({ estimates, dealId }: LEComparisonTableProps)
   const rows = buildRows(estimates, bestIdx);
 
   function handleAskHomie() {
-    setCopilotOpen(true);
     const names = estimates.map((le) => le.lender).join(", ");
+    const msg = `Compare my ${estimates.length} loan estimates (${names}) and tell me which is the best deal overall.`;
+    (window as unknown as Record<string, string>).__pendingCopilotPrefill = msg;
+    setCopilotOpen(true);
     setTimeout(() => {
-      window.dispatchEvent(new CustomEvent("copilot:prefill", {
-        detail: `Compare my ${estimates.length} loan estimates (${names}) and tell me which is the best deal overall.`,
-      }));
-    }, 100);
+      window.dispatchEvent(new CustomEvent("copilot:prefill", { detail: msg }));
+    }, 150);
   }
 
   return (
@@ -166,12 +166,12 @@ export function LEComparisonTable({ estimates, dealId }: LEComparisonTableProps)
             <tr className="border-b border-border">
               <th className="text-left text-sm font-medium text-muted-foreground px-6 py-3 w-48" />
               {estimates.map((le, i) => (
-                <th key={le.id} className={`text-center px-4 py-3 min-w-[180px] ${i === bestIdx ? "bg-primary/5" : ""}`}>
+                <th key={le.id} className={`text-center px-4 py-3 min-w-[180px] ${i === bestIdx ? "bg-primary/15" : ""}`}>
                   <div className="space-y-1">
                     <p className="text-base font-semibold text-foreground">{le.lender}</p>
                     <p className="text-sm text-muted-foreground">{le.product}</p>
                     {i === bestIdx && (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/20 px-2 py-0.5 rounded-full">
                         <Check className="w-3 h-3" /> Best Value
                       </span>
                     )}
@@ -203,8 +203,8 @@ export function LEComparisonTable({ estimates, dealId }: LEComparisonTableProps)
                   return (
                     <td
                       key={i}
-                      className={`text-center text-sm font-medium px-4 py-2.5 ${
-                        isBest ? "bg-primary/5 text-foreground" : "text-foreground"
+                      className={`text-center text-sm px-4 py-2.5 ${
+                        isBest ? "bg-primary/15 font-semibold text-foreground" : "font-medium text-foreground"
                       }`}
                     >
                       {display}

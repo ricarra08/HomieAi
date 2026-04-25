@@ -29,6 +29,7 @@ export interface Deal {
   earnest_money_status: "pending" | "sent" | "confirmed" | "held" | null;
   escrow_company: string | null;
   escrow_contact: string | null;
+  closing_metadata: ClosingMetadata | null;
   created_at: string;
   updated_at: string;
 }
@@ -152,6 +153,41 @@ export interface CollaboratorLink {
   uploads_received: number;
   created_at: string;
 }
+
+export interface ClosingMetadata {
+  walkthrough_items: Record<string, boolean>;
+  signing_date: string | null;
+  signing_location: string | null;
+  signing_confirmed: boolean;
+  wire_verified_steps: [boolean, boolean, boolean];
+  wire_status: "pending" | "wired" | "confirmed";
+  wire_receipt_doc_id: string | null;
+  cd_received_confirmed: boolean;
+  cash_to_close_confirmed: boolean;
+  title_acknowledged: boolean;
+  funding_steps: { step: string; status: "pending" | "in-progress" | "complete"; date?: string }[];
+  underwriting_conditions: { description: string; status: "outstanding" | "submitted" | "cleared" }[];
+}
+
+export const DEFAULT_CLOSING_METADATA: ClosingMetadata = {
+  walkthrough_items: {},
+  signing_date: null,
+  signing_location: null,
+  signing_confirmed: false,
+  wire_verified_steps: [false, false, false],
+  wire_status: "pending",
+  wire_receipt_doc_id: null,
+  cd_received_confirmed: false,
+  cash_to_close_confirmed: false,
+  title_acknowledged: false,
+  funding_steps: [
+    { step: "Lender Funds", status: "pending" },
+    { step: "Escrow Disburses", status: "pending" },
+    { step: "County Records", status: "pending" },
+    { step: "Keys Released", status: "pending" },
+  ],
+  underwriting_conditions: [],
+};
 
 export interface CopilotMessage {
   id: string;

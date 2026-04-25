@@ -53,6 +53,8 @@ export function RedFlagSummary({ dealId, inspectionDocs, repairItems }: RedFlagS
   const totalCost = allFindings.reduce((sum, f) => sum + (f.estimated_cost ?? 0), 0);
   const criticalCount = allFindings.filter((f) => f.severity === "critical" || f.severity === "major").length;
   const existingDescriptions = new Set(repairItems.map((r) => r.description));
+  const uniqueSeverities = new Set(allFindings.map((f) => f.severity));
+  const allSameSeverity = uniqueSeverities.size === 1;
 
   function handleCreateRepair(finding: Finding, docId: string, index: number) {
     createRepair.mutate(
@@ -88,7 +90,9 @@ export function RedFlagSummary({ dealId, inspectionDocs, repairItems }: RedFlagS
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-destructive" />
             <span className="text-sm font-medium text-destructive">
-              {criticalCount} critical/major issue{criticalCount !== 1 ? "s" : ""}
+              {allSameSeverity
+                ? `${allFindings.length} ${[...uniqueSeverities][0]} issue${allFindings.length !== 1 ? "s" : ""}`
+                : `${criticalCount} critical/major issue${criticalCount !== 1 ? "s" : ""}`}
             </span>
           </div>
           {totalCost > 0 && (
@@ -100,9 +104,11 @@ export function RedFlagSummary({ dealId, inspectionDocs, repairItems }: RedFlagS
 
         {allFindings.map((f, i) => (
           <div key={i} className="flex items-start gap-3 py-2 border-b border-border last:border-0">
-            <Badge className={`${SEVERITY_STYLES[f.severity] ?? SEVERITY_STYLES.minor} text-xs shrink-0 mt-0.5`}>
-              {f.severity}
-            </Badge>
+            {!allSameSeverity && (
+              <Badge className={`${SEVERITY_STYLES[f.severity] ?? SEVERITY_STYLES.minor} text-xs shrink-0 mt-0.5`}>
+                {f.severity}
+              </Badge>
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-sm text-foreground">{f.description}</p>
               <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">

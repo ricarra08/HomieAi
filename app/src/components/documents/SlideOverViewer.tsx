@@ -139,10 +139,11 @@ function DraftQuestionPanel({ doc }: { doc: Document }) {
   }
 
   function handleSendToCopilot(question: string) {
+    (window as unknown as Record<string, string>).__pendingCopilotPrefill = question;
     setCopilotOpen(true);
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent("copilot:prefill", { detail: question }));
-    }, 100);
+    }, 150);
   }
 
   if (!doc.ai_summary && !doc.extracted_fields) return null;
@@ -324,6 +325,7 @@ export function DocumentDetailView({ doc }: { doc: Document }) {
                   <p className="text-sm text-destructive font-medium">Analysis failed</p>
                   <button
                     onClick={() => {
+                      qc.invalidateQueries({ queryKey: documentKeys.list(doc.deal_id) });
                       fetch("/api/documents/process", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -331,7 +333,6 @@ export function DocumentDetailView({ doc }: { doc: Document }) {
                       }).then(() => {
                         qc.invalidateQueries({ queryKey: documentKeys.list(doc.deal_id) });
                       });
-                      qc.invalidateQueries({ queryKey: documentKeys.list(doc.deal_id) });
                     }}
                     className="text-sm text-accent hover:underline mt-1"
                   >

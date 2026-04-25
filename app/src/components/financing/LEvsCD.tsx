@@ -41,12 +41,12 @@ export function LEvsCD({ chosenLE, cdDocument }: LEvsCDProps) {
   const hasIssues = variances.some((v) => !v.toleranceOk);
 
   function handleAskHomie() {
+    const msg = "Explain the differences between my Loan Estimate and Closing Disclosure. Are any of the changes concerning?";
+    (window as unknown as Record<string, string>).__pendingCopilotPrefill = msg;
     setCopilotOpen(true);
     setTimeout(() => {
-      window.dispatchEvent(new CustomEvent("copilot:prefill", {
-        detail: "Explain the differences between my Loan Estimate and Closing Disclosure. Are any of the changes concerning?",
-      }));
-    }, 100);
+      window.dispatchEvent(new CustomEvent("copilot:prefill", { detail: msg }));
+    }, 150);
   }
 
   return (

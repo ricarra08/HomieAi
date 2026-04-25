@@ -10,7 +10,13 @@ import { useUIStore } from "@/lib/store";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Trash2, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import type { SavedHome } from "@/lib/types";
 
@@ -89,11 +95,52 @@ export function ShoppingView({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-semibold tracking-tight">Shopping</h2>
-        <p className="text-base text-muted-foreground mt-1">
-          Track homes and prepare your buy box
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-semibold tracking-tight">Shopping</h2>
+          <p className="text-base text-muted-foreground mt-1">
+            Track homes and prepare your buy box
+          </p>
+        </div>
+        {homes && homes.length === 1 ? (
+          <Button
+            onClick={() => handleMoveToOffer(homes[0])}
+            className="bg-accent text-accent-foreground shadow-sm hover:bg-accent/90 text-sm font-medium gap-2"
+          >
+            Start an Offer
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        ) : homes && homes.length > 1 ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent text-accent-foreground shadow-sm hover:bg-accent/90 px-4 py-2 text-sm font-medium transition-colors"
+            >
+              Start an Offer
+              <ArrowRight className="w-4 h-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="bottom" align="end" sideOffset={4}>
+              {homes.map((home) => (
+                <DropdownMenuItem key={home.id} onClick={() => handleMoveToOffer(home)}>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{home.address}</span>
+                    {home.price && (
+                      <span className="text-xs text-muted-foreground">{formatPrice(home.price)}</span>
+                    )}
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Button
+            disabled
+            className="bg-accent text-accent-foreground shadow-sm text-sm font-medium gap-2 opacity-50"
+            title="Save a home first"
+          >
+            Start an Offer
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        )}
       </div>
 
       <ViewEditCard

@@ -9,6 +9,7 @@ import {
   loanEstimateKeys,
   repairItemKeys,
   insuranceKeys,
+  collaboratorKeys,
   copilotKeys,
 } from "./query-keys";
 import type { Phase } from "@/lib/types";
@@ -132,6 +133,12 @@ export function useTransitionPhase(dealId: string, userId: string) {
       qc.invalidateQueries({ queryKey: dealKeys.all(userId) });
       if (newPhase === "escrow") {
         qc.invalidateQueries({ queryKey: offerKeys.detail(dealId) });
+        qc.invalidateQueries({ queryKey: deadlineKeys.list(dealId) });
+      }
+      if (newPhase === "closing" || newPhase === "post-close") {
+        qc.invalidateQueries({ queryKey: documentKeys.list(dealId) });
+        qc.invalidateQueries({ queryKey: insuranceKeys.list(dealId) });
+        qc.invalidateQueries({ queryKey: loanEstimateKeys.list(dealId) });
         qc.invalidateQueries({ queryKey: deadlineKeys.list(dealId) });
       }
     },
@@ -530,6 +537,51 @@ export function useUpdateInsuranceInfo(dealId: string) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: insuranceKeys.list(dealId) });
+    },
+  });
+}
+
+// -- Collaborator Links --
+
+export function useCreateCollaboratorLink(dealId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      recipientRole: "agent" | "lender" | "escrow" | "title" | "inspector" | "other";
+      recipientEmail?: string;
+      requestedDocuments?: string[];
+    }) => {
+      const { data, error } = await supabase
+        .from("collaborator_links")
+        .insert({
+          deal_id: dealId,
+          recipient_role: params.recipientRole,
+          recipient_email: params.recipientEmail ?? null,
+          requested_documents: params.requestedDocuments ?? null,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: collaboratorKeys.list(dealId) });
+    },
+  });
+}
+
+export function useRevokeCollaboratorLink(dealId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (linkId: string) => {
+      const { error } = await supabase
+        .from("collaborator_links")
+        .update({ status: "revoked" })
+        .eq("id", linkId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: collaboratorKeys.list(dealId) });
     },
   });
 }

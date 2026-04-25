@@ -99,7 +99,8 @@ export function DealSetupForm({
             if (Number(loanDays)) deadlines.push({ deal_id: data.id, name: "Financing Contingency", type: "financing", due_date: addDays(base, Number(loanDays)) });
             if (closingDate) deadlines.push({ deal_id: data.id, name: "Closing Date", type: "closing", due_date: closingDate });
             if (deadlines.length > 0) {
-              await createClient().from("deadlines").insert(deadlines);
+              const { error: deadlineError } = await createClient().from("deadlines").insert(deadlines);
+              if (deadlineError) console.error("[deal-setup] Failed to create deadlines:", deadlineError);
             }
           }
 

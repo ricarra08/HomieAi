@@ -28,14 +28,15 @@ const PHASE_QUICK_ACTIONS: Record<Phase, string[]> = {
     "Calculate closing costs",
   ],
   closing: [
-    "Explain closing costs",
-    "Wire transfer safety",
-    "What to bring to signing",
+    "Explain my Closing Disclosure",
+    "What changed from my Loan Estimate?",
+    "Walk me through the wire process",
+    "What should I bring to signing?",
   ],
   "post-close": [
-    "What should new homeowners do?",
-    "Explain my mortgage",
-    "Home maintenance tips",
+    "Summarize my deal",
+    "What should new homeowners do first?",
+    "Explain my mortgage terms",
   ],
 };
 
@@ -167,6 +168,14 @@ export function AICopilotPanel() {
       if (text) handleSendRef.current(text);
     }
     window.addEventListener("copilot:prefill", handlePrefill);
+
+    // Flush any prefill that arrived before the panel mounted
+    const pending = (window as unknown as Record<string, string>).__pendingCopilotPrefill;
+    if (pending) {
+      handleSendRef.current(pending);
+      delete (window as unknown as Record<string, string>).__pendingCopilotPrefill;
+    }
+
     return () => window.removeEventListener("copilot:prefill", handlePrefill);
   }, []);
 

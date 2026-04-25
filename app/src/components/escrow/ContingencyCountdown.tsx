@@ -24,7 +24,7 @@ const urgencyBg: Record<string, string> = {
   waived: "bg-muted",
 };
 
-function DeadlineRow({ deadline, dealId }: { deadline: Deadline; dealId: string }) {
+function DeadlineRow({ deadline, dealId, maxDays }: { deadline: Deadline; dealId: string; maxDays: number }) {
   const updateStatus = useUpdateDeadlineStatus(dealId);
   const urgency = computeDeadlineUrgency(deadline);
   const days = computeDaysRemaining(deadline.due_date);
@@ -59,7 +59,7 @@ function DeadlineRow({ deadline, dealId }: { deadline: Deadline; dealId: string 
         <div className="w-20 h-1.5 bg-border rounded-full overflow-hidden shrink-0">
           <div
             className={`h-full rounded-full ${urgencyBg[urgency]}`}
-            style={{ width: `${Math.max(0, Math.min(100, days <= 0 ? 100 : 100 - (days / 30) * 100))}%` }}
+            style={{ width: `${Math.max(0, Math.min(100, days <= 0 ? 100 : 100 - (days / maxDays) * 100))}%` }}
           />
         </div>
       )}
@@ -101,6 +101,9 @@ export function ContingencyCountdown({ dealId, deadlines, isLoading }: Contingen
   const active = deadlines.filter((d) => d.status !== "completed" && d.status !== "waived");
   const done = deadlines.filter((d) => d.status === "completed" || d.status === "waived");
 
+  // Compute the longest active deadline as the scale for all progress bars
+  const maxDays = Math.max(1, ...active.map((d) => computeDaysRemaining(d.due_date) ?? 1));
+
   function handleAskHomie() {
     setCopilotOpen(true);
     setTimeout(() => {
@@ -127,11 +130,11 @@ export function ContingencyCountdown({ dealId, deadlines, isLoading }: Contingen
               {active.length > 0 ? "Active Deadlines" : "All deadlines resolved"}
             </span>
           </div>
-          {active.map((d) => <DeadlineRow key={d.id} deadline={d} dealId={dealId} />)}
+          {active.map((d) => <DeadlineRow key={d.id} deadline={d} dealId={dealId} maxDays={maxDays} />)}
           {done.length > 0 && (
             <>
               <p className="text-xs text-muted-foreground mt-4 mb-2 uppercase tracking-wider">Resolved</p>
-              {done.map((d) => <DeadlineRow key={d.id} deadline={d} dealId={dealId} />)}
+              {done.map((d) => <DeadlineRow key={d.id} deadline={d} dealId={dealId} maxDays={maxDays} />)}
             </>
           )}
         </div>

@@ -127,22 +127,38 @@ export async function POST(request: NextRequest) {
 
     console.log(`[doc-process] extracted ${extractedText.length} chars`);
 
-    // --- Step 2: GPT-4o reconstruction fallback for scanned/image PDFs ---
+    // --- Step 2: GPT-4o vision fallback for watermarked/scanned/image PDFs ---
     if (extractedText.length < MIN_TEXT_LENGTH) {
-      console.log("[doc-process] Text too short, trying GPT-4o reconstruction...");
+      console.log("[doc-process] Text too short, trying GPT-4o vision extraction...");
       try {
-        const partialText = extractedText || "(no text could be extracted from this PDF)";
+        const base64Pdf = buffer.toString("base64");
         const reconstructResponse = await openai.chat.completions.create({
           model: "gpt-4o",
           max_tokens: 4096,
           messages: [
             {
               role: "system",
-              content: "You are a document text extractor. The user will provide partial or garbled text extracted from a real estate PDF document. Reconstruct and return the readable text content. If the text is empty or unusable, say UNREADABLE.",
+              content:
+                "You are a document text extractor. The user will provide a PDF file. " +
+                "Extract ALL readable text from every page, ignoring any watermarks or stamps. " +
+                "Preserve the document structure (sections, tables, line items). " +
+                "If the document is completely unreadable, say UNREADABLE.",
             },
             {
               role: "user",
-              content: `Partial text from PDF (${buffer.length} bytes, filename: ${doc.name}):\n\n${partialText}`,
+              content: [
+                {
+                  type: "file",
+                  file: {
+                    filename: doc.name,
+                    file_data: `data:application/pdf;base64,${base64Pdf}`,
+                  },
+                },
+                {
+                  type: "text",
+                  text: "Extract all text from this real estate document. Ignore any watermarks.",
+                },
+              ],
             },
           ],
         });
@@ -150,9 +166,9 @@ export async function POST(request: NextRequest) {
         if (result && !result.toUpperCase().startsWith("UNREADABLE")) {
           extractedText = result;
         }
-        console.log(`[doc-process] Reconstruction produced ${extractedText.length} chars`);
+        console.log(`[doc-process] Vision extraction produced ${extractedText.length} chars`);
       } catch (e) {
-        console.log("[doc-process] Reconstruction failed:", e);
+        console.log("[doc-process] Vision extraction failed:", e);
       }
     }
 

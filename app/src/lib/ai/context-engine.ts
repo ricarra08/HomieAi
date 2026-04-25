@@ -198,13 +198,23 @@ export async function assembleContext(dealId: string | null, phase: Phase, userI
     return truncateContext(blocks);
   }
 
+  const documents = (docsRes.data ?? []) as Document[];
+  const estimates = (lesRes.data ?? []) as LoanEstimate[];
+
+  if (phase === "post-close") {
+    if (estimates.length) blocks.push(buildLoanEstimatesBlock(estimates));
+    if (documents.length) {
+      const docList = documents.map((d) => `- ${d.name} (${d.doc_type ?? "unclassified"})`).join("\n");
+      blocks.push(`## Document Archive (${documents.length})\n${docList}`);
+    }
+    return truncateContext(blocks);
+  }
+
   const deadlines = (deadlinesRes.data ?? []) as Deadline[];
   if (deadlines.length) blocks.push(buildDeadlinesBlock(deadlines));
 
-  const documents = (docsRes.data ?? []) as Document[];
   if (documents.length) blocks.push(buildDocumentsBlock(documents));
 
-  const estimates = (lesRes.data ?? []) as LoanEstimate[];
   if (estimates.length) blocks.push(buildLoanEstimatesBlock(estimates));
 
   const repairs = (repairsRes.data ?? []) as RepairItem[];

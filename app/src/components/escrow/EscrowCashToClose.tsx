@@ -19,7 +19,17 @@ export function EscrowCashToClose({ chosenLE, deal, cdDocument }: EscrowCashToCl
   const { setActiveSidebarItem } = useUIStore();
   const router = useRouter();
 
-  if (!chosenLE || !deal) return null;
+  if (!deal) return null;
+
+  if (!chosenLE) {
+    return (
+      <CollapsibleCard title="Cash to Close Summary" subtitle="No loan estimate selected">
+        <p className="text-sm text-muted-foreground text-center py-4">
+          Add a Loan Estimate in the Financing tab and mark one as &quot;Chosen&quot; to see your cash-to-close summary.
+        </p>
+      </CollapsibleCard>
+    );
+  }
 
   const monthlyPI = computeMonthlyPI(chosenLE.loan_amount, chosenLE.rate);
   const totalMonthly = monthlyPI + (chosenLE.pmi_monthly ?? 0);

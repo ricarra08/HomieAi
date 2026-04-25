@@ -77,9 +77,11 @@ export function useStreamingChat(): UseStreamingChatReturn {
       } finally {
         if (mountedRef.current) {
           setIsStreaming(false);
+        }
+        await qc.invalidateQueries({ queryKey: copilotKeys.messages(params.dealId) });
+        if (mountedRef.current) {
           setStreamingContent("");
         }
-        qc.invalidateQueries({ queryKey: copilotKeys.messages(params.dealId) });
       }
     },
     [qc]

@@ -11,7 +11,7 @@ import { useUIStore } from "@/lib/store";
 import { useSavedHomes } from "@/lib/hooks/queries";
 import { useCreateDeal } from "@/lib/hooks/mutations";
 import { TermTooltip } from "@/components/ui/term-tooltip";
-import { Upload, FileText, Check, DollarSign, Sparkles } from "lucide-react";
+import { Upload, FileText, Check, DollarSign, Sparkles, ArrowRight } from "lucide-react";
 import type { SavedHome } from "@/lib/types";
 
 function formatPrice(price: number | null): string {
@@ -128,9 +128,19 @@ export function OfferView({ userId }: OfferViewProps) {
           <h2 className="text-3xl font-semibold tracking-tight">Offer Workspace</h2>
           <p className="text-base text-muted-foreground mt-1">Structure and prepare your offer</p>
         </div>
-        <Badge className="bg-accent/15 text-accent border-accent/30 text-sm px-3 py-1">
-          Offer in Progress
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={handleAcceptOffer}
+            disabled={createDeal.isPending || !offerPrice || !selectedHome}
+            className="bg-accent text-accent-foreground shadow-sm hover:bg-accent/90 text-sm font-medium gap-2"
+          >
+            {createDeal.isPending ? "Creating workspace..." : "Offer Accepted — Start Escrow"}
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+          <Badge className="bg-accent/15 text-accent border-accent/30 text-sm px-3 py-1">
+            Offer in Progress
+          </Badge>
+        </div>
       </div>
 
       <div className="bg-card rounded-xl border border-border shadow-sm p-6">
@@ -147,14 +157,6 @@ export function OfferView({ userId }: OfferViewProps) {
           )}
         </div>
       </div>
-
-      <Button
-        onClick={handleAcceptOffer}
-        disabled={createDeal.isPending || !offerPrice || !selectedHome}
-        className="w-full bg-accent text-accent-foreground shadow-sm hover:bg-accent/90 text-base py-6 font-medium"
-      >
-        {createDeal.isPending ? "Creating workspace..." : "Offer Accepted — Start Escrow"}
-      </Button>
 
       <ViewEditCard
         title="Offer Details"

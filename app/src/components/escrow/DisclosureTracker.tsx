@@ -7,10 +7,10 @@ import { InlineDocUpload } from "./InlineDocUpload";
 import type { Document } from "@/lib/types";
 
 const REQUIRED_DISCLOSURES = [
-  { key: "tds", label: "Transfer Disclosure Statement (TDS)" },
-  { key: "nhd", label: "Natural Hazard Disclosure (NHD)" },
-  { key: "lead_paint", label: "Lead-Based Paint Disclosure" },
-  { key: "hoa", label: "HOA Documents (if applicable)" },
+  { key: "tds", label: "Transfer Disclosure Statement (TDS)", required: true },
+  { key: "nhd", label: "Natural Hazard Disclosure (NHD)", required: true },
+  { key: "lead_paint", label: "Lead-Based Paint Disclosure", required: true },
+  { key: "hoa", label: "HOA Documents", required: false },
 ];
 
 interface DisclosureTrackerProps {
@@ -41,9 +41,10 @@ export function DisclosureTracker({ dealId, disclosureDocs, allDocs }: Disclosur
                 </div>
                 <div className="flex-1 min-w-0 flex items-center justify-between">
                   <p className={`text-sm font-medium ${isUploaded ? "text-foreground" : "text-muted-foreground"}`}>
-                    {disc.label}
+                    {disc.label}{!disc.required && " (if applicable)"}
                   </p>
-                  {!isUploaded && <Badge className="bg-muted text-muted-foreground text-xs">Missing</Badge>}
+                  {!isUploaded && disc.required && <Badge className="bg-muted text-muted-foreground text-xs">Missing</Badge>}
+                  {!isUploaded && !disc.required && <Badge className="bg-muted/50 text-muted-foreground/70 text-xs">Optional</Badge>}
                 </div>
               </div>
               <div className="ml-8">

@@ -1,7 +1,7 @@
 "use client";
 
 import { DollarSign } from "lucide-react";
-import { computeMonthlyPI } from "@/lib/computed";
+import { computeMonthlyPI, computeCashToClose } from "@/lib/computed";
 import { formatCurrency } from "@/lib/utils";
 import type { LoanEstimate, Deal } from "@/lib/types";
 
@@ -140,7 +140,8 @@ export function CashToClose({ chosenLE, deal, cdFields }: CashToCloseProps) {
 }
 
 export function CashToCloseFooter({ chosenLE, cdCashToClose }: { chosenLE: LoanEstimate; cdCashToClose?: number | null }) {
-  const display = cdCashToClose ?? chosenLE.cash_to_close;
+  const computed = computeCashToClose(chosenLE);
+  const display = cdCashToClose ?? chosenLE.cash_to_close ?? computed;
   if (display == null) return null;
 
   return (
