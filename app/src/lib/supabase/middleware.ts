@@ -41,7 +41,10 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/join") ||
     request.nextUrl.pathname.startsWith("/blog");
 
-  if (!user && !isAuthPage && !isPublicPage) {
+  const isOnboardingPage =
+    request.nextUrl.pathname.startsWith("/onboarding");
+
+  if (!user && !isAuthPage && !isPublicPage && !isOnboardingPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
@@ -51,6 +54,26 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
+  }
+
+  // Profile gate: redirect to onboarding if authenticated user has no profile
+  if (user && !isAuthPage && !isPublicPage && !isOnboardingPage) {
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!profile) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/onboarding";
+        return NextResponse.redirect(url);
+      }
+    } catch {
+      // Fail open — if profile query fails, let user through
+      // Dashboard will handle gracefully
+    }
   }
 
   return supabaseResponse;

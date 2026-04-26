@@ -1,3 +1,7 @@
+export const profileKeys = {
+  detail: (userId: string) => ["profile", userId] as const,
+};
+
 export const savedHomeKeys = {
   all: (userId: string) => ["saved-homes", userId] as const,
 };

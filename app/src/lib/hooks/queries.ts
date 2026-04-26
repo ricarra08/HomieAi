@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import {
+  profileKeys,
   savedHomeKeys,
   transactionKeys,
   offerKeys,
@@ -13,6 +14,7 @@ import {
   copilotKeys,
 } from "./query-keys";
 import type {
+  Profile,
   SavedHome,
   Transaction,
   OfferDetails,
@@ -26,6 +28,27 @@ import type {
 } from "@/lib/types";
 
 const supabase = createClient();
+
+// -- Profile --
+
+export function useProfile(userId: string | undefined) {
+  return useQuery({
+    queryKey: profileKeys.detail(userId ?? ""),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", userId!)
+        .single();
+      if (error) {
+        if (error.code === "PGRST116") return null; // no rows
+        throw error;
+      }
+      return data as Profile;
+    },
+    enabled: !!userId,
+  });
+}
 
 // -- Shopping phase --
 

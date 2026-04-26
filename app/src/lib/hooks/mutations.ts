@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import {
+  profileKeys,
   savedHomeKeys,
   transactionKeys,
   offerKeys,
@@ -13,13 +14,37 @@ import {
   collaboratorKeys,
   copilotKeys,
 } from "./query-keys";
-import type { Phase } from "@/lib/types";
+import type { Phase, UserRole } from "@/lib/types";
 
 const supabase = createClient();
 
 function handleMutationError(error: Error, context?: string) {
   console.error(`[mutation${context ? `:${context}` : ""}]`, error);
   toast.error(context ? `Failed to ${context}` : "Something went wrong. Please try again.");
+}
+
+// -- Profile --
+
+export function useCreateProfile(userId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { displayName: string; role: UserRole }) => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .insert({
+          user_id: userId,
+          display_name: params.displayName,
+          role: params.role,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: profileKeys.detail(userId) });
+    },
+  });
 }
 
 // -- Saved Homes (Shopping) --

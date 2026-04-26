@@ -1,27 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { Search, FileText, ArrowRight } from "lucide-react";
 import { useUIStore } from "@/lib/store";
-import { WelcomeStep } from "./WelcomeStep";
-
-type OnboardingStep = "welcome" | "choose";
 
 interface OnboardingSelectorProps {
   userId: string;
 }
 
 export function OnboardingSelector({ userId }: OnboardingSelectorProps) {
-  const [step, setStep] = useState<OnboardingStep>("welcome");
   const { setCurrentPhase, setShowDirectSetup } = useUIStore();
-
-  if (step === "welcome") {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <WelcomeStep onContinue={() => setStep("choose")} />
-      </div>
-    );
-  }
 
   return (
     <div className="flex items-center justify-center min-h-[60vh]">

@@ -1,5 +1,16 @@
 export type Phase = "shopping" | "offer" | "escrow" | "closing" | "post-close";
 
+export type UserRole = "buyer" | "agent";
+
+export interface Profile {
+  id: string;
+  user_id: string;
+  role: UserRole;
+  display_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SavedHome {
   id: string;
   user_id: string;
