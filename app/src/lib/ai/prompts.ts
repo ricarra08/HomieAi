@@ -42,6 +42,12 @@ Extract every requested field from the document text. For each field:
     inspection_report: `Focus on: inspector details, date, type of inspection, major findings (with severity and estimated repair costs), minor findings, system conditions (HVAC, electrical, plumbing, roof, foundation), recommended actions, and overall condition assessment.
 
 IMPORTANT: For the "inspection_type" field, return EXACTLY one of these values: "general", "pest", "roof", "hvac", "foundation". Use "general" for standard whole-home inspections. Use the specific type only if the report is exclusively about that system.`,
+    appraisal: `Focus on: appraised value, appraiser name, date, property details (type, living area, lot size, year built), condition rating, comparable sales (address, sale price, date, net adjustments), reconciled value, and whether the appraisal is "as-is" or "subject to" conditions.`,
+    title_report: `Focus on: title company, effective date, property address, current owner of record, legal description, title exceptions (type, description, whether insurable), liens (holder, amount, type), number of easements, title insurance commitment amount, and requirements that must be met for clear title.`,
+    insurance_binder: `Focus on: insurance company, policy number, policy type (HO-3, HO-6, HO-A, etc.), effective and expiration dates, coverage amounts (dwelling, personal property, liability), annual premium, deductible, whether flood coverage is included, whether wind has a separate policy, named insured, and lender loss payee.`,
+    disclosure: `Focus on: disclosure type (seller_disclosure, natural_hazard, lead_paint, hoa, other), property address, seller name, date signed, material defects (system affected, description, severity), environmental hazards, pending permits, insurance claims, HOA details (name, monthly dues, special assessments), flood zone status, and natural hazard zones.
+
+IMPORTANT: For "disclosure_type", return EXACTLY one of: "seller_disclosure", "natural_hazard", "lead_paint", "hoa", "other".`,
   };
 
   return `${shared}\n\n${typeSpecific[docType] ?? ""}`.trim();
@@ -88,6 +94,45 @@ Flag anything that looks unusual or that changed significantly from the LE.`,
 - Recommended next steps (repairs to negotiate, specialists to consult)
 
 Prioritize safety and cost impact. Be honest but not alarming.`,
+
+    appraisal: `Summarize this ${label} in plain English for a homebuyer. Cover:
+- The appraised value and how it compares to the purchase price
+- Property details (type, size, condition, year built)
+- Comparable sales used and how they support the value
+- Whether the appraisal is "as-is" or "subject to" repairs/conditions
+- What this means for the buyer's financing and any appraisal gap implications
+
+If the appraised value is below the purchase price, explain what that means clearly.`,
+
+    title_report: `Summarize this ${label} in plain English for a homebuyer. Cover:
+- Who the title company is and the report date
+- Current owner of record
+- Any liens on the property (mortgages, tax liens, mechanic's liens)
+- Title exceptions and whether they are insurable
+- Easements that affect the property
+- What needs to happen for "clear title" before closing
+
+Flag anything that could delay closing or create risk for the buyer.`,
+
+    insurance_binder: `Summarize this ${label} in plain English for a homebuyer. Cover:
+- Insurance company and policy type (HO-3, HO-6, etc.)
+- Coverage amounts (dwelling, personal property, liability)
+- Annual premium and deductible
+- Whether flood or wind are covered (or require separate policies)
+- Policy dates and whether the lender is listed as loss payee
+- Anything the buyer should verify or upgrade
+
+Explain policy types briefly if they may be unfamiliar.`,
+
+    disclosure: `Summarize this ${label} in plain English for a homebuyer. Cover:
+- What type of disclosure this is and what it covers
+- Any material defects the seller has disclosed (especially structural, water, pest)
+- Environmental hazards (lead paint, asbestos, mold, radon)
+- HOA details if applicable (dues, special assessments, restrictions)
+- Flood zone or natural hazard designations
+- Items the buyer should investigate further or ask about
+
+Be direct about anything that looks like a red flag.`,
   };
 
   if (tier1Prompts[docType]) {

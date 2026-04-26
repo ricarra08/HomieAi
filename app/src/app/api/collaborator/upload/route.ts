@@ -119,10 +119,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to create document record" }, { status: 500 });
   }
 
-  await supabase
-    .from("collaborator_links")
-    .update({ uploads_received: (link.uploads_received ?? 0) + 1 })
-    .eq("id", link.id);
+  const { error: rpcError } = await supabase.rpc("increment_uploads_received", { link_id: link.id });
+  if (rpcError) {
+    // Fallback to non-atomic update if RPC not available
+    await supabase
+      .from("collaborator_links")
+      .update({ uploads_received: (link.uploads_received ?? 0) + 1 })
+      .eq("id", link.id);
+  }
 
   const origin = request.headers.get("origin") ?? request.nextUrl.origin;
   fetch(`${origin}/api/documents/process`, {

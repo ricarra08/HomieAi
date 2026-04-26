@@ -6,7 +6,6 @@ import { useParams } from "next/navigation";
 
 interface LinkInfo {
   valid: boolean;
-  dealId: string;
   recipientRole: string;
   propertyAddress: string;
   requestedDocuments: string[] | null;

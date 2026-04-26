@@ -5,6 +5,10 @@ export const TIER_1_TYPES = [
   "loan_estimate",
   "closing_disclosure",
   "inspection_report",
+  "appraisal",
+  "title_report",
+  "insurance_binder",
+  "disclosure",
 ] as const;
 
 export type Tier1DocType = (typeof TIER_1_TYPES)[number];
@@ -178,9 +182,173 @@ const inspectionReportSchema: ResponseFormatJSONSchema["json_schema"] = {
   },
 };
 
+const comparableSaleSchema = {
+  type: "object" as const,
+  properties: {
+    address: { type: "string" as const },
+    sale_price: { type: ["number", "null"] as const },
+    sale_date: { type: ["string", "null"] as const },
+    adjustments: { type: ["number", "null"] as const },
+  },
+  required: ["address", "sale_price", "sale_date", "adjustments"] as const,
+  additionalProperties: false as const,
+};
+
+const appraisalSchema: ResponseFormatJSONSchema["json_schema"] = {
+  name: "appraisal_extraction",
+  strict: true,
+  schema: {
+    type: "object",
+    properties: {
+      appraised_value: { type: "object", properties: { value: { type: "number" }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      appraiser_name: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      appraisal_date: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      property_address: { type: "object", properties: { value: { type: "string" }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      property_type: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      living_area_sqft: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      lot_size: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      year_built: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      condition_rating: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      comparable_sales: { type: "object", properties: { value: { type: "array", items: comparableSaleSchema }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      reconciled_value: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      as_is_vs_subject_to: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+    },
+    required: [
+      "appraised_value", "appraiser_name", "appraisal_date", "property_address",
+      "property_type", "living_area_sqft", "lot_size", "year_built",
+      "condition_rating", "comparable_sales", "reconciled_value", "as_is_vs_subject_to",
+    ],
+    additionalProperties: false,
+  },
+};
+
+const titleExceptionSchema = {
+  type: "object" as const,
+  properties: {
+    type: { type: "string" as const },
+    description: { type: "string" as const },
+    insurable: { type: ["boolean", "null"] as const },
+  },
+  required: ["type", "description", "insurable"] as const,
+  additionalProperties: false as const,
+};
+
+const lienSchema = {
+  type: "object" as const,
+  properties: {
+    holder: { type: "string" as const },
+    amount: { type: ["number", "null"] as const },
+    type: { type: "string" as const },
+  },
+  required: ["holder", "amount", "type"] as const,
+  additionalProperties: false as const,
+};
+
+const titleReportSchema: ResponseFormatJSONSchema["json_schema"] = {
+  name: "title_report_extraction",
+  strict: true,
+  schema: {
+    type: "object",
+    properties: {
+      title_company: { type: "object", properties: { value: { type: "string" }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      effective_date: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      property_address: { type: "object", properties: { value: { type: "string" }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      current_owner: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      legal_description: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      exceptions: { type: "object", properties: { value: { type: "array", items: titleExceptionSchema }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      liens: { type: "object", properties: { value: { type: "array", items: lienSchema }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      easements_count: { type: "object", properties: { value: { type: "number" }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      title_insurance_commitment_amount: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      requirements_for_clear_title: { type: "object", properties: { value: { type: "array", items: { type: "string" } }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+    },
+    required: [
+      "title_company", "effective_date", "property_address", "current_owner",
+      "legal_description", "exceptions", "liens", "easements_count",
+      "title_insurance_commitment_amount", "requirements_for_clear_title",
+    ],
+    additionalProperties: false,
+  },
+};
+
+const insuranceBinderSchema: ResponseFormatJSONSchema["json_schema"] = {
+  name: "insurance_binder_extraction",
+  strict: true,
+  schema: {
+    type: "object",
+    properties: {
+      insurance_company: { type: "object", properties: { value: { type: "string" }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      policy_number: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      policy_type: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      effective_date: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      expiration_date: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      dwelling_coverage: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      personal_property_coverage: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      liability_coverage: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      annual_premium: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      deductible: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      flood_coverage: { type: "object", properties: { value: { type: ["boolean", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      wind_separate_policy: { type: "object", properties: { value: { type: ["boolean", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      named_insured: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      lender_loss_payee: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+    },
+    required: [
+      "insurance_company", "policy_number", "policy_type", "effective_date", "expiration_date",
+      "dwelling_coverage", "personal_property_coverage", "liability_coverage",
+      "annual_premium", "deductible", "flood_coverage", "wind_separate_policy",
+      "named_insured", "lender_loss_payee",
+    ],
+    additionalProperties: false,
+  },
+};
+
+const materialDefectSchema = {
+  type: "object" as const,
+  properties: {
+    system: { type: "string" as const },
+    description: { type: "string" as const },
+    severity: { type: "string" as const, enum: ["critical", "major", "minor"] },
+  },
+  required: ["system", "description", "severity"] as const,
+  additionalProperties: false as const,
+};
+
+const disclosureSchema: ResponseFormatJSONSchema["json_schema"] = {
+  name: "disclosure_extraction",
+  strict: true,
+  schema: {
+    type: "object",
+    properties: {
+      disclosure_type: { type: "object", properties: { value: { type: "string" }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      property_address: { type: "object", properties: { value: { type: "string" }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      seller_name: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      date_signed: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      material_defects: { type: "object", properties: { value: { type: "array", items: materialDefectSchema }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      environmental_hazards: { type: "object", properties: { value: { type: "array", items: { type: "string" } }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      pending_permits: { type: "object", properties: { value: { type: ["boolean", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      insurance_claims: { type: "object", properties: { value: { type: "array", items: { type: "string" } }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      hoa_name: { type: "object", properties: { value: { type: ["string", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      hoa_monthly_dues: { type: "object", properties: { value: { type: ["number", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      hoa_special_assessments: { type: "object", properties: { value: { type: ["boolean", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      flood_zone: { type: "object", properties: { value: { type: ["boolean", "null"] }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+      natural_hazard_zones: { type: "object", properties: { value: { type: "array", items: { type: "string" } }, confidence: CONFIDENCE }, required: ["value", "confidence"], additionalProperties: false },
+    },
+    required: [
+      "disclosure_type", "property_address", "seller_name", "date_signed",
+      "material_defects", "environmental_hazards", "pending_permits", "insurance_claims",
+      "hoa_name", "hoa_monthly_dues", "hoa_special_assessments",
+      "flood_zone", "natural_hazard_zones",
+    ],
+    additionalProperties: false,
+  },
+};
+
 export const EXTRACTION_SCHEMAS: Record<Tier1DocType, ResponseFormatJSONSchema["json_schema"]> = {
   purchase_contract: purchaseContractSchema,
   loan_estimate: loanEstimateSchema,
   closing_disclosure: closingDisclosureSchema,
   inspection_report: inspectionReportSchema,
+  appraisal: appraisalSchema,
+  title_report: titleReportSchema,
+  insurance_binder: insuranceBinderSchema,
+  disclosure: disclosureSchema,
 };

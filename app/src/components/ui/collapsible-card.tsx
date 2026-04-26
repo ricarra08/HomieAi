@@ -39,11 +39,16 @@ export function CollapsibleCard({
           </div>
         </div>
       </button>
-      {open && (
-        <div className="px-6 pb-6 pt-0">
-          {children}
+      <div
+        className="grid transition-[grid-template-rows] duration-200 ease-in-out"
+        style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+      >
+        <div className="overflow-hidden">
+          <div className="px-6 pb-6 pt-0">
+            {children}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

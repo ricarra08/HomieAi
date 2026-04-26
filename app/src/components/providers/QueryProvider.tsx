@@ -1,7 +1,8 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, MutationCache } from "@tanstack/react-query";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -13,6 +14,12 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
             retry: 1,
           },
         },
+        mutationCache: new MutationCache({
+          onError: (error) => {
+            console.error("[mutation-error]", error);
+            toast.error("Something went wrong. Please try again.");
+          },
+        }),
       })
   );
 

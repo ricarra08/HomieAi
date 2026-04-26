@@ -34,9 +34,14 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/signup");
 
   const isPublicPage =
-    request.nextUrl.pathname.startsWith("/try");
+    request.nextUrl.pathname === "/" ||
+    request.nextUrl.pathname.startsWith("/try") ||
+    request.nextUrl.pathname.startsWith("/upload") ||
+    request.nextUrl.pathname.startsWith("/explain") ||
+    request.nextUrl.pathname.startsWith("/join") ||
+    request.nextUrl.pathname.startsWith("/blog");
 
-  if (!user && !isAuthPage && !isPublicPage && request.nextUrl.pathname !== "/") {
+  if (!user && !isAuthPage && !isPublicPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

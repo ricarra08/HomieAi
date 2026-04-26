@@ -6,6 +6,7 @@ import { isTier1, EXTRACTION_SCHEMAS, type Tier1DocType } from "@/lib/ai/extract
 import { getExtractionSystemPrompt, getSummarizationSystemPrompt, TEXT_LIMITS } from "@/lib/ai/prompts";
 import { mapExtractedToLE } from "@/lib/ai/le-auto-populate";
 import { isInspectionSubtype } from "@/lib/documents/inspection-subtype";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -89,6 +90,15 @@ export async function POST(request: NextRequest) {
 
     if (!documentId) {
       return NextResponse.json({ error: "documentId is required" }, { status: 400 });
+    }
+
+    // Rate limit by documentId to prevent reprocess spam
+    const { limited } = rateLimit(`doc-process:${documentId}`, 3, 60_000);
+    if (limited) {
+      return NextResponse.json(
+        { error: "Too many processing requests. Please wait." },
+        { status: 429 }
+      );
     }
 
     const openai = getOpenAI();
