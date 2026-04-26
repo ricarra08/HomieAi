@@ -82,8 +82,9 @@ export function ClosingDisclosureReview({ data, transactionId, userId }: { data:
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">{formatCurrency(v.leValue)}</span>
                       <span className="text-foreground font-medium">→</span>
-                      <span className={v.toleranceOk ? "text-foreground" : "text-destructive font-medium"}>{formatCurrency(v.cdValue)}</span>
+                      <span className={!v.toleranceOk ? "text-destructive font-medium" : v.noteworthy ? "text-warning font-medium" : "text-foreground"}>{formatCurrency(v.cdValue)}</span>
                       {!v.toleranceOk && <Badge className="bg-destructive/10 text-destructive text-xs">Flag</Badge>}
+                      {v.noteworthy && <Badge className="bg-warning/10 text-warning text-xs">Review</Badge>}
                     </div>
                   </div>
                 ))}

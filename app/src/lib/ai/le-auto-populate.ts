@@ -40,8 +40,10 @@ export function mapExtractedToLE(
 
   const loanAmount = num(fields, "loan_amount");
   const downPct = num(fields, "down_payment_pct");
-  const downPayment = loanAmount && downPct
-    ? Math.round(loanAmount * (downPct / (100 - downPct)))
+  // Use != null checks instead of truthiness — downPct of 0 (VA/USDA loans)
+  // is valid and should produce a $0 down payment, not undefined.
+  const downPayment = loanAmount != null && downPct != null
+    ? (downPct === 0 ? 0 : Math.round(loanAmount * (downPct / (100 - downPct))))
     : undefined;
 
   return {

@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, MessageCircle, Info } from "lucide-react";
+import { AlertTriangle, CheckCircle2, MessageCircle, Info, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUIStore } from "@/lib/store";
 import { computeLEVariance } from "@/lib/computed";
@@ -39,6 +39,7 @@ export function LEvsCD({ chosenLE, cdDocument }: LEvsCDProps) {
   }
 
   const hasIssues = variances.some((v) => !v.toleranceOk);
+  const hasNoteworthy = variances.some((v) => v.noteworthy);
 
   function handleAskHomie() {
     const msg = "Explain the differences between my Loan Estimate and Closing Disclosure. Are any of the changes concerning?";
@@ -65,6 +66,11 @@ export function LEvsCD({ chosenLE, cdDocument }: LEvsCDProps) {
               Tolerance exceeded
             </span>
           )}
+          {!hasIssues && hasNoteworthy && (
+            <span className="text-xs font-medium text-warning bg-warning/10 px-2 py-0.5 rounded-full">
+              Review recommended
+            </span>
+          )}
         </div>
       </div>
 
@@ -80,13 +86,14 @@ export function LEvsCD({ chosenLE, cdDocument }: LEvsCDProps) {
         </thead>
         <tbody>
           {variances.map((v) => (
-            <tr key={v.field} className={`border-b border-border last:border-0 ${!v.toleranceOk ? "bg-destructive/5" : ""}`}>
+            <tr key={v.field} className={`border-b border-border last:border-0 ${!v.toleranceOk ? "bg-destructive/5" : v.noteworthy ? "bg-warning/5" : ""}`}>
               <td className="text-sm text-foreground px-6 py-2.5">{v.field}</td>
               <td className="text-sm text-muted-foreground text-right px-4 py-2.5">{formatCurrency(v.leValue)}</td>
               <td className="text-sm text-foreground font-medium text-right px-4 py-2.5">{formatCurrency(v.cdValue)}</td>
-              <td className={`text-sm font-medium text-right px-6 py-2.5 ${!v.toleranceOk ? "text-destructive" : v.delta > 0 ? "text-warning" : "text-primary"}`}>
+              <td className={`text-sm font-medium text-right px-6 py-2.5 ${!v.toleranceOk ? "text-destructive" : v.noteworthy ? "text-warning" : v.delta > 0 ? "text-warning" : "text-primary"}`}>
                 {formatDelta(v.delta)}
                 {!v.toleranceOk && <AlertTriangle className="w-3.5 h-3.5 inline ml-1" />}
+                {v.noteworthy && <Eye className="w-3.5 h-3.5 inline ml-1" />}
               </td>
             </tr>
           ))}
@@ -98,7 +105,7 @@ export function LEvsCD({ chosenLE, cdDocument }: LEvsCDProps) {
         <div className="flex items-start gap-2 text-sm text-muted-foreground">
           <Info className="w-4 h-4 shrink-0 mt-0.5" />
           <p>
-            Under TILA-RESPA (TRID), certain fees have tolerance limits. Fees exceeding $100 or 10% from the original estimate may require your lender to cover the difference.
+            Under TILA-RESPA (TRID), certain fees have tolerance limits. Fees exceeding $100 or 10% from the original estimate may require your lender to cover the difference. Changes over $250 that are within tolerance are flagged for your review — they&apos;re legal, but worth understanding.
           </p>
         </div>
         <Button

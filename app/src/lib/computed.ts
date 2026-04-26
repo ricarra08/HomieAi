@@ -53,7 +53,10 @@ export function computeDeadlineUrgency(
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const due = new Date(deadline.due_date);
+  // Append T00:00:00 to force local-time parsing. Date-only strings like
+  // "2026-06-01" are parsed as UTC midnight per the JS spec, which shifts
+  // to the previous day in negative-offset timezones (e.g., US Eastern/Central).
+  const due = new Date(deadline.due_date + "T00:00:00");
   due.setHours(0, 0, 0, 0);
 
   const daysRemaining = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
@@ -70,7 +73,8 @@ export function computeDaysRemaining(targetDate: string | null): number | null {
   if (!targetDate) return null;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const target = new Date(targetDate);
+  // Append T00:00:00 to force local-time parsing (see computeDeadlineUrgency comment).
+  const target = new Date(targetDate + "T00:00:00");
   target.setHours(0, 0, 0, 0);
   return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
@@ -89,10 +93,25 @@ function unwrapCDValue(cdFields: Record<string, unknown>, key: string): number |
   return null;
 }
 
+// Dollar threshold above which a change is flagged as "noteworthy" even if
+// it's within TRID tolerance. TRID compliance is a regulatory floor — this
+// is the consumer-protection layer on top.
+const NOTEWORTHY_DELTA = 250;
+
+export interface LEVarianceRow {
+  field: string;
+  leValue: number;
+  cdValue: number;
+  delta: number;
+  toleranceOk: boolean;
+  /** Within TRID tolerance but still a significant dollar change worth reviewing. */
+  noteworthy: boolean;
+}
+
 export function computeLEVariance(
   le: LoanEstimate,
   cdFields: Record<string, unknown> | null
-): { field: string; leValue: number; cdValue: number; delta: number; toleranceOk: boolean }[] {
+): LEVarianceRow[] {
   if (!cdFields) return [];
 
   const fieldsToCompare: { key: string; label: string }[] = [
@@ -123,8 +142,9 @@ export function computeLEVariance(
       const delta = cdValue - leValue;
       const absDelta = Math.abs(delta);
       const toleranceOk = absDelta <= 100 || (leValue > 0 && (absDelta / leValue) <= 0.1);
+      const noteworthy = toleranceOk && absDelta > NOTEWORTHY_DELTA;
 
-      return { field: label, leValue, cdValue, delta, toleranceOk };
+      return { field: label, leValue, cdValue, delta, toleranceOk, noteworthy };
     })
     .filter((row): row is NonNullable<typeof row> => row !== null && row.delta !== 0);
 }
