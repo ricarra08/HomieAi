@@ -201,16 +201,16 @@ const FEATURES = [
     icon: DollarSign,
     title: "Cash-to-Close Engine",
     description:
-      "See exactly how much you need at closing — broken down by down payment, lender fees, third-party costs, prepaids, and credits. Updated as your deal progresses from estimate to final numbers.",
+      "See exactly how much you need at closing — broken down by down payment, lender fees, third-party costs, prepaids, and credits. Updated as your transaction progresses from estimate to final numbers.",
     color: "text-accent",
     bgColor: "bg-accent/10",
     hasDeadlineVisual: false,
   },
   {
     icon: MessageSquare,
-    title: "AI Deal Assistant",
+    title: "AI Homebuying Assistant",
     description:
-      "Ask Homie anything about your transaction. Grounded in your actual documents and deal data — not generic advice. Get answers about your specific rate, your specific deadlines, your specific deal.",
+      "Ask Homie anything about your transaction. Grounded in your actual documents and deal data — not generic advice. Get answers about your specific rate, your specific deadlines, your specific transaction.",
     color: "text-primary-foreground",
     bgColor: "bg-primary/20",
     hasDeadlineVisual: false,
@@ -494,7 +494,7 @@ function CopilotDemo() {
       <div className="flex items-center gap-2 px-5 py-4 border-b border-border">
         <Sparkles className="w-4 h-4 text-accent" />
         <h3 className="text-xl font-semibold">Homie</h3>
-        <span className="text-sm text-muted-foreground ml-1">AI Deal Assistant</span>
+        <span className="text-sm text-muted-foreground ml-1">AI Homebuying Assistant</span>
       </div>
       <div className="p-5 space-y-4 min-h-[280px]" key={responseKey}>
         <div className="flex justify-start">
@@ -1440,7 +1440,7 @@ export default function LandingPage() {
             <p className="text-base text-muted-foreground mt-3 max-w-xl mx-auto">
               Your AI assistant is grounded in your actual documents — not generic
               advice. Ask about your specific rate, fees, deadlines, or anything
-              about your deal.
+              about your transaction.
             </p>
           </motion.div>
           <motion.div
@@ -1472,7 +1472,7 @@ export default function LandingPage() {
             {[
               {
                 step: "1",
-                title: "Set up your deal",
+                title: "Set up your transaction",
                 description:
                   "Enter your property details, offer acceptance date, and closing timeline. Your personalized workspace is ready in 60 seconds.",
               },
@@ -1486,7 +1486,7 @@ export default function LandingPage() {
                 step: "3",
                 title: "Stay on track to closing",
                 description:
-                  "Track every deadline, compare loan options, verify wire instructions, and ask Homie anything about your deal. No surprises at the closing table.",
+                  "Track every deadline, compare loan options, verify wire instructions, and ask Homie anything about your transaction. No surprises at the closing table.",
               },
             ].map((item, i) => (
               <motion.div

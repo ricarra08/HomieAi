@@ -3,10 +3,10 @@
 import { DollarSign, Check, Clock } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
-import { useUpdateDeal } from "@/lib/hooks/mutations";
+import { useUpdateTransaction } from "@/lib/hooks/mutations";
 import { computeDaysRemaining } from "@/lib/computed";
 import { formatCurrency } from "@/lib/utils";
-import type { Deal, Deadline } from "@/lib/types";
+import type { Transaction, Deadline } from "@/lib/types";
 
 const STATUS_STEPS = ["pending", "sent", "confirmed", "held"] as const;
 
@@ -56,16 +56,16 @@ function StatusStepper({ current }: { current: string | null }) {
 }
 
 interface EarnestMoneyTrackerProps {
-  deal: Deal;
+  transaction: Transaction;
   userId: string;
   emdDeadline?: Deadline | null;
 }
 
-function computeEmdDueDate(deal: Deal, emdDeadline?: Deadline | null): string | null {
+function computeEmdDueDate(transaction: Transaction, emdDeadline?: Deadline | null): string | null {
   if (emdDeadline) return emdDeadline.due_date;
-  if (!deal.contract_acceptance_date) return null;
+  if (!transaction.contract_acceptance_date) return null;
   // Default: EMD due 3 business days after acceptance
-  const start = new Date(deal.contract_acceptance_date);
+  const start = new Date(transaction.contract_acceptance_date);
   let bizDays = 0;
   while (bizDays < 3) {
     start.setDate(start.getDate() + 1);
@@ -75,14 +75,14 @@ function computeEmdDueDate(deal: Deal, emdDeadline?: Deadline | null): string | 
   return start.toISOString().split("T")[0];
 }
 
-export function EarnestMoneyTracker({ deal, userId, emdDeadline }: EarnestMoneyTrackerProps) {
-  const updateDeal = useUpdateDeal(deal.id, userId);
+export function EarnestMoneyTracker({ transaction, userId, emdDeadline }: EarnestMoneyTrackerProps) {
+  const updateTransaction = useUpdateTransaction(transaction.id, userId);
 
-  const status = deal.earnest_money_status ?? "pending";
+  const status = transaction.earnest_money_status ?? "pending";
 
   function advanceStatus() {
     const next = status === "pending" ? "sent" : status === "sent" ? "confirmed" : status === "confirmed" ? "held" : null;
-    if (next) updateDeal.mutate({ earnest_money_status: next });
+    if (next) updateTransaction.mutate({ earnest_money_status: next });
   }
 
   const nextLabel = status === "pending" ? "Mark as Sent" : status === "sent" ? "Mark as Confirmed" : status === "confirmed" ? "Mark as Held" : null;
@@ -96,14 +96,14 @@ export function EarnestMoneyTracker({ deal, userId, emdDeadline }: EarnestMoneyT
             <span className="text-sm text-muted-foreground">Deposit Amount</span>
           </div>
           <span className="text-2xl font-semibold text-foreground">
-            {formatCurrency(deal.earnest_money_amount)}
+            {formatCurrency(transaction.earnest_money_amount)}
           </span>
         </div>
 
         <StatusStepper current={status} />
 
         {status !== "confirmed" && status !== "held" && (() => {
-          const emdDue = computeEmdDueDate(deal, emdDeadline);
+          const emdDue = computeEmdDueDate(transaction, emdDeadline);
           if (!emdDue) return null;
           const days = computeDaysRemaining(emdDue);
           if (days === null) return null;
@@ -118,21 +118,21 @@ export function EarnestMoneyTracker({ deal, userId, emdDeadline }: EarnestMoneyT
           );
         })()}
 
-        {(deal.escrow_company || deal.escrow_contact) && (
+        {(transaction.escrow_company || transaction.escrow_contact) && (
           <div className="bg-muted/50 rounded-lg p-3">
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Escrow Company</p>
-            {deal.escrow_company && <p className="text-sm font-medium text-foreground">{deal.escrow_company}</p>}
-            {deal.escrow_contact && <p className="text-sm text-muted-foreground">{deal.escrow_contact}</p>}
+            {transaction.escrow_company && <p className="text-sm font-medium text-foreground">{transaction.escrow_company}</p>}
+            {transaction.escrow_contact && <p className="text-sm text-muted-foreground">{transaction.escrow_contact}</p>}
           </div>
         )}
 
         {nextLabel && (
           <Button
             onClick={advanceStatus}
-            disabled={updateDeal.isPending}
+            disabled={updateTransaction.isPending}
             className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
           >
-            {updateDeal.isPending ? "Updating..." : nextLabel}
+            {updateTransaction.isPending ? "Updating..." : nextLabel}
           </Button>
         )}
       </div>

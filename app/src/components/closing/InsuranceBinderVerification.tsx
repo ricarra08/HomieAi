@@ -17,11 +17,11 @@ const BINDER_STATUS_LABELS: Record<string, string> = {
   verified: "Verified",
 };
 
-export function InsuranceBinderVerification({ data, dealId }: { data: ClosingData; dealId: string }) {
+export function InsuranceBinderVerification({ data, transactionId }: { data: ClosingData; transactionId: string }) {
   const { insuranceInfo, insuranceBinder } = data;
-  const { data: allDocs } = useDocuments(dealId);
-  const createInsurance = useCreateInsuranceInfo(dealId);
-  const updateInsurance = useUpdateInsuranceInfo(dealId);
+  const { data: allDocs } = useDocuments(transactionId);
+  const createInsurance = useCreateInsuranceInfo(transactionId);
+  const updateInsurance = useUpdateInsuranceInfo(transactionId);
 
   const isBound = insuranceInfo?.binder_status === "bound" || insuranceInfo?.binder_status === "verified";
 
@@ -72,7 +72,7 @@ export function InsuranceBinderVerification({ data, dealId }: { data: ClosingDat
         )}
 
         <InlineDocUpload
-          dealId={dealId}
+          transactionId={transactionId}
           existingDoc={insuranceBinder ?? null}
           allDocs={allDocs ?? []}
           label="Drop insurance binder"

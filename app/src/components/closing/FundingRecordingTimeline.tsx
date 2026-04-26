@@ -3,7 +3,7 @@
 import { CheckCircle2, Circle, Loader2, Key } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
-import { useUpdateDeal } from "@/lib/hooks/mutations";
+import { useUpdateTransaction } from "@/lib/hooks/mutations";
 import type { ClosingData } from "@/lib/hooks/use-closing-data";
 
 const STEP_ICONS: Record<string, React.ReactNode> = {
@@ -14,17 +14,17 @@ const STEP_ICONS: Record<string, React.ReactNode> = {
 
 export function FundingRecordingTimeline({
   data,
-  dealId,
+  transactionId,
   userId,
   onKeysReceived,
 }: {
   data: ClosingData;
-  dealId: string;
+  transactionId: string;
   userId: string;
   onKeysReceived: () => void;
 }) {
   const { meta } = data;
-  const updateDeal = useUpdateDeal(dealId, userId);
+  const updateTransaction = useUpdateTransaction(transactionId, userId);
   const steps = meta.funding_steps;
 
   const completedCount = steps.filter((s) => s.status === "complete").length;
@@ -39,7 +39,7 @@ export function FundingRecordingTimeline({
       status: next,
       date: next === "complete" ? new Date().toISOString().split("T")[0] : updated[index].date,
     };
-    updateDeal.mutate({ closing_metadata: { ...meta, funding_steps: updated } });
+    updateTransaction.mutate({ closing_metadata: { ...meta, funding_steps: updated } });
   }
 
   return (

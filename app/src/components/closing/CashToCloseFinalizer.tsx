@@ -3,27 +3,27 @@
 import { CheckCircle2, Shield } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
-import { useUpdateDeal } from "@/lib/hooks/mutations";
+import { useUpdateTransaction } from "@/lib/hooks/mutations";
 import { computeCashToClose } from "@/lib/computed";
 import { formatCurrency } from "@/lib/utils";
 import type { ClosingData } from "@/lib/hooks/use-closing-data";
 import type { ClosingMetadata } from "@/lib/types";
 
-export function CashToCloseFinalizer({ data, dealId, userId }: { data: ClosingData; dealId: string; userId: string }) {
-  const { chosenLE, deal, meta } = data;
-  const updateDeal = useUpdateDeal(dealId, userId);
+export function CashToCloseFinalizer({ data, transactionId, userId }: { data: ClosingData; transactionId: string; userId: string }) {
+  const { chosenLE, transaction, meta } = data;
+  const updateTransaction = useUpdateTransaction(transactionId, userId);
 
   const cashToClose = computeCashToClose(chosenLE, {
-    earnestMoney: deal?.earnest_money_amount ?? 0,
+    earnestMoney: transaction?.earnest_money_amount ?? 0,
   });
 
   function toggleConfirmed() {
     const updated: Partial<ClosingMetadata> = { ...meta, cash_to_close_confirmed: !meta.cash_to_close_confirmed };
-    updateDeal.mutate({ closing_metadata: updated });
+    updateTransaction.mutate({ closing_metadata: updated });
   }
 
-  const wireDueDate = deal?.closing_date
-    ? (() => { const d = new Date(deal.closing_date); d.setDate(d.getDate() - 1); return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }); })()
+  const wireDueDate = transaction?.closing_date
+    ? (() => { const d = new Date(transaction.closing_date); d.setDate(d.getDate() - 1); return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }); })()
     : null;
 
   return (
@@ -56,10 +56,10 @@ export function CashToCloseFinalizer({ data, dealId, userId }: { data: ClosingDa
                 <span className="text-foreground">{formatCurrency((chosenLE.points / 100) * chosenLE.loan_amount)}</span>
               </div>
             )}
-            {deal?.earnest_money_amount && deal.earnest_money_amount > 0 && (
+            {transaction?.earnest_money_amount && transaction.earnest_money_amount > 0 && (
               <div className="flex justify-between text-primary-foreground">
                 <span>Less: Earnest Money Deposit</span>
-                <span>-{formatCurrency(deal.earnest_money_amount)}</span>
+                <span>-{formatCurrency(transaction.earnest_money_amount)}</span>
               </div>
             )}
           </div>
@@ -73,10 +73,10 @@ export function CashToCloseFinalizer({ data, dealId, userId }: { data: ClosingDa
           </div>
         )}
 
-        {deal?.escrow_company && (
+        {transaction?.escrow_company && (
           <div className="text-sm">
-            <p className="text-muted-foreground">Escrow: <span className="text-foreground">{deal.escrow_company}</span></p>
-            {deal.escrow_contact && <p className="text-muted-foreground">Contact: <span className="text-foreground">{deal.escrow_contact}</span></p>}
+            <p className="text-muted-foreground">Escrow: <span className="text-foreground">{transaction.escrow_company}</span></p>
+            {transaction.escrow_contact && <p className="text-muted-foreground">Contact: <span className="text-foreground">{transaction.escrow_contact}</span></p>}
           </div>
         )}
 

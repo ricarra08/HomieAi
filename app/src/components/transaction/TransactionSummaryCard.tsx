@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeal } from "@/lib/hooks/queries";
+import { useTransaction } from "@/lib/hooks/queries";
 import { computeDaysRemaining } from "@/lib/computed";
 import { Badge } from "@/components/ui/badge";
 
@@ -17,10 +17,10 @@ function formatDate(date: string | null): string {
   });
 }
 
-export function DealSummaryCard({ dealId }: { dealId: string }) {
-  const { data: deal, isLoading } = useDeal(dealId);
+export function TransactionSummaryCard({ transactionId }: { transactionId: string }) {
+  const { data: transaction, isLoading } = useTransaction(transactionId);
 
-  if (isLoading || !deal) {
+  if (isLoading || !transaction) {
     return (
       <div className="bg-card rounded-xl border border-border shadow-sm p-6 animate-pulse">
         <div className="h-6 bg-muted rounded w-1/3" />
@@ -29,17 +29,17 @@ export function DealSummaryCard({ dealId }: { dealId: string }) {
     );
   }
 
-  const daysRemaining = computeDaysRemaining(deal.closing_date);
+  const daysRemaining = computeDaysRemaining(transaction.closing_date);
 
   return (
     <div className="bg-card rounded-xl border border-border shadow-sm p-6">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-xl font-semibold text-foreground">{deal.property_address}</h3>
+          <h3 className="text-xl font-semibold text-foreground">{transaction.property_address}</h3>
           <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-            {deal.closing_date && <span>Closing: {formatDate(deal.closing_date)}</span>}
-            {deal.closing_date && <span>&middot;</span>}
-            <span>Purchase Price: {formatPrice(deal.purchase_price)}</span>
+            {transaction.closing_date && <span>Closing: {formatDate(transaction.closing_date)}</span>}
+            {transaction.closing_date && <span>&middot;</span>}
+            <span>Purchase Price: {formatPrice(transaction.purchase_price)}</span>
           </div>
         </div>
         <div className="text-right shrink-0 ml-4">

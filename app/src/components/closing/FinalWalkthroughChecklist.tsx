@@ -2,7 +2,7 @@
 
 import { CheckCircle2 } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
-import { useUpdateDeal } from "@/lib/hooks/mutations";
+import { useUpdateTransaction } from "@/lib/hooks/mutations";
 import type { ClosingData } from "@/lib/hooks/use-closing-data";
 import type { ClosingMetadata } from "@/lib/types";
 
@@ -19,9 +19,9 @@ const WALKTHROUGH_ROOMS = [
   { id: "repairs", label: "Agreed repairs completed and verified" },
 ];
 
-export function FinalWalkthroughChecklist({ data, dealId, userId }: { data: ClosingData; dealId: string; userId: string }) {
+export function FinalWalkthroughChecklist({ data, transactionId, userId }: { data: ClosingData; transactionId: string; userId: string }) {
   const { meta } = data;
-  const updateDeal = useUpdateDeal(dealId, userId);
+  const updateTransaction = useUpdateTransaction(transactionId, userId);
   const items = meta.walkthrough_items;
 
   const checkedCount = Object.values(items).filter(Boolean).length;
@@ -33,7 +33,7 @@ export function FinalWalkthroughChecklist({ data, dealId, userId }: { data: Clos
       ...meta,
       walkthrough_items: { ...items, [id]: !items[id] },
     };
-    updateDeal.mutate({ closing_metadata: updated });
+    updateTransaction.mutate({ closing_metadata: updated });
   }
 
   return (

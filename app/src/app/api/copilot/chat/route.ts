@@ -3,7 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
 import { assembleContext } from "@/lib/ai/context-engine";
 import { getCopilotSystemPrompt } from "@/lib/ai/system-prompts";
+import { rateLimit } from "@/lib/rate-limit";
 import type { Phase } from "@/lib/types";
+
+const MAX_MESSAGE_LENGTH = 2000;
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -42,8 +45,8 @@ function parseCitations(content: string): { documentName: string; page?: number;
 
 export async function POST(request: NextRequest) {
   try {
-    const { dealId, userId, phase, message, history } = (await request.json()) as {
-      dealId: string | null;
+    const { transactionId, userId, phase, message, history } = (await request.json()) as {
+      transactionId: string | null;
       userId: string;
       phase: Phase;
       message: string;
@@ -57,11 +60,27 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const trimmed = message.trim();
+    if (!trimmed || trimmed.length > MAX_MESSAGE_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: `Message must be 1-${MAX_MESSAGE_LENGTH} characters` }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const { limited } = rateLimit(`copilot:${userId}`, 30, 60_000);
+    if (limited) {
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please wait a moment." }),
+        { status: 429, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     const openai = getOpenAI();
     const supabaseAdmin = getSupabaseAdmin();
     const model = selectModel(phase);
 
-    const contextBlock = await assembleContext(dealId, phase, userId);
+    const contextBlock = await assembleContext(transactionId, phase, userId);
     const systemPrompt = getCopilotSystemPrompt(phase, contextBlock);
 
     const messages: OpenAI.ChatCompletionMessageParam[] = [
@@ -99,7 +118,7 @@ export async function POST(request: NextRequest) {
             const citations = parseCitations(fullContent);
             const { error: insertError } = await supabaseAdmin.from("copilot_messages").insert({
               user_id: userId,
-              deal_id: dealId,
+              deal_id: transactionId,
               role: "assistant",
               content: fullContent,
               citations: citations.length > 0 ? citations : null,

@@ -34,7 +34,7 @@ const PHASE_QUICK_ACTIONS: Record<Phase, string[]> = {
     "What should I bring to signing?",
   ],
   "post-close": [
-    "Summarize my deal",
+    "Summarize my purchase",
     "What should new homeowners do first?",
     "Explain my mortgage terms",
   ],
@@ -117,14 +117,14 @@ export function AICopilotButton() {
 }
 
 export function AICopilotPanel() {
-  const { copilotOpen, setCopilotOpen, activeDealId, currentPhase } = useUIStore();
+  const { copilotOpen, setCopilotOpen, activeTransactionId, currentPhase } = useUIStore();
   const pathname = usePathname();
   const [input, setInput] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const { data: messages } = useCopilotMessages(activeDealId);
-  const sendUserMsg = useSendCopilotMessage(userId ?? "", activeDealId, currentPhase);
+  const { data: messages } = useCopilotMessages(activeTransactionId);
+  const sendUserMsg = useSendCopilotMessage(userId ?? "", activeTransactionId, currentPhase);
   const { sendMessage, streamingContent, isStreaming } = useStreamingChat();
 
   useEffect(() => {
@@ -158,9 +158,9 @@ export function AICopilotPanel() {
         role: m.role as "user" | "assistant",
         content: m.content,
       }));
-      sendMessage({ message: content, dealId: activeDealId, userId, phase: currentPhase, history });
+      sendMessage({ message: content, transactionId: activeTransactionId, userId, phase: currentPhase, history });
     };
-  }, [userId, isStreaming, messages, activeDealId, currentPhase, sendUserMsg, sendMessage]);
+  }, [userId, isStreaming, messages, activeTransactionId, currentPhase, sendUserMsg, sendMessage]);
 
   useEffect(() => {
     function handlePrefill(e: Event) {
@@ -214,7 +214,7 @@ export function AICopilotPanel() {
                 <p>
                   Hi there! I&apos;m Homie, your AI homebuying assistant. I can help you
                   understand documents, explain the process, or answer questions about
-                  your deal. What would you like to know?
+                  your home purchase. What would you like to know?
                 </p>
                 <span className="text-sm text-muted-foreground mt-2 block">Just now</span>
               </div>

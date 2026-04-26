@@ -5,16 +5,16 @@ import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useUIStore } from "@/lib/store";
-import { useUpdateDeal } from "@/lib/hooks/mutations";
+import { useUpdateTransaction } from "@/lib/hooks/mutations";
 import type { ClosingData } from "@/lib/hooks/use-closing-data";
 
-export function TitleEscrowFinalChecks({ data, dealId, userId }: { data: ClosingData; dealId: string; userId: string }) {
-  const { meta, titleReport, deal } = data;
-  const updateDeal = useUpdateDeal(dealId, userId);
+export function TitleEscrowFinalChecks({ data, transactionId, userId }: { data: ClosingData; transactionId: string; userId: string }) {
+  const { meta, titleReport, transaction } = data;
+  const updateTransaction = useUpdateTransaction(transactionId, userId);
   const { openViewer } = useUIStore();
 
   function toggleAcknowledged() {
-    updateDeal.mutate({ closing_metadata: { ...meta, title_acknowledged: !meta.title_acknowledged } });
+    updateTransaction.mutate({ closing_metadata: { ...meta, title_acknowledged: !meta.title_acknowledged } });
   }
 
   return (
@@ -39,10 +39,10 @@ export function TitleEscrowFinalChecks({ data, dealId, userId }: { data: Closing
             )}
           </div>
 
-          {deal?.escrow_company && (
+          {transaction?.escrow_company && (
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Escrow Company</span>
-              <span className="text-foreground">{deal.escrow_company}</span>
+              <span className="text-foreground">{transaction.escrow_company}</span>
             </div>
           )}
         </div>

@@ -20,7 +20,7 @@ export function EscrowAlerts({ data }: { data: EscrowData }) {
   const router = useRouter();
   const { setActiveSidebarItem } = useUIStore();
 
-  const { deal, deadlines, documents, loanEstimates } = data;
+  const { transaction, deadlines, documents, loanEstimates } = data;
   const alerts: Alert[] = [];
 
   alerts.push({
@@ -93,12 +93,12 @@ export function EscrowAlerts({ data }: { data: EscrowData }) {
     }
   }
 
-  if (deal && deal.earnest_money_amount && deal.earnest_money_status !== "confirmed" && deal.earnest_money_status !== "held") {
+  if (transaction && transaction.earnest_money_amount && transaction.earnest_money_status !== "confirmed" && transaction.earnest_money_status !== "held") {
     alerts.push({
       id: "emd-pending",
       severity: "warning",
       icon: <DollarSign className="w-4 h-4" />,
-      message: `Earnest money deposit (${deal.earnest_money_status ?? "pending"}) — not yet confirmed`,
+      message: `Earnest money deposit (${transaction.earnest_money_status ?? "pending"}) — not yet confirmed`,
     });
   }
 

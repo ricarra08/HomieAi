@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useCreateDeal } from "@/lib/hooks/mutations";
+import { useCreateTransaction } from "@/lib/hooks/mutations";
 import { useUIStore } from "@/lib/store";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { TermTooltip } from "@/components/ui/term-tooltip";
 
-export interface DealFormData {
+export interface TransactionFormData {
   address: string;
   acceptanceDate: string;
   closingDate: string;
@@ -20,17 +20,17 @@ export interface DealFormData {
   loanDays: string;
 }
 
-interface DealSetupFormProps {
+interface TransactionSetupFormProps {
   userId?: string;
   mode?: "authenticated" | "guest";
   onComplete?: () => void;
-  onGuestSubmit?: (data: DealFormData) => void;
+  onGuestSubmit?: (data: TransactionFormData) => void;
   title?: string;
   subtitle?: string;
   submitLabel?: string;
 }
 
-export function DealSetupForm({
+export function TransactionSetupForm({
   userId,
   mode = "authenticated",
   onComplete,
@@ -38,8 +38,8 @@ export function DealSetupForm({
   title = "Welcome to Your Transaction Workspace",
   subtitle = "Let\u2019s set up your escrow and closing dashboard. You can update these details anytime.",
   submitLabel,
-}: DealSetupFormProps) {
-  const createDeal = useCreateDeal(userId ?? "");
+}: TransactionSetupFormProps) {
+  const createTransaction = useCreateTransaction(userId ?? "");
   const uiStore = useUIStore();
 
   const [address, setAddress] = useState("");
@@ -51,12 +51,12 @@ export function DealSetupForm({
   const [appraisalDays, setAppraisalDays] = useState("17");
   const [loanDays, setLoanDays] = useState("21");
 
-  const isSubmitting = createDeal.isPending;
+  const isSubmitting = createTransaction.isPending;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const formData: DealFormData = {
+    const formData: TransactionFormData = {
       address,
       acceptanceDate,
       closingDate,
@@ -72,7 +72,7 @@ export function DealSetupForm({
       return;
     }
 
-    createDeal.mutate(
+    createTransaction.mutate(
       {
         property_address: address,
         purchase_price: Number(purchasePrice),
@@ -83,7 +83,7 @@ export function DealSetupForm({
       },
       {
         onSuccess: async (data) => {
-          uiStore.setActiveDealId(data.id);
+          uiStore.setActiveTransactionId(data.id);
           uiStore.setCurrentPhase("escrow");
 
           if (acceptanceDate) {
@@ -100,7 +100,7 @@ export function DealSetupForm({
             if (closingDate) deadlines.push({ deal_id: data.id, name: "Closing Date", type: "closing", due_date: closingDate });
             if (deadlines.length > 0) {
               const { error: deadlineError } = await createClient().from("deadlines").insert(deadlines);
-              if (deadlineError) console.error("[deal-setup] Failed to create deadlines:", deadlineError);
+              if (deadlineError) console.error("[transaction-setup] Failed to create deadlines:", deadlineError);
             }
           }
 

@@ -5,32 +5,32 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ProgressStepper } from "@/components/layout/ProgressStepper";
 import { GlobalFooter } from "@/components/layout/GlobalFooter";
-import { DealSetupForm, type DealFormData } from "@/components/deal/DealSetupForm";
-import { DealSummaryPreview } from "./DealSummaryPreview";
+import { TransactionSetupForm, type TransactionFormData } from "@/components/transaction/TransactionSetupForm";
+import { TransactionSummaryPreview } from "./TransactionSummaryPreview";
 
 export default function TryPage() {
   const router = useRouter();
   const [step, setStep] = useState<"form" | "preview">("form");
-  const [dealData, setDealData] = useState<DealFormData | null>(null);
+  const [transactionData, setTransactionData] = useState<TransactionFormData | null>(null);
 
-  function handleGuestSubmit(data: DealFormData) {
-    setDealData(data);
+  function handleGuestSubmit(data: TransactionFormData) {
+    setTransactionData(data);
     setStep("preview");
   }
 
-  if (step === "preview" && dealData) {
+  if (step === "preview" && transactionData) {
     return (
       <div className="flex flex-col h-screen overflow-hidden">
         <ProgressStepper />
         <div className="flex flex-1 overflow-hidden">
           <div className="flex-1 overflow-y-auto p-6 lg:p-8 xl:p-10">
             <div className="max-w-[1152px] mx-auto space-y-6">
-              <DealSummaryPreview dealData={dealData} />
+              <TransactionSummaryPreview transactionData={transactionData} />
 
               <div className="bg-card rounded-xl border border-border shadow-sm p-8 text-center space-y-4">
-                <h3 className="text-xl font-semibold">Ready to track your deal?</h3>
+                <h3 className="text-xl font-semibold">Ready to track your transaction?</h3>
                 <p className="text-base text-muted-foreground max-w-md mx-auto">
-                  Sign up to save your workspace, upload documents, track deadlines, and get AI-powered deal intelligence.
+                  Sign up to save your workspace, upload documents, track deadlines, and get AI-powered transaction intelligence.
                 </p>
                 <div className="flex justify-center gap-3">
                   <Button
@@ -58,8 +58,8 @@ export default function TryPage() {
                   </div>
                 </div>
                 <div className="bg-card rounded-xl border border-border shadow-sm p-6 opacity-60">
-                  <h3 className="text-base font-semibold mb-2">AI Deal Assistant</h3>
-                  <p className="text-sm text-muted-foreground">Ask Homie anything about your deal — documents, deadlines, financing, or next steps.</p>
+                  <h3 className="text-base font-semibold mb-2">AI Homebuying Assistant</h3>
+                  <p className="text-sm text-muted-foreground">Ask Homie anything about your transaction — documents, deadlines, financing, or next steps.</p>
                   <div className="mt-4 border-2 border-dashed border-border rounded-lg p-6 text-center text-sm text-muted-foreground">
                     Sign up to chat with Homie
                   </div>
@@ -76,11 +76,11 @@ export default function TryPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full">
-        <DealSetupForm
+        <TransactionSetupForm
           mode="guest"
           onGuestSubmit={handleGuestSubmit}
           title="See Your Transaction Workspace"
-          subtitle="Enter your deal details to preview your personalized escrow and closing dashboard. No account required."
+          subtitle="Enter your transaction details to preview your personalized escrow and closing dashboard. No account required."
         />
         <div className="flex justify-center mt-4">
           <p className="text-sm text-muted-foreground">

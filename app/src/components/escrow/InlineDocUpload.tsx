@@ -15,7 +15,7 @@ interface UploadHints {
 }
 
 interface InlineDocUploadProps {
-  dealId: string;
+  transactionId: string;
   existingDoc?: Document | null;
   allDocs: Document[];
   label: string;
@@ -24,8 +24,8 @@ interface InlineDocUploadProps {
   onDocUploaded?: (docId: string) => void;
 }
 
-export function InlineDocUpload({ dealId, existingDoc, allDocs, label, acceptTypes = ".pdf", uploadHints, onDocUploaded }: InlineDocUploadProps) {
-  const upload = useUploadDocument(dealId);
+export function InlineDocUpload({ transactionId, existingDoc, allDocs, label, acceptTypes = ".pdf", uploadHints, onDocUploaded }: InlineDocUploadProps) {
+  const upload = useUploadDocument(transactionId);
   const openViewer = useUIStore((s) => s.openViewer);
   const [dragging, setDragging] = useState(false);
   const [uploadedDocId, setUploadedDocId] = useState<string | null>(null);

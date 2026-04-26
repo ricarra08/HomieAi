@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { computeDeadlineUrgency, computeDaysRemaining } from "@/lib/computed";
-import type { Phase, Deal, Document, Deadline, LoanEstimate, RepairItem, SavedHome } from "@/lib/types";
+import type { Phase, Transaction, Document, Deadline, LoanEstimate, RepairItem, SavedHome } from "@/lib/types";
 
 function getSupabaseAdmin() {
   return createClient(
@@ -17,19 +17,19 @@ function formatCurrency(n: number | null | undefined): string {
   return `$${n.toLocaleString("en-US", { minimumFractionDigits: 0 })}`;
 }
 
-function buildDealSummary(deal: Deal): string {
-  const daysLeft = computeDaysRemaining(deal.closing_date);
+function buildTransactionSummary(transaction: Transaction): string {
+  const daysLeft = computeDaysRemaining(transaction.closing_date);
   const lines = [
-    `Property: ${deal.property_address}`,
-    `Purchase price: ${formatCurrency(deal.purchase_price)}`,
-    `Phase: ${deal.current_phase}`,
+    `Property: ${transaction.property_address}`,
+    `Purchase price: ${formatCurrency(transaction.purchase_price)}`,
+    `Phase: ${transaction.current_phase}`,
   ];
-  if (deal.closing_date) lines.push(`Closing date: ${deal.closing_date}${daysLeft !== null ? ` (${daysLeft} days remaining)` : ""}`);
-  if (deal.contract_acceptance_date) lines.push(`Contract acceptance: ${deal.contract_acceptance_date}`);
-  if (deal.agent_name) lines.push(`Agent: ${deal.agent_name}${deal.agent_contact ? ` (${deal.agent_contact})` : ""}`);
-  if (deal.escrow_company) lines.push(`Escrow: ${deal.escrow_company}`);
-  if (deal.earnest_money_amount) lines.push(`Earnest money: ${formatCurrency(deal.earnest_money_amount)} — status: ${deal.earnest_money_status ?? "unknown"}`);
-  return `## Deal Summary\n${lines.join("\n")}`;
+  if (transaction.closing_date) lines.push(`Closing date: ${transaction.closing_date}${daysLeft !== null ? ` (${daysLeft} days remaining)` : ""}`);
+  if (transaction.contract_acceptance_date) lines.push(`Contract acceptance: ${transaction.contract_acceptance_date}`);
+  if (transaction.agent_name) lines.push(`Agent: ${transaction.agent_name}${transaction.agent_contact ? ` (${transaction.agent_contact})` : ""}`);
+  if (transaction.escrow_company) lines.push(`Escrow: ${transaction.escrow_company}`);
+  if (transaction.earnest_money_amount) lines.push(`Earnest money: ${formatCurrency(transaction.earnest_money_amount)} — status: ${transaction.earnest_money_status ?? "unknown"}`);
+  return `## Transaction Summary\n${lines.join("\n")}`;
 }
 
 function buildDeadlinesBlock(deadlines: Deadline[]): string {
@@ -164,8 +164,8 @@ export async function assembleContext(dealId: string | null, phase: Phase, userI
     if (savedHomes.length) blocks.push(buildSavedHomesBlock(savedHomes));
 
     if (dealId) {
-      const { data: deal } = await supabase.from("deals").select("*").eq("id", dealId).single();
-      if (deal) blocks.push(buildDealSummary(deal as Deal));
+      const { data: transaction } = await supabase.from("transactions").select("*").eq("id", dealId).single();
+      if (transaction) blocks.push(buildTransactionSummary(transaction as Transaction));
     }
 
     return truncateContext(blocks);
@@ -174,25 +174,25 @@ export async function assembleContext(dealId: string | null, phase: Phase, userI
   if (!dealId) return "";
 
   const [dealRes, docsRes, deadlinesRes, lesRes, repairsRes] = await Promise.all([
-    supabase.from("deals").select("*").eq("id", dealId).single(),
+    supabase.from("transactions").select("*").eq("id", dealId).single(),
     supabase.from("documents").select("*").eq("deal_id", dealId).order("created_at", { ascending: false }),
     supabase.from("deadlines").select("*").eq("deal_id", dealId).order("due_date", { ascending: true }),
     supabase.from("loan_estimates").select("*").eq("deal_id", dealId).order("created_at", { ascending: false }),
     supabase.from("repair_items").select("*").eq("deal_id", dealId).order("created_at", { ascending: false }),
   ]);
 
-  if (dealRes.error) console.error("[context-engine] Failed to fetch deal:", dealRes.error);
+  if (dealRes.error) console.error("[context-engine] Failed to fetch transaction:", dealRes.error);
   if (docsRes.error) console.error("[context-engine] Failed to fetch documents:", docsRes.error);
   if (deadlinesRes.error) console.error("[context-engine] Failed to fetch deadlines:", deadlinesRes.error);
   if (lesRes.error) console.error("[context-engine] Failed to fetch loan estimates:", lesRes.error);
   if (repairsRes.error) console.error("[context-engine] Failed to fetch repairs:", repairsRes.error);
 
-  const deal = dealRes.data as Deal | null;
-  if (!deal) return "";
+  const transaction = dealRes.data as Transaction | null;
+  if (!transaction) return "";
 
   const blocks: string[] = [];
 
-  blocks.push(buildDealSummary(deal));
+  blocks.push(buildTransactionSummary(transaction));
 
   if (phase === "offer") {
     return truncateContext(blocks);

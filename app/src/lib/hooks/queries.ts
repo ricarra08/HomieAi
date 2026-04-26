@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import {
   savedHomeKeys,
-  dealKeys,
+  transactionKeys,
   offerKeys,
   documentKeys,
   deadlineKeys,
@@ -14,7 +14,7 @@ import {
 } from "./query-keys";
 import type {
   SavedHome,
-  Deal,
+  Transaction,
   OfferDetails,
   Document,
   Deadline,
@@ -46,179 +46,179 @@ export function useSavedHomes(userId: string | undefined) {
   });
 }
 
-// -- Deal --
+// -- Transaction --
 
-export function useDeals(userId: string | undefined) {
+export function useTransactions(userId: string | undefined) {
   return useQuery({
-    queryKey: dealKeys.all(userId ?? ""),
+    queryKey: transactionKeys.all(userId ?? ""),
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("deals")
+        .from("transactions")
         .select("*")
         .eq("user_id", userId!)
         .order("updated_at", { ascending: false });
       if (error) throw error;
-      return data as Deal[];
+      return data as Transaction[];
     },
     enabled: !!userId,
   });
 }
 
-export function useDeal(dealId: string | null) {
+export function useTransaction(transactionId: string | null) {
   return useQuery({
-    queryKey: dealKeys.detail(dealId ?? ""),
+    queryKey: transactionKeys.detail(transactionId ?? ""),
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("deals")
+        .from("transactions")
         .select("*")
-        .eq("id", dealId!)
+        .eq("id", transactionId!)
         .single();
       if (error) throw error;
-      return data as Deal;
+      return data as Transaction;
     },
-    enabled: !!dealId,
+    enabled: !!transactionId,
   });
 }
 
 // -- Offer phase --
 
-export function useOfferDetails(dealId: string | null) {
+export function useOfferDetails(transactionId: string | null) {
   return useQuery({
-    queryKey: offerKeys.detail(dealId ?? ""),
+    queryKey: offerKeys.detail(transactionId ?? ""),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("offer_details")
         .select("*")
-        .eq("deal_id", dealId!)
+        .eq("deal_id", transactionId!)
         .single();
       if (error) throw error;
       return data as OfferDetails;
     },
-    enabled: !!dealId,
+    enabled: !!transactionId,
   });
 }
 
 // -- Documents --
 
-export function useDocuments(dealId: string | null) {
+export function useDocuments(transactionId: string | null) {
   return useQuery({
-    queryKey: documentKeys.list(dealId ?? ""),
+    queryKey: documentKeys.list(transactionId ?? ""),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("documents")
         .select("*")
-        .eq("deal_id", dealId!)
+        .eq("deal_id", transactionId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Document[];
     },
-    enabled: !!dealId,
+    enabled: !!transactionId,
   });
 }
 
 // -- Deadlines --
 
-export function useDeadlines(dealId: string | null) {
+export function useDeadlines(transactionId: string | null) {
   return useQuery({
-    queryKey: deadlineKeys.list(dealId ?? ""),
+    queryKey: deadlineKeys.list(transactionId ?? ""),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("deadlines")
         .select("*")
-        .eq("deal_id", dealId!)
+        .eq("deal_id", transactionId!)
         .order("due_date", { ascending: true });
       if (error) throw error;
       return data as Deadline[];
     },
-    enabled: !!dealId,
+    enabled: !!transactionId,
   });
 }
 
 // -- Loan Estimates --
 
-export function useLoanEstimates(dealId: string | null) {
+export function useLoanEstimates(transactionId: string | null) {
   return useQuery({
-    queryKey: loanEstimateKeys.list(dealId ?? ""),
+    queryKey: loanEstimateKeys.list(transactionId ?? ""),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("loan_estimates")
         .select("*")
-        .eq("deal_id", dealId!)
+        .eq("deal_id", transactionId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as LoanEstimate[];
     },
-    enabled: !!dealId,
+    enabled: !!transactionId,
   });
 }
 
 // -- Repair Items --
 
-export function useRepairItems(dealId: string | null) {
+export function useRepairItems(transactionId: string | null) {
   return useQuery({
-    queryKey: repairItemKeys.list(dealId ?? ""),
+    queryKey: repairItemKeys.list(transactionId ?? ""),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("repair_items")
         .select("*")
-        .eq("deal_id", dealId!)
+        .eq("deal_id", transactionId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as RepairItem[];
     },
-    enabled: !!dealId,
+    enabled: !!transactionId,
   });
 }
 
 // -- Insurance --
 
-export function useInsuranceInfo(dealId: string | null) {
+export function useInsuranceInfo(transactionId: string | null) {
   return useQuery({
-    queryKey: insuranceKeys.list(dealId ?? ""),
+    queryKey: insuranceKeys.list(transactionId ?? ""),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("insurance_info")
         .select("*")
-        .eq("deal_id", dealId!)
+        .eq("deal_id", transactionId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as InsuranceInfo[];
     },
-    enabled: !!dealId,
+    enabled: !!transactionId,
   });
 }
 
 // -- Collaborator Links --
 
-export function useCollaboratorLinks(dealId: string | null) {
+export function useCollaboratorLinks(transactionId: string | null) {
   return useQuery({
-    queryKey: collaboratorKeys.list(dealId ?? ""),
+    queryKey: collaboratorKeys.list(transactionId ?? ""),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("collaborator_links")
         .select("*")
-        .eq("deal_id", dealId!)
+        .eq("deal_id", transactionId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as CollaboratorLink[];
     },
-    enabled: !!dealId,
+    enabled: !!transactionId,
   });
 }
 
 // -- Copilot Messages --
 
-export function useCopilotMessages(dealId: string | null) {
+export function useCopilotMessages(transactionId: string | null) {
   return useQuery({
-    queryKey: copilotKeys.messages(dealId),
+    queryKey: copilotKeys.messages(transactionId),
     queryFn: async () => {
       const query = supabase
         .from("copilot_messages")
         .select("*")
         .order("created_at", { ascending: true });
 
-      if (dealId) {
-        query.eq("deal_id", dealId);
+      if (transactionId) {
+        query.eq("deal_id", transactionId);
       }
 
       const { data, error } = await query;

@@ -2,39 +2,39 @@ export const savedHomeKeys = {
   all: (userId: string) => ["saved-homes", userId] as const,
 };
 
-export const dealKeys = {
-  all: (userId: string) => ["deals", "list", userId] as const,
-  detail: (dealId: string) => ["deals", dealId] as const,
+export const transactionKeys = {
+  all: (userId: string) => ["transactions", "list", userId] as const,
+  detail: (transactionId: string) => ["transactions", transactionId] as const,
 };
 
 export const offerKeys = {
-  detail: (dealId: string) => ["offer-details", dealId] as const,
+  detail: (transactionId: string) => ["offer-details", transactionId] as const,
 };
 
 export const documentKeys = {
-  list: (dealId: string) => ["documents", dealId] as const,
+  list: (transactionId: string) => ["documents", transactionId] as const,
 };
 
 export const deadlineKeys = {
-  list: (dealId: string) => ["deadlines", dealId] as const,
+  list: (transactionId: string) => ["deadlines", transactionId] as const,
 };
 
 export const loanEstimateKeys = {
-  list: (dealId: string) => ["loan-estimates", dealId] as const,
+  list: (transactionId: string) => ["loan-estimates", transactionId] as const,
 };
 
 export const repairItemKeys = {
-  list: (dealId: string) => ["repair-items", dealId] as const,
+  list: (transactionId: string) => ["repair-items", transactionId] as const,
 };
 
 export const insuranceKeys = {
-  list: (dealId: string) => ["insurance-info", dealId] as const,
+  list: (transactionId: string) => ["insurance-info", transactionId] as const,
 };
 
 export const collaboratorKeys = {
-  list: (dealId: string) => ["collaborator-links", dealId] as const,
+  list: (transactionId: string) => ["collaborator-links", transactionId] as const,
 };
 
 export const copilotKeys = {
-  messages: (dealId: string | null) => ["copilot-messages", dealId] as const,
+  messages: (transactionId: string | null) => ["copilot-messages", transactionId] as const,
 };

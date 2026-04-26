@@ -5,7 +5,7 @@ import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useUIStore } from "@/lib/store";
-import { useUpdateDeal } from "@/lib/hooks/mutations";
+import { useUpdateTransaction } from "@/lib/hooks/mutations";
 import { computeLEVariance, computeDaysRemaining } from "@/lib/computed";
 import { formatCurrency } from "@/lib/utils";
 import type { ClosingData } from "@/lib/hooks/use-closing-data";
@@ -23,14 +23,14 @@ function computeBusinessDaysRemaining(uploadDate: string): number {
   return remaining ?? 0;
 }
 
-export function ClosingDisclosureReview({ data, dealId, userId }: { data: ClosingData; dealId: string; userId: string }) {
+export function ClosingDisclosureReview({ data, transactionId, userId }: { data: ClosingData; transactionId: string; userId: string }) {
   const { cdDocument, chosenLE, meta } = data;
-  const updateDeal = useUpdateDeal(dealId, userId);
+  const updateTransaction = useUpdateTransaction(transactionId, userId);
   const { openViewer, setCopilotOpen } = useUIStore();
 
   function toggleCDConfirmed() {
     const updated: Partial<ClosingMetadata> = { ...meta, cd_received_confirmed: !meta.cd_received_confirmed };
-    updateDeal.mutate({ closing_metadata: updated });
+    updateTransaction.mutate({ closing_metadata: updated });
   }
 
   const variance = chosenLE && cdDocument?.extracted_fields

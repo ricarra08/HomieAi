@@ -25,13 +25,13 @@ const SEVERITY_STYLES: Record<string, string> = {
 };
 
 interface RedFlagSummaryProps {
-  dealId: string;
+  transactionId: string;
   inspectionDocs: Document[];
   repairItems: RepairItem[];
 }
 
-export function RedFlagSummary({ dealId, inspectionDocs, repairItems }: RedFlagSummaryProps) {
-  const createRepair = useCreateRepairItem(dealId);
+export function RedFlagSummary({ transactionId, inspectionDocs, repairItems }: RedFlagSummaryProps) {
+  const createRepair = useCreateRepairItem(transactionId);
   const { setCopilotOpen } = useUIStore();
   const [addedFindings, setAddedFindings] = useState<Set<string>>(new Set());
 

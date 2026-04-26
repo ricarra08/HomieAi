@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
-import { useDocuments, useDeadlines, useLoanEstimates, useRepairItems, useDeal } from "./queries";
-import type { Deal, Document, Deadline, LoanEstimate, RepairItem } from "@/lib/types";
+import { useDocuments, useDeadlines, useLoanEstimates, useRepairItems, useTransaction } from "./queries";
+import type { Transaction, Document, Deadline, LoanEstimate, RepairItem } from "@/lib/types";
 
 export interface EscrowData {
-  deal: Deal | null;
+  transaction: Transaction | null;
   documents: Document[];
   inspectionDocs: Document[];
   appraisalDoc: Document | null;
@@ -19,12 +19,12 @@ export interface EscrowData {
   isLoading: boolean;
 }
 
-export function useEscrowData(dealId: string): EscrowData {
-  const { data: deal, isLoading: dealLoading } = useDeal(dealId);
-  const { data: documents, isLoading: docsLoading } = useDocuments(dealId);
-  const { data: deadlines, isLoading: deadlinesLoading } = useDeadlines(dealId);
-  const { data: loanEstimates, isLoading: lesLoading } = useLoanEstimates(dealId);
-  const { data: repairItems, isLoading: repairsLoading } = useRepairItems(dealId);
+export function useEscrowData(transactionId: string): EscrowData {
+  const { data: transaction, isLoading: transactionLoading } = useTransaction(transactionId);
+  const { data: documents, isLoading: docsLoading } = useDocuments(transactionId);
+  const { data: deadlines, isLoading: deadlinesLoading } = useDeadlines(transactionId);
+  const { data: loanEstimates, isLoading: lesLoading } = useLoanEstimates(transactionId);
+  const { data: repairItems, isLoading: repairsLoading } = useRepairItems(transactionId);
 
   const allDocs = documents ?? [];
 
@@ -58,10 +58,10 @@ export function useEscrowData(dealId: string): EscrowData {
     [loanEstimates]
   );
 
-  const isLoading = dealLoading || docsLoading || deadlinesLoading || lesLoading || repairsLoading;
+  const isLoading = transactionLoading || docsLoading || deadlinesLoading || lesLoading || repairsLoading;
 
   return {
-    deal: deal ?? null,
+    transaction: transaction ?? null,
     documents: allDocs,
     inspectionDocs,
     appraisalDoc,

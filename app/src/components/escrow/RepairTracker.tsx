@@ -17,8 +17,8 @@ const SEVERITY_STYLES: Record<string, string> = {
   cosmetic: "bg-muted text-muted-foreground",
 };
 
-function RepairRow({ item, dealId }: { item: RepairItem; dealId: string }) {
-  const updateRepair = useUpdateRepairItem(dealId);
+function RepairRow({ item, transactionId }: { item: RepairItem; transactionId: string }) {
+  const updateRepair = useUpdateRepairItem(transactionId);
   const [editingCost, setEditingCost] = useState(false);
   const [costValue, setCostValue] = useState(item.agreed_cost?.toString() ?? "");
   const costInputRef = useRef<HTMLInputElement>(null);
@@ -109,13 +109,13 @@ function RepairRow({ item, dealId }: { item: RepairItem; dealId: string }) {
 }
 
 interface RepairTrackerProps {
-  dealId: string;
+  transactionId: string;
   repairItems: RepairItem[];
   isLoading?: boolean;
 }
 
-export function RepairTracker({ dealId, repairItems, isLoading }: RepairTrackerProps) {
-  const createRepair = useCreateRepairItem(dealId);
+export function RepairTracker({ transactionId, repairItems, isLoading }: RepairTrackerProps) {
+  const createRepair = useCreateRepairItem(transactionId);
   const [showAdd, setShowAdd] = useState(false);
   const [desc, setDesc] = useState("");
   const [cost, setCost] = useState("");
@@ -141,7 +141,7 @@ export function RepairTracker({ dealId, repairItems, isLoading }: RepairTrackerP
           <div className="h-20 bg-muted rounded-lg animate-pulse" />
         ) : repairItems.length > 0 ? (
           <>
-            {repairItems.map((item) => <RepairRow key={item.id} item={item} dealId={dealId} />)}
+            {repairItems.map((item) => <RepairRow key={item.id} item={item} transactionId={transactionId} />)}
             <div className="flex items-center justify-between pt-3 border-t border-border text-sm">
               <span className="text-muted-foreground">Total Estimated</span>
               <span className="font-medium text-foreground">{formatCurrency(totalEstimated)}</span>

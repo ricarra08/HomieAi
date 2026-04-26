@@ -36,18 +36,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "This link has expired" }, { status: 410 });
   }
 
-  const { data: deal } = await supabase
-    .from("deals")
+  const { data: transaction } = await supabase
+    .from("transactions")
     .select("property_address")
     .eq("id", link.deal_id)
     .single();
 
   return NextResponse.json({
     valid: true,
-    dealId: link.deal_id,
     recipientRole: link.recipient_role,
     requestedDocuments: link.requested_documents,
-    propertyAddress: deal?.property_address ?? "Property",
+    propertyAddress: transaction?.property_address ?? "Property",
     uploadsReceived: link.uploads_received,
   });
 }

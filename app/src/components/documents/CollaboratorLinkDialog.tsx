@@ -22,8 +22,8 @@ function buildUploadUrl(token: string): string {
   return `${typeof window !== "undefined" ? window.location.origin : ""}/upload/${token}`;
 }
 
-function LinkRow({ link, dealId }: { link: CollaboratorLink; dealId: string }) {
-  const revoke = useRevokeCollaboratorLink(dealId);
+function LinkRow({ link, transactionId }: { link: CollaboratorLink; transactionId: string }) {
+  const revoke = useRevokeCollaboratorLink(transactionId);
   const [copied, setCopied] = useState(false);
   const url = buildUploadUrl(link.link_token);
   const isExpired = new Date(link.expires_at) < new Date();
@@ -67,9 +67,9 @@ function LinkRow({ link, dealId }: { link: CollaboratorLink; dealId: string }) {
   );
 }
 
-export function CollaboratorLinkDialog({ dealId }: { dealId: string }) {
-  const { data: links } = useCollaboratorLinks(dealId);
-  const createLink = useCreateCollaboratorLink(dealId);
+export function CollaboratorLinkDialog({ transactionId }: { transactionId: string }) {
+  const { data: links } = useCollaboratorLinks(transactionId);
+  const createLink = useCreateCollaboratorLink(transactionId);
   const [selectedRole, setSelectedRole] = useState<(typeof ROLES)[number]["value"]>("agent");
   const [email, setEmail] = useState("");
   const [open, setOpen] = useState(false);
@@ -130,7 +130,7 @@ export function CollaboratorLinkDialog({ dealId }: { dealId: string }) {
                 {activeLinks.length} active link{activeLinks.length !== 1 ? "s" : ""}
               </p>
               {(links ?? []).map((link) => (
-                <LinkRow key={link.id} link={link} dealId={dealId} />
+                <LinkRow key={link.id} link={link} transactionId={transactionId} />
               ))}
             </div>
           )}

@@ -24,8 +24,8 @@ const urgencyBg: Record<string, string> = {
   waived: "bg-muted",
 };
 
-function DeadlineRow({ deadline, dealId, maxDays }: { deadline: Deadline; dealId: string; maxDays: number }) {
-  const updateStatus = useUpdateDeadlineStatus(dealId);
+function DeadlineRow({ deadline, transactionId, maxDays }: { deadline: Deadline; transactionId: string; maxDays: number }) {
+  const updateStatus = useUpdateDeadlineStatus(transactionId);
   const urgency = computeDeadlineUrgency(deadline);
   const days = computeDaysRemaining(deadline.due_date);
   const isDone = urgency === "completed" || urgency === "waived";
@@ -90,12 +90,12 @@ function DeadlineRow({ deadline, dealId, maxDays }: { deadline: Deadline; dealId
 }
 
 interface ContingencyCountdownProps {
-  dealId: string;
+  transactionId: string;
   deadlines: Deadline[];
   isLoading?: boolean;
 }
 
-export function ContingencyCountdown({ dealId, deadlines, isLoading }: ContingencyCountdownProps) {
+export function ContingencyCountdown({ transactionId, deadlines, isLoading }: ContingencyCountdownProps) {
   const { setCopilotOpen } = useUIStore();
 
   const active = deadlines.filter((d) => d.status !== "completed" && d.status !== "waived");
@@ -130,17 +130,17 @@ export function ContingencyCountdown({ dealId, deadlines, isLoading }: Contingen
               {active.length > 0 ? "Active Deadlines" : "All deadlines resolved"}
             </span>
           </div>
-          {active.map((d) => <DeadlineRow key={d.id} deadline={d} dealId={dealId} maxDays={maxDays} />)}
+          {active.map((d) => <DeadlineRow key={d.id} deadline={d} transactionId={transactionId} maxDays={maxDays} />)}
           {done.length > 0 && (
             <>
               <p className="text-xs text-muted-foreground mt-4 mb-2 uppercase tracking-wider">Resolved</p>
-              {done.map((d) => <DeadlineRow key={d.id} deadline={d} dealId={dealId} maxDays={maxDays} />)}
+              {done.map((d) => <DeadlineRow key={d.id} deadline={d} transactionId={transactionId} maxDays={maxDays} />)}
             </>
           )}
         </div>
       ) : (
         <p className="text-base text-muted-foreground py-4 text-center">
-          No deadlines set. Deadlines are auto-created when you set up your deal.
+          No deadlines set. Deadlines are auto-created when you set up your transaction.
         </p>
       )}
       {active.length > 0 && (

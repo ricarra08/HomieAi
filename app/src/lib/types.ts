@@ -14,9 +14,12 @@ export interface SavedHome {
   created_at: string;
 }
 
-export interface Deal {
+export interface Transaction {
   id: string;
   user_id: string;
+  agent_id: string | null;
+  client_name: string | null;
+  client_email: string | null;
   saved_home_id: string | null;
   property_address: string;
   purchase_price: number;

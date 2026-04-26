@@ -4,7 +4,7 @@ import { Shield, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
 import { InlineDocUpload } from "@/components/escrow/InlineDocUpload";
-import { useUpdateDeal } from "@/lib/hooks/mutations";
+import { useUpdateTransaction } from "@/lib/hooks/mutations";
 import { useDocuments } from "@/lib/hooks/queries";
 import { computeCashToClose } from "@/lib/computed";
 import { formatCurrency } from "@/lib/utils";
@@ -17,12 +17,12 @@ const VERIFICATION_STEPS = [
   "I understand wire fraud is irreversible and I will NEVER wire based on email alone",
 ];
 
-export function WireTransferSafeSend({ data, dealId, userId }: { data: ClosingData; dealId: string; userId: string }) {
-  const { meta, chosenLE, deal } = data;
-  const updateDeal = useUpdateDeal(dealId, userId);
-  const { data: allDocs } = useDocuments(dealId);
+export function WireTransferSafeSend({ data, transactionId, userId }: { data: ClosingData; transactionId: string; userId: string }) {
+  const { meta, chosenLE, transaction } = data;
+  const updateTransaction = useUpdateTransaction(transactionId, userId);
+  const { data: allDocs } = useDocuments(transactionId);
 
-  const wireAmount = computeCashToClose(chosenLE, { earnestMoney: deal?.earnest_money_amount ?? 0 });
+  const wireAmount = computeCashToClose(chosenLE, { earnestMoney: transaction?.earnest_money_amount ?? 0 });
   const allVerified = meta.wire_verified_steps.every(Boolean);
   const isWired = meta.wire_status === "wired" || meta.wire_status === "confirmed";
 
@@ -36,15 +36,15 @@ export function WireTransferSafeSend({ data, dealId, userId }: { data: ClosingDa
     const updated = [...meta.wire_verified_steps] as [boolean, boolean, boolean];
     updated[index] = !updated[index];
     const patch: Partial<ClosingMetadata> = { ...meta, wire_verified_steps: updated };
-    updateDeal.mutate({ closing_metadata: patch });
+    updateTransaction.mutate({ closing_metadata: patch });
   }
 
   function handleReceiptUploaded(docId: string) {
-    updateDeal.mutate({ closing_metadata: { ...meta, wire_receipt_doc_id: docId } });
+    updateTransaction.mutate({ closing_metadata: { ...meta, wire_receipt_doc_id: docId } });
   }
 
   function markWired() {
-    updateDeal.mutate({ closing_metadata: { ...meta, wire_status: "wired" } });
+    updateTransaction.mutate({ closing_metadata: { ...meta, wire_status: "wired" } });
   }
 
   return (
@@ -89,7 +89,7 @@ export function WireTransferSafeSend({ data, dealId, userId }: { data: ClosingDa
 
         {!isWired && (
           <InlineDocUpload
-            dealId={dealId}
+            transactionId={transactionId}
             existingDoc={receiptDoc}
             allDocs={allDocs ?? []}
             label="Upload wire receipt"

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { computeDaysRemaining } from "@/lib/computed";
 import { Calendar, DollarSign, Clock, MapPin } from "lucide-react";
 
-interface DealData {
+interface TransactionData {
   address: string;
   acceptanceDate: string;
   closingDate: string;
@@ -37,8 +37,8 @@ function addDays(date: string, days: string): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export function DealSummaryPreview({ dealData }: { dealData: DealData }) {
-  const daysRemaining = computeDaysRemaining(dealData.closingDate || null);
+export function TransactionSummaryPreview({ transactionData }: { transactionData: TransactionData }) {
+  const daysRemaining = computeDaysRemaining(transactionData.closingDate || null);
 
   return (
     <div className="space-y-6">
@@ -52,12 +52,12 @@ export function DealSummaryPreview({ dealData }: { dealData: DealData }) {
           <div>
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-xl font-semibold">{dealData.address || "Your Property"}</h3>
+              <h3 className="text-xl font-semibold">{transactionData.address || "Your Property"}</h3>
             </div>
             <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
-              {dealData.closingDate && <span>Closing: {formatDate(dealData.closingDate)}</span>}
+              {transactionData.closingDate && <span>Closing: {formatDate(transactionData.closingDate)}</span>}
               <span>&middot;</span>
-              <span>Purchase Price: {formatPrice(dealData.purchasePrice)}</span>
+              <span>Purchase Price: {formatPrice(transactionData.purchasePrice)}</span>
             </div>
           </div>
           {daysRemaining !== null && (
@@ -83,7 +83,7 @@ export function DealSummaryPreview({ dealData }: { dealData: DealData }) {
             <h3 className="text-base font-semibold">Earnest Money Deposit</h3>
           </div>
           <div>
-            <p className="text-2xl font-semibold">{formatPrice(dealData.earnestMoney)}</p>
+            <p className="text-2xl font-semibold">{formatPrice(transactionData.earnestMoney)}</p>
             <p className="text-sm text-muted-foreground mt-1">Due within 3 business days of acceptance</p>
           </div>
           <Badge className="bg-warning/10 text-warning text-sm">Pending</Badge>
@@ -95,22 +95,22 @@ export function DealSummaryPreview({ dealData }: { dealData: DealData }) {
             <h3 className="text-base font-semibold">Contingency Countdown</h3>
           </div>
           <div className="space-y-2">
-            {Number(dealData.inspectionDays) > 0 && (
+            {Number(transactionData.inspectionDays) > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-foreground">Inspection</span>
-                <span className="text-muted-foreground">Due {addDays(dealData.acceptanceDate, dealData.inspectionDays)}</span>
+                <span className="text-muted-foreground">Due {addDays(transactionData.acceptanceDate, transactionData.inspectionDays)}</span>
               </div>
             )}
-            {Number(dealData.appraisalDays) > 0 && (
+            {Number(transactionData.appraisalDays) > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-foreground">Appraisal</span>
-                <span className="text-muted-foreground">Due {addDays(dealData.acceptanceDate, dealData.appraisalDays)}</span>
+                <span className="text-muted-foreground">Due {addDays(transactionData.acceptanceDate, transactionData.appraisalDays)}</span>
               </div>
             )}
-            {Number(dealData.loanDays) > 0 && (
+            {Number(transactionData.loanDays) > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-foreground">Loan</span>
-                <span className="text-muted-foreground">Due {addDays(dealData.acceptanceDate, dealData.loanDays)}</span>
+                <span className="text-muted-foreground">Due {addDays(transactionData.acceptanceDate, transactionData.loanDays)}</span>
               </div>
             )}
           </div>

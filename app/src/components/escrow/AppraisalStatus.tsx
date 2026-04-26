@@ -7,7 +7,7 @@ import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { InlineDocUpload } from "./InlineDocUpload";
 import { useUIStore } from "@/lib/store";
 import { formatCurrency } from "@/lib/utils";
-import type { Document, Deal } from "@/lib/types";
+import type { Document, Transaction } from "@/lib/types";
 
 function getAppraisedValue(doc: Document): number | null {
   const fields = doc.extracted_fields as Record<string, { value: unknown }> | null;
@@ -17,18 +17,18 @@ function getAppraisedValue(doc: Document): number | null {
 }
 
 interface AppraisalStatusProps {
-  dealId: string;
+  transactionId: string;
   appraisalDoc: Document | null;
-  deal: Deal | null;
+  transaction: Transaction | null;
   allDocs: Document[];
 }
 
-export function AppraisalStatus({ dealId, appraisalDoc, deal, allDocs }: AppraisalStatusProps) {
+export function AppraisalStatus({ transactionId, appraisalDoc, transaction, allDocs }: AppraisalStatusProps) {
   const { setCopilotOpen } = useUIStore();
 
   const isProcessed = appraisalDoc?.status === "processed";
   const appraisedValue = isProcessed && appraisalDoc ? getAppraisedValue(appraisalDoc) : null;
-  const purchasePrice = deal?.purchase_price ?? 0;
+  const purchasePrice = transaction?.purchase_price ?? 0;
   const gap = appraisedValue != null ? purchasePrice - appraisedValue : null;
   const hasGap = gap != null && gap > 0;
 
@@ -38,7 +38,7 @@ export function AppraisalStatus({ dealId, appraisalDoc, deal, allDocs }: Apprais
       window.dispatchEvent(new CustomEvent("copilot:prefill", {
         detail: hasGap
           ? "My appraisal came in below the purchase price. What are my options?"
-          : "Explain my appraisal results and what they mean for my deal.",
+          : "Explain my appraisal results and what they mean for my purchase.",
       }));
     }, 100);
   }
@@ -46,7 +46,7 @@ export function AppraisalStatus({ dealId, appraisalDoc, deal, allDocs }: Apprais
   return (
     <CollapsibleCard title="Appraisal" subtitle="Property valuation">
       <div className="space-y-4">
-        <InlineDocUpload dealId={dealId} existingDoc={appraisalDoc} allDocs={allDocs} label="Drop appraisal report here" uploadHints={{ docType: "appraisal", category: "appraisal", stage: "escrow" }} />
+        <InlineDocUpload transactionId={transactionId} existingDoc={appraisalDoc} allDocs={allDocs} label="Drop appraisal report here" uploadHints={{ docType: "appraisal", category: "appraisal", stage: "escrow" }} />
 
         {appraisedValue != null && (
           <>

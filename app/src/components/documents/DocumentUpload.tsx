@@ -6,11 +6,11 @@ import { Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface DocumentUploadProps {
-  dealId: string;
+  transactionId: string;
 }
 
-export function DocumentUpload({ dealId }: DocumentUploadProps) {
-  const upload = useUploadDocument(dealId);
+export function DocumentUpload({ transactionId }: DocumentUploadProps) {
+  const upload = useUploadDocument(transactionId);
   const [dragOver, setDragOver] = useState(false);
 
   const handleFiles = useCallback(

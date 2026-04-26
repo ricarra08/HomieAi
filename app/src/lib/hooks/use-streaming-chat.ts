@@ -8,7 +8,7 @@ import type { Phase } from "@/lib/types";
 interface UseStreamingChatReturn {
   sendMessage: (params: {
     message: string;
-    dealId: string | null;
+    transactionId: string | null;
     userId: string;
     phase: Phase;
     history: { role: "user" | "assistant"; content: string }[];
@@ -35,7 +35,7 @@ export function useStreamingChat(): UseStreamingChatReturn {
   const sendMessage = useCallback(
     async (params: {
       message: string;
-      dealId: string | null;
+      transactionId: string | null;
       userId: string;
       phase: Phase;
       history: { role: "user" | "assistant"; content: string }[];
@@ -51,7 +51,13 @@ export function useStreamingChat(): UseStreamingChatReturn {
         const res = await fetch("/api/copilot/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(params),
+          body: JSON.stringify({
+            transactionId: params.transactionId,
+            userId: params.userId,
+            phase: params.phase,
+            message: params.message,
+            history: params.history,
+          }),
           signal: controller.signal,
         });
 
@@ -78,7 +84,11 @@ export function useStreamingChat(): UseStreamingChatReturn {
         if (mountedRef.current) {
           setIsStreaming(false);
         }
-        await qc.invalidateQueries({ queryKey: copilotKeys.messages(params.dealId) });
+        // Refetch persisted messages first, then clear streaming text
+        // to prevent a flash of empty content between stream end and refetch
+        await qc.invalidateQueries({ queryKey: copilotKeys.messages(params.transactionId) });
+        // Small delay so the refetched messages render before we clear the stream
+        await new Promise((r) => setTimeout(r, 100));
         if (mountedRef.current) {
           setStreamingContent("");
         }

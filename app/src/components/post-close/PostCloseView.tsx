@@ -5,7 +5,7 @@ import { Download, FileText, Home, Wrench, TrendingUp, Loader2 } from "lucide-re
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useDeal, useDocuments, useLoanEstimates } from "@/lib/hooks/queries";
+import { useTransaction, useDocuments, useLoanEstimates } from "@/lib/hooks/queries";
 import { computeMonthlyPI, computeCashToClose } from "@/lib/computed";
 import { formatCurrency } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -52,14 +52,14 @@ function DocumentArchiveRow({ doc }: { doc: { id: string; name: string; file_pat
   );
 }
 
-export function PostCloseView({ dealId }: { dealId: string }) {
-  const { data: deal } = useDeal(dealId);
-  const { data: documents } = useDocuments(dealId);
-  const { data: loanEstimates } = useLoanEstimates(dealId);
+export function PostCloseView({ transactionId }: { transactionId: string }) {
+  const { data: transaction } = useTransaction(transactionId);
+  const { data: documents } = useDocuments(transactionId);
+  const { data: loanEstimates } = useLoanEstimates(transactionId);
 
   const chosenLE = (loanEstimates ?? []).find((le) => le.is_chosen) ?? null;
   const monthlyPI = chosenLE ? computeMonthlyPI(chosenLE.loan_amount, chosenLE.rate) : null;
-  const cashToClose = computeCashToClose(chosenLE, { earnestMoney: deal?.earnest_money_amount ?? 0 });
+  const cashToClose = computeCashToClose(chosenLE, { earnestMoney: transaction?.earnest_money_amount ?? 0 });
   const allDocs = documents ?? [];
 
   return (
@@ -67,22 +67,22 @@ export function PostCloseView({ dealId }: { dealId: string }) {
       <div className="text-center py-8">
         <div className="text-6xl mb-4">🎉</div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Congratulations!</h1>
-        {deal && (
+        {transaction && (
           <p className="text-lg text-muted-foreground mt-2">
-            You&apos;ve successfully closed on <span className="font-medium text-foreground">{deal.property_address}</span>
+            You&apos;ve successfully closed on <span className="font-medium text-foreground">{transaction.property_address}</span>
           </p>
         )}
-        {deal?.closing_date && (
-          <p className="text-sm text-muted-foreground mt-1">Closing Date: {formatDate(deal.closing_date)}</p>
+        {transaction?.closing_date && (
+          <p className="text-sm text-muted-foreground mt-1">Closing Date: {formatDate(transaction.closing_date)}</p>
         )}
       </div>
 
-      <CollapsibleCard title="Deal Summary" subtitle={deal ? formatCurrency(deal.purchase_price) : ""}>
+      <CollapsibleCard title="Transaction Summary" subtitle={transaction ? formatCurrency(transaction.purchase_price) : ""}>
         <div className="space-y-2 text-sm">
-          {deal && (
+          {transaction && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">Purchase Price</span>
-              <span className="text-foreground font-medium">{formatCurrency(deal.purchase_price)}</span>
+              <span className="text-foreground font-medium">{formatCurrency(transaction.purchase_price)}</span>
             </div>
           )}
           {chosenLE && (
@@ -119,7 +119,7 @@ export function PostCloseView({ dealId }: { dealId: string }) {
       <CollapsibleCard title="Document Archive" subtitle={`${allDocs.length} document${allDocs.length !== 1 ? "s" : ""}`}>
         <div className="divide-y divide-border">
           {allDocs.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">No documents in this deal.</p>
+            <p className="text-sm text-muted-foreground py-4 text-center">No documents in this transaction.</p>
           ) : (
             allDocs.map((doc) => <DocumentArchiveRow key={doc.id} doc={doc} />)
           )}

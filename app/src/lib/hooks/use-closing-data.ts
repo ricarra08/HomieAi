@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { useDocuments, useDeadlines, useLoanEstimates, useRepairItems, useDeal, useInsuranceInfo } from "./queries";
-import type { Deal, Document, Deadline, LoanEstimate, RepairItem, InsuranceInfo, ClosingMetadata } from "@/lib/types";
+import { useDocuments, useDeadlines, useLoanEstimates, useRepairItems, useTransaction, useInsuranceInfo } from "./queries";
+import type { Transaction, Document, Deadline, LoanEstimate, RepairItem, InsuranceInfo, ClosingMetadata } from "@/lib/types";
 import { DEFAULT_CLOSING_METADATA } from "@/lib/types";
 
 export interface ClosingData {
-  deal: Deal | null;
+  transaction: Transaction | null;
   meta: ClosingMetadata;
   documents: Document[];
   cdDocument: Document | null;
@@ -21,13 +21,13 @@ export interface ClosingData {
   isLoading: boolean;
 }
 
-export function useClosingData(dealId: string): ClosingData {
-  const { data: deal, isLoading: dealLoading } = useDeal(dealId);
-  const { data: documents, isLoading: docsLoading } = useDocuments(dealId);
-  const { data: deadlines, isLoading: deadlinesLoading } = useDeadlines(dealId);
-  const { data: loanEstimates, isLoading: lesLoading } = useLoanEstimates(dealId);
-  const { data: repairItems, isLoading: repairsLoading } = useRepairItems(dealId);
-  const { data: insuranceList, isLoading: insuranceLoading } = useInsuranceInfo(dealId);
+export function useClosingData(transactionId: string): ClosingData {
+  const { data: transaction, isLoading: transactionLoading } = useTransaction(transactionId);
+  const { data: documents, isLoading: docsLoading } = useDocuments(transactionId);
+  const { data: deadlines, isLoading: deadlinesLoading } = useDeadlines(transactionId);
+  const { data: loanEstimates, isLoading: lesLoading } = useLoanEstimates(transactionId);
+  const { data: repairItems, isLoading: repairsLoading } = useRepairItems(transactionId);
+  const { data: insuranceList, isLoading: insuranceLoading } = useInsuranceInfo(transactionId);
 
   const allDocs = useMemo(() => documents ?? [], [documents]);
 
@@ -62,16 +62,16 @@ export function useClosingData(dealId: string): ClosingData {
   );
 
   const meta: ClosingMetadata = useMemo(() => {
-    if (deal?.closing_metadata && typeof deal.closing_metadata === "object") {
-      return { ...DEFAULT_CLOSING_METADATA, ...deal.closing_metadata };
+    if (transaction?.closing_metadata && typeof transaction.closing_metadata === "object") {
+      return { ...DEFAULT_CLOSING_METADATA, ...transaction.closing_metadata };
     }
     return DEFAULT_CLOSING_METADATA;
-  }, [deal]);
+  }, [transaction]);
 
-  const isLoading = dealLoading || docsLoading || deadlinesLoading || lesLoading || repairsLoading || insuranceLoading;
+  const isLoading = transactionLoading || docsLoading || deadlinesLoading || lesLoading || repairsLoading || insuranceLoading;
 
   return {
-    deal: deal ?? null,
+    transaction: transaction ?? null,
     meta,
     documents: allDocs,
     cdDocument,

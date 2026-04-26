@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 import {
   savedHomeKeys,
-  dealKeys,
+  transactionKeys,
   offerKeys,
   documentKeys,
   deadlineKeys,
@@ -15,6 +16,11 @@ import {
 import type { Phase } from "@/lib/types";
 
 const supabase = createClient();
+
+function handleMutationError(error: Error, context?: string) {
+  console.error(`[mutation${context ? `:${context}` : ""}]`, error);
+  toast.error(context ? `Failed to ${context}` : "Something went wrong. Please try again.");
+}
 
 // -- Saved Homes (Shopping) --
 
@@ -59,12 +65,12 @@ export function useDeleteSavedHome(userId: string) {
   });
 }
 
-// -- Deal --
+// -- Transaction --
 
-export function useCreateDeal(userId: string) {
+export function useCreateTransaction(userId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (deal: {
+    mutationFn: async (transaction: {
       property_address: string;
       purchase_price: number;
       current_phase?: Phase;
@@ -76,11 +82,11 @@ export function useCreateDeal(userId: string) {
       earnest_money_amount?: number;
     }) => {
       const { data, error } = await supabase
-        .from("deals")
+        .from("transactions")
         .insert({
-          ...deal,
+          ...transaction,
           user_id: userId,
-          current_phase: deal.current_phase ?? "offer",
+          current_phase: transaction.current_phase ?? "offer",
         })
         .select()
         .single();
@@ -88,66 +94,72 @@ export function useCreateDeal(userId: string) {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: dealKeys.all(userId) });
+      qc.invalidateQueries({ queryKey: transactionKeys.all(userId) });
+      toast.success("Transaction created");
     },
   });
 }
 
-export function useUpdateDeal(dealId: string, userId: string) {
+export function useUpdateTransaction(transactionId: string, userId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (updates: Record<string, unknown>) => {
       const { data, error } = await supabase
-        .from("deals")
+        .from("transactions")
         .update(updates)
-        .eq("id", dealId)
+        .eq("id", transactionId)
         .select()
         .single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: dealKeys.detail(dealId) });
-      qc.invalidateQueries({ queryKey: dealKeys.all(userId) });
+      qc.invalidateQueries({ queryKey: transactionKeys.detail(transactionId) });
+      qc.invalidateQueries({ queryKey: transactionKeys.all(userId) });
     },
   });
 }
 
 // -- Phase Transition --
 
-export function useTransitionPhase(dealId: string, userId: string) {
+export function useTransitionPhase(transactionId: string, userId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (newPhase: Phase) => {
       const { data, error } = await supabase
-        .from("deals")
+        .from("transactions")
         .update({ current_phase: newPhase })
-        .eq("id", dealId)
+        .eq("id", transactionId)
         .select()
         .single();
       if (error) throw error;
       return data;
     },
     onSuccess: (_data, newPhase) => {
-      qc.invalidateQueries({ queryKey: dealKeys.detail(dealId) });
-      qc.invalidateQueries({ queryKey: dealKeys.all(userId) });
+      qc.invalidateQueries({ queryKey: transactionKeys.detail(transactionId) });
+      qc.invalidateQueries({ queryKey: transactionKeys.all(userId) });
       if (newPhase === "escrow") {
-        qc.invalidateQueries({ queryKey: offerKeys.detail(dealId) });
-        qc.invalidateQueries({ queryKey: deadlineKeys.list(dealId) });
+        qc.invalidateQueries({ queryKey: offerKeys.detail(transactionId) });
+        qc.invalidateQueries({ queryKey: deadlineKeys.list(transactionId) });
       }
       if (newPhase === "closing" || newPhase === "post-close") {
-        qc.invalidateQueries({ queryKey: documentKeys.list(dealId) });
-        qc.invalidateQueries({ queryKey: insuranceKeys.list(dealId) });
-        qc.invalidateQueries({ queryKey: loanEstimateKeys.list(dealId) });
-        qc.invalidateQueries({ queryKey: deadlineKeys.list(dealId) });
+        qc.invalidateQueries({ queryKey: documentKeys.list(transactionId) });
+        qc.invalidateQueries({ queryKey: insuranceKeys.list(transactionId) });
+        qc.invalidateQueries({ queryKey: loanEstimateKeys.list(transactionId) });
+        qc.invalidateQueries({ queryKey: deadlineKeys.list(transactionId) });
       }
+      const phaseLabels: Record<Phase, string> = {
+        shopping: "Shopping", offer: "Offer", escrow: "Escrow",
+        closing: "Closing", "post-close": "Post-Close",
+      };
+      toast.success(`Moved to ${phaseLabels[newPhase]}`);
     },
   });
 }
 
 // -- Offer Details --
 
-export function useCreateOfferDetails(dealId: string) {
+export function useCreateOfferDetails(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (offer: {
@@ -161,40 +173,40 @@ export function useCreateOfferDetails(dealId: string) {
     }) => {
       const { data, error } = await supabase
         .from("offer_details")
-        .insert({ ...offer, deal_id: dealId })
+        .insert({ ...offer, deal_id: transactionId })
         .select()
         .single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: offerKeys.detail(dealId) });
+      qc.invalidateQueries({ queryKey: offerKeys.detail(transactionId) });
     },
   });
 }
 
-export function useUpdateOfferDetails(dealId: string) {
+export function useUpdateOfferDetails(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (updates: Record<string, unknown>) => {
       const { data, error } = await supabase
         .from("offer_details")
         .update(updates)
-        .eq("deal_id", dealId)
+        .eq("deal_id", transactionId)
         .select()
         .single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: offerKeys.detail(dealId) });
+      qc.invalidateQueries({ queryKey: offerKeys.detail(transactionId) });
     },
   });
 }
 
 // -- Documents --
 
-export function useUploadDocument(dealId: string) {
+export function useUploadDocument(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (params: {
@@ -206,7 +218,7 @@ export function useUploadDocument(dealId: string) {
       inspectionSubtype?: string;
     }) => {
       const { file, sourceType = "buyer-upload", docType, category, stage, inspectionSubtype } = params;
-      const filePath = `${dealId}/${crypto.randomUUID()}/${file.name}`;
+      const filePath = `${transactionId}/${crypto.randomUUID()}/${file.name}`;
 
       const { error: uploadError } = await supabase.storage
         .from("deal-documents")
@@ -214,7 +226,7 @@ export function useUploadDocument(dealId: string) {
       if (uploadError) throw uploadError;
 
       const row: Record<string, unknown> = {
-        deal_id: dealId,
+        deal_id: transactionId,
         name: file.name,
         file_path: filePath,
         file_size: file.size,
@@ -246,21 +258,21 @@ export function useUploadDocument(dealId: string) {
           console.error(`[upload] Document processing failed for ${data.id}: ${res.status}`);
         }
         // Always invalidate so the UI picks up status changes (including "failed")
-        qc.invalidateQueries({ queryKey: documentKeys.list(dealId) });
+        qc.invalidateQueries({ queryKey: documentKeys.list(transactionId) });
       }).catch((err) => {
         console.error(`[upload] Document processing request failed for ${data.id}:`, err);
-        qc.invalidateQueries({ queryKey: documentKeys.list(dealId) });
+        qc.invalidateQueries({ queryKey: documentKeys.list(transactionId) });
       });
 
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: documentKeys.list(dealId) });
+      qc.invalidateQueries({ queryKey: documentKeys.list(transactionId) });
     },
   });
 }
 
-export function useUpdateDocument(dealId: string) {
+export function useUpdateDocument(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (params: { documentId: string; updates: Record<string, unknown> }) => {
@@ -274,12 +286,12 @@ export function useUpdateDocument(dealId: string) {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: documentKeys.list(dealId) });
+      qc.invalidateQueries({ queryKey: documentKeys.list(transactionId) });
     },
   });
 }
 
-export function useDeleteDocument(dealId: string) {
+export function useDeleteDocument(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (params: { documentId: string; filePath: string }) => {
@@ -291,14 +303,14 @@ export function useDeleteDocument(dealId: string) {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: documentKeys.list(dealId) });
+      qc.invalidateQueries({ queryKey: documentKeys.list(transactionId) });
     },
   });
 }
 
 // -- Deadlines --
 
-export function useUpdateDeadlineStatus(dealId: string) {
+export function useUpdateDeadlineStatus(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (params: { deadlineId: string; status: string }) => {
@@ -312,12 +324,12 @@ export function useUpdateDeadlineStatus(dealId: string) {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: deadlineKeys.list(dealId) });
+      qc.invalidateQueries({ queryKey: deadlineKeys.list(transactionId) });
     },
   });
 }
 
-export function useCreateDeadlines(dealId: string) {
+export function useCreateDeadlines(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (
@@ -327,7 +339,7 @@ export function useCreateDeadlines(dealId: string) {
         due_date: string;
       }[]
     ) => {
-      const rows = deadlines.map((d) => ({ ...d, deal_id: dealId }));
+      const rows = deadlines.map((d) => ({ ...d, deal_id: transactionId }));
       const { data, error } = await supabase
         .from("deadlines")
         .insert(rows)
@@ -336,14 +348,14 @@ export function useCreateDeadlines(dealId: string) {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: deadlineKeys.list(dealId) });
+      qc.invalidateQueries({ queryKey: deadlineKeys.list(transactionId) });
     },
   });
 }
 
 // -- Loan Estimates --
 
-export function useCreateLoanEstimate(dealId: string) {
+export function useCreateLoanEstimate(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (le: {
@@ -366,19 +378,20 @@ export function useCreateLoanEstimate(dealId: string) {
     }) => {
       const { data, error } = await supabase
         .from("loan_estimates")
-        .insert({ ...le, deal_id: dealId })
+        .insert({ ...le, deal_id: transactionId })
         .select()
         .single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: loanEstimateKeys.list(dealId) });
+      qc.invalidateQueries({ queryKey: loanEstimateKeys.list(transactionId) });
+      toast.success("Loan estimate saved");
     },
   });
 }
 
-export function useUpdateLoanEstimate(dealId: string) {
+export function useUpdateLoanEstimate(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (params: { leId: string; updates: Record<string, unknown> }) => {
@@ -387,26 +400,26 @@ export function useUpdateLoanEstimate(dealId: string) {
         .from("loan_estimates")
         .update(params.updates)
         .eq("id", params.leId)
-        .eq("deal_id", dealId)
+        .eq("deal_id", transactionId)
         .select()
         .single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: loanEstimateKeys.list(dealId) });
+      qc.invalidateQueries({ queryKey: loanEstimateKeys.list(transactionId) });
     },
   });
 }
 
-export function useSetChosenLE(dealId: string) {
+export function useSetChosenLE(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (leId: string) => {
       await supabase
         .from("loan_estimates")
         .update({ is_chosen: false })
-        .eq("deal_id", dealId);
+        .eq("deal_id", transactionId);
 
       const { data, error } = await supabase
         .from("loan_estimates")
@@ -418,14 +431,14 @@ export function useSetChosenLE(dealId: string) {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: loanEstimateKeys.list(dealId) });
+      qc.invalidateQueries({ queryKey: loanEstimateKeys.list(transactionId) });
     },
   });
 }
 
 // -- Repair Items --
 
-export function useCreateRepairItem(dealId: string) {
+export function useCreateRepairItem(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (item: {
@@ -437,19 +450,19 @@ export function useCreateRepairItem(dealId: string) {
     }) => {
       const { data, error } = await supabase
         .from("repair_items")
-        .insert({ ...item, deal_id: dealId })
+        .insert({ ...item, deal_id: transactionId })
         .select()
         .single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: repairItemKeys.list(dealId) });
+      qc.invalidateQueries({ queryKey: repairItemKeys.list(transactionId) });
     },
   });
 }
 
-export function useUpdateRepairItem(dealId: string) {
+export function useUpdateRepairItem(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (params: {
@@ -466,7 +479,7 @@ export function useUpdateRepairItem(dealId: string) {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: repairItemKeys.list(dealId) });
+      qc.invalidateQueries({ queryKey: repairItemKeys.list(transactionId) });
     },
   });
 }
@@ -475,7 +488,7 @@ export function useUpdateRepairItem(dealId: string) {
 
 export function useSendCopilotMessage(
   userId: string,
-  dealId: string | null,
+  transactionId: string | null,
   phase: Phase
 ) {
   const qc = useQueryClient();
@@ -485,7 +498,7 @@ export function useSendCopilotMessage(
         .from("copilot_messages")
         .insert({
           user_id: userId,
-          deal_id: dealId,
+          deal_id: transactionId,
           role: "user",
           content,
           phase,
@@ -496,14 +509,14 @@ export function useSendCopilotMessage(
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: copilotKeys.messages(dealId) });
+      qc.invalidateQueries({ queryKey: copilotKeys.messages(transactionId) });
     },
   });
 }
 
 // -- Insurance --
 
-export function useCreateInsuranceInfo(dealId: string) {
+export function useCreateInsuranceInfo(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (info: {
@@ -519,19 +532,19 @@ export function useCreateInsuranceInfo(dealId: string) {
     }) => {
       const { data, error } = await supabase
         .from("insurance_info")
-        .insert({ ...info, deal_id: dealId })
+        .insert({ ...info, deal_id: transactionId })
         .select()
         .single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: insuranceKeys.list(dealId) });
+      qc.invalidateQueries({ queryKey: insuranceKeys.list(transactionId) });
     },
   });
 }
 
-export function useUpdateInsuranceInfo(dealId: string) {
+export function useUpdateInsuranceInfo(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (params: { infoId: string; updates: Record<string, unknown> }) => {
@@ -545,14 +558,14 @@ export function useUpdateInsuranceInfo(dealId: string) {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: insuranceKeys.list(dealId) });
+      qc.invalidateQueries({ queryKey: insuranceKeys.list(transactionId) });
     },
   });
 }
 
 // -- Collaborator Links --
 
-export function useCreateCollaboratorLink(dealId: string) {
+export function useCreateCollaboratorLink(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (params: {
@@ -563,7 +576,8 @@ export function useCreateCollaboratorLink(dealId: string) {
       const { data, error } = await supabase
         .from("collaborator_links")
         .insert({
-          deal_id: dealId,
+          deal_id: transactionId,
+          link_token: crypto.randomUUID(),
           recipient_role: params.recipientRole,
           recipient_email: params.recipientEmail ?? null,
           requested_documents: params.requestedDocuments ?? null,
@@ -574,12 +588,13 @@ export function useCreateCollaboratorLink(dealId: string) {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: collaboratorKeys.list(dealId) });
+      qc.invalidateQueries({ queryKey: collaboratorKeys.list(transactionId) });
+      toast.success("Upload link created");
     },
   });
 }
 
-export function useRevokeCollaboratorLink(dealId: string) {
+export function useRevokeCollaboratorLink(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (linkId: string) => {
@@ -590,7 +605,7 @@ export function useRevokeCollaboratorLink(dealId: string) {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: collaboratorKeys.list(dealId) });
+      qc.invalidateQueries({ queryKey: collaboratorKeys.list(transactionId) });
     },
   });
 }

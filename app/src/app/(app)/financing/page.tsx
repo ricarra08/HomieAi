@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUIStore } from "@/lib/store";
-import { useLoanEstimates, useDocuments, useDeal } from "@/lib/hooks/queries";
+import { useLoanEstimates, useDocuments, useTransaction } from "@/lib/hooks/queries";
 import { LECard } from "@/components/financing/LECard";
 import { LEFormModal } from "@/components/financing/LEFormModal";
 import { LEComparisonTable } from "@/components/financing/LEComparisonTable";
@@ -14,13 +14,13 @@ import { DocumentDetailView } from "@/components/documents/SlideOverViewer";
 import type { LoanEstimate } from "@/lib/types";
 
 export default function FinancingPage() {
-  const activeDealId = useUIStore((s) => s.activeDealId);
+  const activeTransactionId = useUIStore((s) => s.activeTransactionId);
   const selectedLEIds = useUIStore((s) => s.selectedLEIds);
   const { viewerDocId, viewerOpen } = useUIStore();
 
-  const { data: estimates, isLoading } = useLoanEstimates(activeDealId);
-  const { data: documents } = useDocuments(activeDealId);
-  const { data: deal } = useDeal(activeDealId);
+  const { data: estimates, isLoading } = useLoanEstimates(activeTransactionId);
+  const { data: documents } = useDocuments(activeTransactionId);
+  const { data: transaction } = useTransaction(activeTransactionId);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingLE, setEditingLE] = useState<LoanEstimate | null>(null);
@@ -29,7 +29,7 @@ export default function FinancingPage() {
     ? documents?.find((d) => d.id === viewerDocId)
     : null;
 
-  if (!activeDealId) {
+  if (!activeTransactionId) {
     return (
       <div className="space-y-6">
         <div>
@@ -117,15 +117,17 @@ export default function FinancingPage() {
               <LECard
                 key={le.id}
                 le={le}
-                dealId={activeDealId}
+                transactionId={activeTransactionId}
                 isSelected={selectedLEIds.includes(le.id)}
                 onEdit={handleEdit}
               />
             ))}
           </div>
         ) : (
-          <div className="text-base text-muted-foreground bg-card rounded-xl border border-border shadow-sm p-10 text-center">
-            No loan estimates yet. Add one manually or upload a Loan Estimate PDF in Documents.
+          <div className="bg-card rounded-xl border border-border shadow-sm p-10 text-center space-y-3">
+            <CreditCard className="w-8 h-8 text-muted-foreground mx-auto" />
+            <p className="text-base text-muted-foreground">No loan estimates yet</p>
+            <p className="text-sm text-muted-foreground">Add one manually above or upload a Loan Estimate PDF in the Documents tab.</p>
           </div>
         )}
 
@@ -133,15 +135,15 @@ export default function FinancingPage() {
         {selectedCount >= 2 && estimates && (
           <LEComparisonTable
             estimates={estimates.filter((le) => selectedLEIds.includes(le.id))}
-            dealId={activeDealId}
+            transactionId={activeTransactionId}
           />
         )}
 
         {/* Cash to Close */}
-        {chosenLE && deal && (
+        {chosenLE && transaction && (
           <CashToClose
             chosenLE={chosenLE}
-            deal={deal}
+            transaction={transaction}
             cdFields={cdFields}
           />
         )}
@@ -159,7 +161,7 @@ export default function FinancingPage() {
 
       {!activeDoc && (
         <LEFormModal
-          dealId={activeDealId}
+          transactionId={activeTransactionId}
           open={formOpen}
           onClose={handleCloseForm}
           editingLE={editingLE}

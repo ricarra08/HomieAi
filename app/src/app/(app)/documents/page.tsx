@@ -9,10 +9,11 @@ import { SmartTabs, type DocumentTabId } from "@/components/documents/SmartTabs"
 import { StageEssentials } from "@/components/documents/StageEssentials";
 import { DocumentDetailView } from "@/components/documents/SlideOverViewer";
 import { CollaboratorLinkDialog } from "@/components/documents/CollaboratorLinkDialog";
+import { FileText } from "lucide-react";
 
-function DocumentsContent({ dealId }: { dealId: string }) {
+function DocumentsContent({ transactionId }: { transactionId: string }) {
   const [activeTab, setActiveTab] = useState<DocumentTabId>("all");
-  const { data: documents, isLoading } = useDocuments(dealId);
+  const { data: documents, isLoading } = useDocuments(transactionId);
   const { viewerDocId, viewerOpen } = useUIStore();
 
   const tab: DocumentTabId =
@@ -36,15 +37,15 @@ function DocumentsContent({ dealId }: { dealId: string }) {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Documents</h1>
           <p className="text-base text-muted-foreground mt-1">
-            Upload, organize, and understand your deal documents
+            Upload, organize, and understand your documents
           </p>
         </div>
-        <CollaboratorLinkDialog dealId={dealId} />
+        <CollaboratorLinkDialog transactionId={transactionId} />
       </div>
 
       <StageEssentials documents={documents ?? []} />
 
-      <DocumentUpload dealId={dealId} />
+      <DocumentUpload transactionId={transactionId} />
 
       {documents && documents.length > 0 && (
         <SmartTabs
@@ -67,10 +68,16 @@ function DocumentsContent({ dealId }: { dealId: string }) {
           ))}
         </div>
       ) : (
-        <div className="text-base text-muted-foreground bg-card rounded-xl border border-border shadow-sm p-10 text-center">
-          {documents && documents.length > 0
-            ? "No documents in this category."
-            : "No documents uploaded yet. Drag and drop PDFs above to get started."}
+        <div className="bg-card rounded-xl border border-border shadow-sm p-10 text-center space-y-3">
+          {documents && documents.length > 0 ? (
+            <p className="text-base text-muted-foreground">No documents in this category.</p>
+          ) : (
+            <>
+              <FileText className="w-8 h-8 text-muted-foreground mx-auto" />
+              <p className="text-base text-muted-foreground">No documents uploaded yet</p>
+              <p className="text-sm text-muted-foreground">Drag and drop PDFs into the upload zone above to get started.</p>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -80,23 +87,23 @@ function DocumentsContent({ dealId }: { dealId: string }) {
 }
 
 export default function DocumentsPage() {
-  const activeDealId = useUIStore((s) => s.activeDealId);
+  const activeTransactionId = useUIStore((s) => s.activeTransactionId);
 
-  if (!activeDealId) {
+  if (!activeTransactionId) {
     return (
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Documents</h1>
           <p className="text-base text-muted-foreground mt-1">
-            Upload, organize, and understand your deal documents
+            Upload, organize, and understand your documents
           </p>
         </div>
         <div className="text-base text-muted-foreground bg-card rounded-xl border border-border shadow-sm p-10 text-center">
-          Create a deal first to start uploading documents.
+          Create a transaction first to start uploading documents.
         </div>
       </div>
     );
   }
 
-  return <DocumentsContent key={activeDealId} dealId={activeDealId} />;
+  return <DocumentsContent key={activeTransactionId} transactionId={activeTransactionId} />;
 }

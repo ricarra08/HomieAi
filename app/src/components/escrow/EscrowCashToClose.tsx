@@ -7,19 +7,19 @@ import { computeMonthlyPI, computeCashToClose } from "@/lib/computed";
 import { formatCurrency } from "@/lib/utils";
 import { useUIStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
-import type { LoanEstimate, Deal, Document } from "@/lib/types";
+import type { LoanEstimate, Transaction, Document } from "@/lib/types";
 
 interface EscrowCashToCloseProps {
   chosenLE: LoanEstimate | null;
-  deal: Deal | null;
+  transaction: Transaction | null;
   cdDocument: Document | null;
 }
 
-export function EscrowCashToClose({ chosenLE, deal, cdDocument }: EscrowCashToCloseProps) {
+export function EscrowCashToClose({ chosenLE, transaction, cdDocument }: EscrowCashToCloseProps) {
   const { setActiveSidebarItem } = useUIStore();
   const router = useRouter();
 
-  if (!deal) return null;
+  if (!transaction) return null;
 
   if (!chosenLE) {
     return (
@@ -33,7 +33,7 @@ export function EscrowCashToClose({ chosenLE, deal, cdDocument }: EscrowCashToCl
 
   const monthlyPI = computeMonthlyPI(chosenLE.loan_amount, chosenLE.rate);
   const totalMonthly = monthlyPI + (chosenLE.pmi_monthly ?? 0);
-  const earnestMoney = deal.earnest_money_amount ?? 0;
+  const earnestMoney = transaction.earnest_money_amount ?? 0;
   const cashToClose = computeCashToClose(chosenLE, { earnestMoney });
 
   const cdFields = cdDocument?.extracted_fields as Record<string, unknown> | null;

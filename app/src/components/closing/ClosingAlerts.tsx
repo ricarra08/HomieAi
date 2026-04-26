@@ -20,7 +20,7 @@ export function ClosingAlerts({ data }: { data: ClosingData }) {
   const router = useRouter();
   const { setActiveSidebarItem } = useUIStore();
 
-  const { deal, meta, cdDocument, insuranceInfo, chosenLE, titleReport } = data;
+  const { transaction, meta, cdDocument, insuranceInfo, chosenLE, titleReport } = data;
   const alerts: Alert[] = [];
 
   if (meta.wire_status === "pending") {
@@ -32,8 +32,8 @@ export function ClosingAlerts({ data }: { data: ClosingData }) {
     });
   }
 
-  if (deal?.closing_date) {
-    const days = computeDaysRemaining(deal.closing_date);
+  if (transaction?.closing_date) {
+    const days = computeDaysRemaining(transaction.closing_date);
     if (days !== null && days <= 0) {
       alerts.push({
         id: "closing-today-past",

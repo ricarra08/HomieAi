@@ -16,9 +16,9 @@ interface UIState {
   activeSidebarItem: "dashboard" | "documents" | "financing";
   setActiveSidebarItem: (item: UIState["activeSidebarItem"]) => void;
 
-  // Active deal context
-  activeDealId: string | null;
-  setActiveDealId: (id: string | null) => void;
+  // Active transaction context
+  activeTransactionId: string | null;
+  setActiveTransactionId: (id: string | null) => void;
 
   // Selected home (Shopping → Offer handoff)
   selectedHomeId: string | null;
@@ -28,7 +28,7 @@ interface UIState {
   ownsCurrentHome: boolean | null;
   setOwnsCurrentHome: (owns: boolean) => void;
 
-  // Direct entry mode (shows DealSetupForm instead of phase dashboard)
+  // Direct entry mode (shows TransactionSetupForm instead of phase dashboard)
   showDirectSetup: boolean;
   setShowDirectSetup: (show: boolean) => void;
 
@@ -57,9 +57,9 @@ export const useUIStore = create<UIState>()(persist((set) => ({
   activeSidebarItem: "dashboard",
   setActiveSidebarItem: (item) => set({ activeSidebarItem: item }),
 
-  // Active deal context
-  activeDealId: null,
-  setActiveDealId: (id) => set({ activeDealId: id }),
+  // Active transaction context
+  activeTransactionId: null,
+  setActiveTransactionId: (id) => set({ activeTransactionId: id }),
 
   // Selected home
   selectedHomeId: null,
@@ -92,8 +92,17 @@ export const useUIStore = create<UIState>()(persist((set) => ({
   closeViewer: () => set({ viewerDocId: null, viewerOpen: false }),
 }), {
   name: "homieai-ui",
+  version: 1,
+  migrate: (persistedState: unknown, version: number) => {
+    const state = persistedState as Record<string, unknown>;
+    if (version === 0 && "activeDealId" in state) {
+      state.activeTransactionId = state.activeDealId;
+      delete state.activeDealId;
+    }
+    return state as unknown as UIState;
+  },
   partialize: (state) => ({
-    activeDealId: state.activeDealId,
+    activeTransactionId: state.activeTransactionId,
     currentPhase: state.currentPhase,
   }),
 }));

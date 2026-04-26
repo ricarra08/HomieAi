@@ -16,7 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Trash2, ArrowRight } from "lucide-react";
+import { Trash2, ArrowRight, Search } from "lucide-react";
 import { toast } from "sonner";
 import type { SavedHome } from "@/lib/types";
 
@@ -225,8 +225,10 @@ export function ShoppingView({ userId }: { userId: string }) {
             ))}
           </div>
         ) : (
-          <div className="text-base text-muted-foreground py-6 text-center">
-            No homes saved yet. Add a property to start tracking.
+          <div className="py-8 text-center space-y-3">
+            <Search className="w-8 h-8 text-muted-foreground mx-auto" />
+            <p className="text-base text-muted-foreground">No homes saved yet</p>
+            <p className="text-sm text-muted-foreground">Add a property below to start tracking homes you&apos;re interested in.</p>
           </div>
         )}
         <div className="flex justify-end mt-4 pt-4 border-t border-border">
@@ -329,7 +331,7 @@ export function ShoppingView({ userId }: { userId: string }) {
           variant="outline"
           className="text-accent border-accent hover:bg-accent/10"
         >
-          Go to Deal Setup
+          Go to Transaction Setup
         </Button>
       </div>
     </div>

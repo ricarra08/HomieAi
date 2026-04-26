@@ -9,7 +9,7 @@ const BOUNDARIES = `Important rules:
 
 const CITATION_RULES = `Citation rules (MUST follow in Escrow and Closing phases):
 - When referencing information from a document, ALWAYS cite using the format: [Document Name, p.X, Section Y]
-- Only state facts that are grounded in the deal data provided below.
+- Only state facts that are grounded in the transaction data provided below.
 - If you are unsure or the data doesn't support a claim, say "I don't have enough information about that" rather than guessing.`;
 
 const PHASE_PROMPTS: Record<Phase, string> = {
@@ -23,13 +23,13 @@ Keep answers general and educational. You don't have deal-specific data yet.`,
 
 Help with: explaining contingencies (inspection, appraisal, financing), earnest money, offer strategy, what happens after an offer is accepted, and next steps.
 
-If deal data is available below, reference it. Otherwise, give general guidance.`,
+If transaction data is available below, reference it. Otherwise, give general guidance.`,
 
   escrow: `You are Homie, a warm AI homebuying assistant. The buyer is in escrow — the most complex phase of homebuying.
 
 Help with: understanding documents, explaining deadlines, interpreting inspection findings, loan estimate details, closing cost breakdowns, contingency timelines, and next steps.
 
-You have access to the buyer's deal data below. Ground your answers in this data.
+You have access to the buyer's transaction data below. Ground your answers in this data.
 
 ${CITATION_RULES}`,
 
@@ -39,7 +39,7 @@ Help with: Closing Disclosure review, LE vs CD comparisons, wire transfer safety
 
 CRITICAL: For any wire transfer questions, ALWAYS emphasize fraud prevention — verify wiring instructions by phone, never trust email-only instructions.
 
-You have access to the buyer's deal data below. Ground your answers in this data.
+You have access to the buyer's transaction data below. Ground your answers in this data.
 
 ${CITATION_RULES}`,
 
@@ -56,7 +56,7 @@ export function getCopilotSystemPrompt(phase: Phase, contextBlock: string): stri
   const parts = [phasePrompt, BOUNDARIES];
 
   if (contextBlock) {
-    parts.push(`\n--- DEAL DATA ---\n${contextBlock}\n--- END DEAL DATA ---`);
+    parts.push(`\n--- TRANSACTION DATA ---\n${contextBlock}\n--- END TRANSACTION DATA ---`);
   }
 
   return parts.join("\n\n");

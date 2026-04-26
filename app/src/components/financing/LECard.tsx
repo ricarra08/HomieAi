@@ -11,13 +11,13 @@ import type { LoanEstimate } from "@/lib/types";
 
 interface LECardProps {
   le: LoanEstimate;
-  dealId: string;
+  transactionId: string;
   isSelected: boolean;
   onEdit: (le: LoanEstimate) => void;
 }
 
-export function LECard({ le, dealId, isSelected, onEdit }: LECardProps) {
-  const setChosen = useSetChosenLE(dealId);
+export function LECard({ le, transactionId, isSelected, onEdit }: LECardProps) {
+  const setChosen = useSetChosenLE(transactionId);
   const { toggleLESelection, openViewer } = useUIStore();
   const selectedLEIds = useUIStore((s) => s.selectedLEIds);
 

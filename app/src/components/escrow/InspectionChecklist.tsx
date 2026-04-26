@@ -40,12 +40,12 @@ function getCondition(doc: Document): string | null {
 }
 
 interface InspectionChecklistProps {
-  dealId: string;
+  transactionId: string;
   inspectionDocs: Document[];
   allDocs: Document[];
 }
 
-export function InspectionChecklist({ dealId, inspectionDocs, allDocs }: InspectionChecklistProps) {
+export function InspectionChecklist({ transactionId, inspectionDocs, allDocs }: InspectionChecklistProps) {
   const { setCopilotOpen } = useUIStore();
 
   const docsByType = new Map<string, Document>();
@@ -114,7 +114,7 @@ export function InspectionChecklist({ dealId, inspectionDocs, allDocs }: Inspect
 
               <div className="ml-8">
                 <InlineDocUpload
-                  dealId={dealId}
+                  transactionId={transactionId}
                   existingDoc={doc ?? null}
                   allDocs={allDocs}
                   label={`Drop ${INSPECTION_SUBTYPE_LABELS[type].toLowerCase()} report`}

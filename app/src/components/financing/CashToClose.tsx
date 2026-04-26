@@ -3,7 +3,7 @@
 import { DollarSign } from "lucide-react";
 import { computeMonthlyPI, computeCashToClose } from "@/lib/computed";
 import { formatCurrency } from "@/lib/utils";
-import type { LoanEstimate, Deal } from "@/lib/types";
+import type { LoanEstimate, Transaction } from "@/lib/types";
 
 function cdVal(cdFields: Record<string, unknown> | null | undefined, key: string): number | null {
   if (!cdFields) return null;
@@ -40,11 +40,11 @@ function CostRow({ label, amount, variant }: {
 
 interface CashToCloseProps {
   chosenLE: LoanEstimate;
-  deal: Deal;
+  transaction: Transaction;
   cdFields?: Record<string, unknown> | null;
 }
 
-export function CashToClose({ chosenLE, deal, cdFields }: CashToCloseProps) {
+export function CashToClose({ chosenLE, transaction, cdFields }: CashToCloseProps) {
   const monthlyPI = computeMonthlyPI(chosenLE.loan_amount, chosenLE.rate);
   const totalMonthly = monthlyPI + (chosenLE.pmi_monthly ?? 0);
 
@@ -54,7 +54,7 @@ export function CashToClose({ chosenLE, deal, cdFields }: CashToCloseProps) {
   const pointsDollars = (chosenLE.points ?? 0) > 0
     ? (chosenLE.points! / 100) * chosenLE.loan_amount
     : 0;
-  const earnestMoney = deal.earnest_money_amount ?? 0;
+  const earnestMoney = transaction.earnest_money_amount ?? 0;
 
   const totalCosts = downPayment + lenderFees + thirdPartyFees + pointsDollars;
   const leCashToClose = totalCosts - earnestMoney;

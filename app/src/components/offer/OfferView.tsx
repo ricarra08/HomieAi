@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useUIStore } from "@/lib/store";
 import { useSavedHomes } from "@/lib/hooks/queries";
-import { useCreateDeal } from "@/lib/hooks/mutations";
+import { useCreateTransaction } from "@/lib/hooks/mutations";
 import { TermTooltip } from "@/components/ui/term-tooltip";
 import { Upload, FileText, Check, DollarSign, Sparkles, ArrowRight } from "lucide-react";
 import type { SavedHome } from "@/lib/types";
@@ -24,8 +24,8 @@ interface OfferViewProps {
 }
 
 export function OfferView({ userId }: OfferViewProps) {
-  const { setCurrentPhase, setActiveDealId, selectedHomeId, ownsCurrentHome } = useUIStore();
-  const createDeal = useCreateDeal(userId);
+  const { setCurrentPhase, setActiveTransactionId, selectedHomeId, ownsCurrentHome } = useUIStore();
+  const createTransaction = useCreateTransaction(userId);
   const { data: homes } = useSavedHomes(userId);
 
   const selectedHome: SavedHome | null =
@@ -76,7 +76,7 @@ export function OfferView({ userId }: OfferViewProps) {
     : "Go back to Shopping to select a property";
 
   function handleAcceptOffer() {
-    createDeal.mutate(
+    createTransaction.mutate(
       {
         property_address: propertyAddress,
         purchase_price: Number(offerPrice),
@@ -90,7 +90,7 @@ export function OfferView({ userId }: OfferViewProps) {
       },
       {
         onSuccess: async (data) => {
-          setActiveDealId(data.id);
+          setActiveTransactionId(data.id);
           setCurrentPhase("escrow");
 
           const base = acceptanceDate ? new Date(acceptanceDate) : null;
@@ -131,10 +131,10 @@ export function OfferView({ userId }: OfferViewProps) {
         <div className="flex items-center gap-3">
           <Button
             onClick={handleAcceptOffer}
-            disabled={createDeal.isPending || !offerPrice || !selectedHome}
+            disabled={createTransaction.isPending || !offerPrice || !selectedHome}
             className="bg-accent text-accent-foreground shadow-sm hover:bg-accent/90 text-sm font-medium gap-2"
           >
-            {createDeal.isPending ? "Creating workspace..." : "Offer Accepted — Start Escrow"}
+            {createTransaction.isPending ? "Creating workspace..." : "Offer Accepted — Start Escrow"}
             <ArrowRight className="w-4 h-4" />
           </Button>
           <Badge className="bg-accent/15 text-accent border-accent/30 text-sm px-3 py-1">
@@ -402,7 +402,7 @@ export function OfferView({ userId }: OfferViewProps) {
           <div>
             <h3 className="text-base font-semibold text-foreground">What&apos;s Ahead</h3>
             <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-              When your offer is accepted, your workspace unlocks: document review with AI summaries, closing cost tracking with LE vs CD comparison, deadline alerts for every contingency, and Homie — your AI deal assistant.
+              When your offer is accepted, your workspace unlocks: document review with AI summaries, closing cost tracking with LE vs CD comparison, deadline alerts for every contingency, and Homie — your AI homebuying assistant.
             </p>
           </div>
         </div>

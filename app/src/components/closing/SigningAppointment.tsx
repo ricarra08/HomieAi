@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Calendar, MapPin, Check, CheckCircle2 } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
-import { useUpdateDeal } from "@/lib/hooks/mutations";
+import { useUpdateTransaction } from "@/lib/hooks/mutations";
 import type { ClosingData } from "@/lib/hooks/use-closing-data";
 import type { ClosingMetadata } from "@/lib/types";
 
@@ -14,12 +15,14 @@ const WHAT_TO_BRING = [
   "Blue ink pen for signing",
 ];
 
-export function SigningAppointment({ data, dealId, userId }: { data: ClosingData; dealId: string; userId: string }) {
+export function SigningAppointment({ data, transactionId, userId }: { data: ClosingData; transactionId: string; userId: string }) {
   const { meta } = data;
-  const updateDeal = useUpdateDeal(dealId, userId);
+  const updateTransaction = useUpdateTransaction(transactionId, userId);
+  const [localDate, setLocalDate] = useState(meta.signing_date ?? "");
+  const [localLocation, setLocalLocation] = useState(meta.signing_location ?? "");
 
   function updateMeta(patch: Partial<ClosingMetadata>) {
-    updateDeal.mutate({ closing_metadata: { ...meta, ...patch } });
+    updateTransaction.mutate({ closing_metadata: { ...meta, ...patch } });
   }
 
   return (
@@ -32,8 +35,9 @@ export function SigningAppointment({ data, dealId, userId }: { data: ClosingData
               <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
               <input
                 type="datetime-local"
-                value={meta.signing_date ?? ""}
-                onChange={(e) => updateMeta({ signing_date: e.target.value || null })}
+                value={localDate}
+                onChange={(e) => setLocalDate(e.target.value)}
+                onBlur={() => updateMeta({ signing_date: localDate || null })}
                 className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm text-foreground"
               />
             </div>
@@ -45,8 +49,9 @@ export function SigningAppointment({ data, dealId, userId }: { data: ClosingData
               <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
               <input
                 type="text"
-                value={meta.signing_location ?? ""}
-                onChange={(e) => updateMeta({ signing_location: e.target.value || null })}
+                value={localLocation}
+                onChange={(e) => setLocalLocation(e.target.value)}
+                onBlur={() => updateMeta({ signing_location: localLocation || null })}
                 placeholder="e.g., Title company office"
                 className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground"
               />

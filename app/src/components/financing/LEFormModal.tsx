@@ -27,20 +27,20 @@ function CurrencyInput({ value, onChange, placeholder }: {
 }
 
 interface LEFormModalProps {
-  dealId: string;
+  transactionId: string;
   open: boolean;
   onClose: () => void;
   editingLE?: LoanEstimate | null;
 }
 
-export function LEFormModal({ dealId, open, onClose, editingLE }: LEFormModalProps) {
+export function LEFormModal({ transactionId, open, onClose, editingLE }: LEFormModalProps) {
   if (!open) return null;
-  return <LEFormContent key={editingLE?.id ?? "new"} dealId={dealId} onClose={onClose} editingLE={editingLE} />;
+  return <LEFormContent key={editingLE?.id ?? "new"} transactionId={transactionId} onClose={onClose} editingLE={editingLE} />;
 }
 
-function LEFormContent({ dealId, onClose, editingLE }: Omit<LEFormModalProps, "open">) {
-  const createLE = useCreateLoanEstimate(dealId);
-  const updateLE = useUpdateLoanEstimate(dealId);
+function LEFormContent({ transactionId, onClose, editingLE }: Omit<LEFormModalProps, "open">) {
+  const createLE = useCreateLoanEstimate(transactionId);
+  const updateLE = useUpdateLoanEstimate(transactionId);
   const isEditing = !!editingLE;
 
   const [lender, setLender] = useState(editingLE?.lender ?? "");

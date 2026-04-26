@@ -14,12 +14,12 @@ const REQUIRED_DISCLOSURES = [
 ];
 
 interface DisclosureTrackerProps {
-  dealId: string;
+  transactionId: string;
   disclosureDocs: Document[];
   allDocs: Document[];
 }
 
-export function DisclosureTracker({ dealId, disclosureDocs, allDocs }: DisclosureTrackerProps) {
+export function DisclosureTracker({ transactionId, disclosureDocs, allDocs }: DisclosureTrackerProps) {
   return (
     <CollapsibleCard
       title="Disclosures"
@@ -49,7 +49,7 @@ export function DisclosureTracker({ dealId, disclosureDocs, allDocs }: Disclosur
               </div>
               <div className="ml-8">
                 <InlineDocUpload
-                  dealId={dealId}
+                  transactionId={transactionId}
                   existingDoc={matchingDoc ?? null}
                   allDocs={allDocs}
                   uploadHints={{ docType: "disclosure", category: "disclosures", stage: "escrow" }}
@@ -71,7 +71,7 @@ export function DisclosureTracker({ dealId, disclosureDocs, allDocs }: Disclosur
                 <p className="text-sm font-medium text-foreground flex-1">{doc.name}</p>
               </div>
               <div className="ml-8">
-                <InlineDocUpload dealId={dealId} existingDoc={doc} allDocs={allDocs} label="Additional disclosure" uploadHints={{ docType: "disclosure", category: "disclosures", stage: "escrow" }} />
+                <InlineDocUpload transactionId={transactionId} existingDoc={doc} allDocs={allDocs} label="Additional disclosure" uploadHints={{ docType: "disclosure", category: "disclosures", stage: "escrow" }} />
               </div>
             </div>
           ))}

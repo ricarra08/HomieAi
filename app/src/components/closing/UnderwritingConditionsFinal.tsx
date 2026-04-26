@@ -4,7 +4,7 @@ import { useState } from "react";
 import { CheckCircle2, Circle, Loader2, Plus } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
-import { useUpdateDeal } from "@/lib/hooks/mutations";
+import { useUpdateTransaction } from "@/lib/hooks/mutations";
 import type { ClosingData } from "@/lib/hooks/use-closing-data";
 import type { ClosingMetadata } from "@/lib/types";
 
@@ -17,9 +17,9 @@ const STATUS_STYLES: Record<ConditionStatus, { icon: React.ReactNode; className:
   cleared: { icon: <CheckCircle2 className="w-3.5 h-3.5" />, className: "text-primary-foreground" },
 };
 
-export function UnderwritingConditionsFinal({ data, dealId, userId }: { data: ClosingData; dealId: string; userId: string }) {
+export function UnderwritingConditionsFinal({ data, transactionId, userId }: { data: ClosingData; transactionId: string; userId: string }) {
   const { meta } = data;
-  const updateDeal = useUpdateDeal(dealId, userId);
+  const updateTransaction = useUpdateTransaction(transactionId, userId);
   const [newCondition, setNewCondition] = useState("");
 
   const conditions = meta.underwriting_conditions ?? [];
@@ -27,7 +27,7 @@ export function UnderwritingConditionsFinal({ data, dealId, userId }: { data: Cl
   const allCleared = conditions.length > 0 && clearedCount === conditions.length;
 
   function saveMeta(updated: ClosingMetadata["underwriting_conditions"]) {
-    updateDeal.mutate({ closing_metadata: { ...meta, underwriting_conditions: updated } });
+    updateTransaction.mutate({ closing_metadata: { ...meta, underwriting_conditions: updated } });
   }
 
   function addCondition() {

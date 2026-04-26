@@ -116,12 +116,12 @@ function buildRows(estimates: LoanEstimate[], bestIdx: number): Row[] {
 
 interface LEComparisonTableProps {
   estimates: LoanEstimate[];
-  dealId: string;
+  transactionId: string;
 }
 
-export function LEComparisonTable({ estimates, dealId }: LEComparisonTableProps) {
+export function LEComparisonTable({ estimates, transactionId }: LEComparisonTableProps) {
   const [mode, setMode] = useState<OptMode>("monthly");
-  const setChosen = useSetChosenLE(dealId);
+  const setChosen = useSetChosenLE(transactionId);
   const { clearLESelections, setCopilotOpen } = useUIStore();
 
   const bestIdx = getBestIndex(estimates, mode);
