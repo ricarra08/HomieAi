@@ -87,6 +87,22 @@ export function useTransactions(userId: string | undefined) {
   });
 }
 
+export function useAgentTransactions(agentId: string | undefined) {
+  return useQuery({
+    queryKey: ["transactions", "agent", agentId ?? ""] as const,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("agent_id", agentId!)
+        .order("updated_at", { ascending: false });
+      if (error) throw error;
+      return data as Transaction[];
+    },
+    enabled: !!agentId,
+  });
+}
+
 export function useTransaction(transactionId: string | null) {
   return useQuery({
     queryKey: transactionKeys.detail(transactionId ?? ""),

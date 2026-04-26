@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useUIStore, type Phase } from "@/lib/store";
+import { useProfile } from "@/lib/hooks/queries";
+import { createClient } from "@/lib/supabase/client";
 import { Search, FilePen, ShieldCheck, Key, LineChart, Check } from "lucide-react";
 
 const steps: { id: Phase; label: string; icon: React.ElementType }[] = [
@@ -23,6 +26,22 @@ function getStepState(step: Phase, current: Phase): "completed" | "current" | "f
 
 export function ProgressStepper() {
   const currentPhase = useUIStore((s) => s.currentPhase);
+  const activeTransactionId = useUIStore((s) => s.activeTransactionId);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setUserId(data.user?.id ?? null);
+    });
+  }, []);
+
+  const { data: profile } = useProfile(userId ?? undefined);
+
+  // Hide stepper for agents on client list (no active transaction)
+  if (profile?.role === "agent" && !activeTransactionId) {
+    return <div className="h-[72px] bg-secondary border-b border-border shadow-sm" />;
+  }
 
   return (
     <div className="h-[72px] bg-secondary border-b border-border shadow-sm flex items-center justify-center px-8">

@@ -105,6 +105,9 @@ export function useCreateTransaction(userId: string) {
       agent_name?: string;
       agent_contact?: string;
       earnest_money_amount?: number;
+      agent_id?: string;
+      client_name?: string;
+      client_email?: string;
     }) => {
       const { data, error } = await supabase
         .from("transactions")

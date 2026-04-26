@@ -2,9 +2,10 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { useUIStore } from "@/lib/store";
-import { LayoutDashboard, FileText, CreditCard, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
+import { LayoutDashboard, FileText, CreditCard, ChevronLeft, ChevronRight, LogOut, Users, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
+import { useProfile } from "@/lib/hooks/queries";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -16,7 +17,13 @@ import {
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 
-const navItems = [
+const buyerNavItems = [
+  { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+  { id: "documents" as const, label: "Documents", icon: FileText, href: "/documents" },
+  { id: "financing" as const, label: "Financing", icon: CreditCard, href: "/financing" },
+];
+
+const agentNavItems = [
   { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { id: "documents" as const, label: "Documents", icon: FileText, href: "/documents" },
   { id: "financing" as const, label: "Financing", icon: CreditCard, href: "/financing" },
@@ -25,15 +32,22 @@ const navItems = [
 export function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { setActiveSidebarItem, sidebarCollapsed, toggleSidebar } = useUIStore();
+  const { setActiveSidebarItem, sidebarCollapsed, toggleSidebar, activeTransactionId, setActiveTransactionId, setCurrentPhase } = useUIStore();
+  const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
+      setUserId(data.user?.id ?? null);
       setUserEmail(data.user?.email ?? null);
     });
   }, []);
+
+  const { data: profile } = useProfile(userId ?? undefined);
+  const isAgent = profile?.role === "agent";
+  const isAgentInTransaction = isAgent && !!activeTransactionId;
+  const navItems = isAgent ? agentNavItems : buyerNavItems;
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -41,9 +55,12 @@ export function Sidebar() {
     router.push("/login");
   };
 
-  const initials = userEmail
-    ? userEmail.slice(0, 2).toUpperCase()
-    : "U";
+  const displayName = profile?.display_name;
+  const initials = displayName
+    ? displayName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    : userEmail
+      ? userEmail.slice(0, 2).toUpperCase()
+      : "U";
 
   return (
     <div className="relative shrink-0">
@@ -62,6 +79,23 @@ export function Sidebar() {
             <span className="text-lg font-semibold text-sidebar-foreground">HP</span>
           )}
         </div>
+
+        {/* Back to clients button for agents inside a transaction */}
+        {isAgentInTransaction && !sidebarCollapsed && (
+          <div className="px-4 pb-2">
+            <button
+              onClick={() => {
+                setActiveTransactionId(null);
+                setCurrentPhase("shopping");
+                router.push("/dashboard");
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to clients
+            </button>
+          </div>
+        )}
 
         <nav className={`flex-1 space-y-1 ${sidebarCollapsed ? "px-2" : "px-4"}`}>
           {navItems.map((item) => {
@@ -101,7 +135,7 @@ export function Sidebar() {
                   ? "justify-center p-2"
                   : "gap-3 px-3 py-2"
               }`}
-              title={sidebarCollapsed ? (userEmail ?? "Account") : undefined}
+              title={sidebarCollapsed ? (displayName ?? userEmail ?? "Account") : undefined}
             >
               <Avatar size="sm">
                 <AvatarFallback className="text-xs font-medium">
@@ -110,7 +144,7 @@ export function Sidebar() {
               </Avatar>
               {!sidebarCollapsed && (
                 <span className="truncate text-sm text-sidebar-foreground">
-                  {userEmail ?? "Account"}
+                  {displayName ?? userEmail ?? "Account"}
                 </span>
               )}
             </DropdownMenuTrigger>
@@ -119,14 +153,15 @@ export function Sidebar() {
               sideOffset={8}
               align="end"
             >
-              {userEmail && (
-                <>
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel>{userEmail}</DropdownMenuLabel>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
-                </>
-              )}
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>
+                  {displayName ?? userEmail}
+                  {isAgent && (
+                    <span className="block text-xs font-normal text-muted-foreground">Agent</span>
+                  )}
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="w-4 h-4" />
                 Log out
