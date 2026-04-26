@@ -38,9 +38,9 @@ export function ProgressStepper() {
 
   const { data: profile } = useProfile(userId ?? undefined);
 
-  // Hide stepper for agents on client list (no active transaction)
+  // Hide stepper entirely for agents on client list
   if (profile?.role === "agent" && !activeTransactionId) {
-    return <div className="h-[72px] bg-secondary border-b border-border shadow-sm" />;
+    return null;
   }
 
   return (

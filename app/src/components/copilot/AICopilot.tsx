@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { useUIStore, type Phase } from "@/lib/store";
-import { useCopilotMessages } from "@/lib/hooks/queries";
+import { useCopilotMessages, useProfile } from "@/lib/hooks/queries";
 import { useSendCopilotMessage } from "@/lib/hooks/mutations";
 import { useStreamingChat } from "@/lib/hooks/use-streaming-chat";
 import { createClient } from "@/lib/supabase/client";
@@ -101,9 +101,19 @@ function MarkdownContent({ content }: { content: string }) {
 }
 
 export function AICopilotButton() {
-  const { copilotOpen, toggleCopilot } = useUIStore();
+  const { copilotOpen, toggleCopilot, activeTransactionId } = useUIStore();
+  const [userId, setUserId] = useState<string | null>(null);
 
-  if (copilotOpen) return null;
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => {
+      if (data.user) setUserId(data.user.id);
+    });
+  }, []);
+
+  const { data: profile } = useProfile(userId ?? undefined);
+  const isAgentOnClientList = profile?.role === "agent" && !activeTransactionId;
+
+  if (copilotOpen || isAgentOnClientList) return null;
 
   return (
     <button
@@ -179,7 +189,11 @@ export function AICopilotPanel() {
     return () => window.removeEventListener("copilot:prefill", handlePrefill);
   }, []);
 
-  if (!copilotOpen) return null;
+  // Hide panel for agents on client list (no transaction context)
+  const { data: profile } = useProfile(userId ?? undefined);
+  const isAgentOnClientList = profile?.role === "agent" && !activeTransactionId;
+
+  if (!copilotOpen || isAgentOnClientList) return null;
 
   const pageActions = Object.entries(PAGE_QUICK_ACTIONS).find(([path]) => pathname?.startsWith(path));
   const quickActions = pageActions?.[1] ?? PHASE_QUICK_ACTIONS[currentPhase] ?? PHASE_QUICK_ACTIONS.escrow;

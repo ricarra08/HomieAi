@@ -1,3 +1,5 @@
+## Client Dashboard
+- make Homie AI contextually aware in the client dashboard
 
 ## Shopping
 - Market Snapshot needs to be wired to pull actual market data 
@@ -18,3 +20,5 @@
 
 ## Onboarding
 - support realtor onboarding vs home buyer on boarding
+## Wire Fraud Prevention
+- architect SafeSend verification which ensures you never wire funds based on fraudulent instructions.

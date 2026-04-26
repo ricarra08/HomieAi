@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useUIStore } from "@/lib/store";
 import { useTransaction } from "@/lib/hooks/queries";
 import { useTransitionPhase } from "@/lib/hooks/mutations";
@@ -220,11 +220,16 @@ export function PhaseDashboard() {
   const { data: transaction } = useTransaction(activeTransactionId);
   const { data: savedHomes } = useSavedHomes(userId ?? "");
 
+  // Sync phase from transaction on initial load only — don't override local
+  // navigation (e.g. shopping → offer is a local phase change before the
+  // transaction's current_phase updates in the DB)
+  const initialSynced = useRef(false);
   useEffect(() => {
-    if (transaction && transaction.current_phase !== currentPhase) {
+    if (transaction && !initialSynced.current) {
+      initialSynced.current = true;
       setCurrentPhase(transaction.current_phase);
     }
-  }, [transaction, transaction?.current_phase, currentPhase, setCurrentPhase]);
+  }, [transaction, setCurrentPhase]);
 
   if (!userId) {
     return <div className="text-base text-muted-foreground p-10 text-center">Loading...</div>;

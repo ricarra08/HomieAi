@@ -5,7 +5,7 @@ import { useUIStore } from "@/lib/store";
 import { LayoutDashboard, FileText, CreditCard, ChevronLeft, ChevronRight, LogOut, Users, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
-import { useProfile } from "@/lib/hooks/queries";
+import { useProfile, useTransaction } from "@/lib/hooks/queries";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -23,7 +23,11 @@ const buyerNavItems = [
   { id: "financing" as const, label: "Financing", icon: CreditCard, href: "/financing" },
 ];
 
-const agentNavItems = [
+const agentClientListNavItems = [
+  { id: "dashboard" as const, label: "Clients", icon: Users, href: "/dashboard" },
+];
+
+const agentTransactionNavItems = [
   { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { id: "documents" as const, label: "Documents", icon: FileText, href: "/documents" },
   { id: "financing" as const, label: "Financing", icon: CreditCard, href: "/financing" },
@@ -45,9 +49,15 @@ export function Sidebar() {
   }, []);
 
   const { data: profile } = useProfile(userId ?? undefined);
+  const { data: activeTransaction } = useTransaction(activeTransactionId);
   const isAgent = profile?.role === "agent";
   const isAgentInTransaction = isAgent && !!activeTransactionId;
-  const navItems = isAgent ? agentNavItems : buyerNavItems;
+
+  const navItems = isAgent
+    ? isAgentInTransaction
+      ? agentTransactionNavItems
+      : agentClientListNavItems
+    : buyerNavItems;
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -80,9 +90,9 @@ export function Sidebar() {
           )}
         </div>
 
-        {/* Back to clients button for agents inside a transaction */}
+        {/* Agent inside a transaction: back button + client context */}
         {isAgentInTransaction && !sidebarCollapsed && (
-          <div className="px-4 pb-2">
+          <div className="px-4 pb-3 space-y-2">
             <button
               onClick={() => {
                 setActiveTransactionId(null);
@@ -94,6 +104,18 @@ export function Sidebar() {
               <ArrowLeft className="w-4 h-4" />
               Back to clients
             </button>
+            {activeTransaction && (
+              <div className="px-3 py-2 rounded-lg bg-muted/50">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {activeTransaction.client_name || "Client"}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {activeTransaction.property_address !== "TBD"
+                    ? activeTransaction.property_address
+                    : "No property yet"}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
