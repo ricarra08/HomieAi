@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ArrowLeft } from "lucide-react";
 
 export default function DashboardPage() {
-  const { viewerDocId, viewerOpen, activeTransactionId, setActiveTransactionId, setCurrentPhase } = useUIStore();
+  const { viewerDocId, viewerOpen, activeTransactionId, clearTransactionContext, activeSidebarItem } = useUIStore();
   const { data: documents } = useDocuments(activeTransactionId);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -33,7 +33,7 @@ export default function DashboardPage() {
 
   // Agent on client list (no active transaction)
   if (profile.role === "agent" && !activeTransactionId) {
-    return <AgentDashboard userId={userId} />;
+    return <AgentDashboard userId={userId} showArchived={activeSidebarItem === "archived"} />;
   }
 
   // Agent inside a transaction — show back button + PhaseDashboard
@@ -44,8 +44,7 @@ export default function DashboardPage() {
         <div className={activeDoc ? "hidden" : ""}>
           <button
             onClick={() => {
-              setActiveTransactionId(null);
-              setCurrentPhase("shopping");
+              clearTransactionContext();
             }}
             className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
           >

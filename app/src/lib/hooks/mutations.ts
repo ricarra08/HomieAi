@@ -49,7 +49,7 @@ export function useCreateProfile(userId: string) {
 
 // -- Saved Homes (Shopping) --
 
-export function useCreateSavedHome(userId: string) {
+export function useCreateSavedHome(userId: string, transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (home: {
@@ -62,19 +62,19 @@ export function useCreateSavedHome(userId: string) {
     }) => {
       const { data, error } = await supabase
         .from("saved_homes")
-        .insert({ ...home, user_id: userId })
+        .insert({ ...home, user_id: userId, deal_id: transactionId })
         .select()
         .single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: savedHomeKeys.all(userId) });
+      qc.invalidateQueries({ queryKey: savedHomeKeys.all(transactionId) });
     },
   });
 }
 
-export function useDeleteSavedHome(userId: string) {
+export function useDeleteSavedHome(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (homeId: string) => {
@@ -85,7 +85,7 @@ export function useDeleteSavedHome(userId: string) {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: savedHomeKeys.all(userId) });
+      qc.invalidateQueries({ queryKey: savedHomeKeys.all(transactionId) });
     },
   });
 }
@@ -123,7 +123,7 @@ export function useCreateTransaction(userId: string) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: transactionKeys.all(userId) });
-      toast.success("Transaction created");
+      qc.invalidateQueries({ queryKey: ["transactions", "agent", userId] });
     },
   });
 }
@@ -144,6 +144,24 @@ export function useUpdateTransaction(transactionId: string, userId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: transactionKeys.detail(transactionId) });
       qc.invalidateQueries({ queryKey: transactionKeys.all(userId) });
+      qc.invalidateQueries({ queryKey: ["transactions", "agent", userId] });
+    },
+  });
+}
+
+export function useDeleteTransaction(userId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (transactionId: string) => {
+      const { error } = await supabase
+        .from("transactions")
+        .delete()
+        .eq("id", transactionId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: transactionKeys.all(userId) });
+      qc.invalidateQueries({ queryKey: ["transactions", "agent", userId] });
     },
   });
 }
@@ -166,6 +184,7 @@ export function useTransitionPhase(transactionId: string, userId: string) {
     onSuccess: (_data, newPhase) => {
       qc.invalidateQueries({ queryKey: transactionKeys.detail(transactionId) });
       qc.invalidateQueries({ queryKey: transactionKeys.all(userId) });
+      qc.invalidateQueries({ queryKey: ["transactions", "agent", userId] });
       if (newPhase === "escrow") {
         qc.invalidateQueries({ queryKey: offerKeys.detail(transactionId) });
         qc.invalidateQueries({ queryKey: deadlineKeys.list(transactionId) });

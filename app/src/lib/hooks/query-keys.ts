@@ -3,7 +3,7 @@ export const profileKeys = {
 };
 
 export const savedHomeKeys = {
-  all: (userId: string) => ["saved-homes", userId] as const,
+  all: (transactionId: string) => ["saved-homes", transactionId] as const,
 };
 
 export const transactionKeys = {

@@ -14,6 +14,7 @@ export interface Profile {
 export interface SavedHome {
   id: string;
   user_id: string;
+  deal_id: string | null;
   address: string;
   price: number | null;
   beds: number | null;
@@ -44,6 +45,7 @@ export interface Transaction {
   escrow_company: string | null;
   escrow_contact: string | null;
   closing_metadata: ClosingMetadata | null;
+  archived: boolean;
   created_at: string;
   updated_at: string;
 }

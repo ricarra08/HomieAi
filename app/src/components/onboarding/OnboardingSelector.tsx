@@ -1,14 +1,17 @@
 "use client";
 
-import { Search, FileText, ArrowRight } from "lucide-react";
+import { Search, FileText, ArrowRight, Loader2 } from "lucide-react";
 import { useUIStore } from "@/lib/store";
+import { useCreateTransaction } from "@/lib/hooks/mutations";
+import { toast } from "sonner";
 
 interface OnboardingSelectorProps {
   userId: string;
 }
 
 export function OnboardingSelector({ userId }: OnboardingSelectorProps) {
-  const { setCurrentPhase, setShowDirectSetup } = useUIStore();
+  const { setCurrentPhase, setShowDirectSetup, setActiveTransactionId } = useUIStore();
+  const createTransaction = useCreateTransaction(userId);
 
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
@@ -22,11 +25,29 @@ export function OnboardingSelector({ userId }: OnboardingSelectorProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <button
-            onClick={() => setCurrentPhase("shopping")}
-            className="group bg-card rounded-xl border border-border shadow-sm p-6 text-left hover:border-accent/40 hover:shadow-md transition-all"
+            disabled={createTransaction.isPending}
+            onClick={() => {
+              createTransaction.mutate(
+                { property_address: "TBD", purchase_price: 0, current_phase: "shopping" },
+                {
+                  onSuccess: (data) => {
+                    setActiveTransactionId(data.id);
+                    setCurrentPhase("shopping");
+                  },
+                  onError: () => {
+                    toast.error("Something went wrong. Please try again.");
+                  },
+                }
+              );
+            }}
+            className="group bg-card rounded-xl border border-border shadow-sm p-6 text-left hover:border-accent/40 hover:shadow-md transition-all disabled:opacity-50"
           >
             <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
-              <Search className="w-6 h-6 text-accent" />
+              {createTransaction.isPending ? (
+                <Loader2 className="w-6 h-6 text-accent animate-spin" />
+              ) : (
+                <Search className="w-6 h-6 text-accent" />
+              )}
             </div>
             <h3 className="text-base font-semibold text-foreground">I&apos;m shopping for a home</h3>
             <p className="text-sm text-muted-foreground mt-1">
@@ -39,8 +60,9 @@ export function OnboardingSelector({ userId }: OnboardingSelectorProps) {
           </button>
 
           <button
+            disabled={createTransaction.isPending}
             onClick={() => setShowDirectSetup(true)}
-            className="group bg-card rounded-xl border border-border shadow-sm p-6 text-left hover:border-accent/40 hover:shadow-md transition-all"
+            className="group bg-card rounded-xl border border-border shadow-sm p-6 text-left hover:border-accent/40 hover:shadow-md transition-all disabled:opacity-50"
           >
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
               <FileText className="w-6 h-6 text-primary-foreground" />

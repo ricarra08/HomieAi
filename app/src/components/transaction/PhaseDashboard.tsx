@@ -35,7 +35,7 @@ import { OnboardingSelector } from "@/components/onboarding/OnboardingSelector";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { useSavedHomes } from "@/lib/hooks/queries";
+
 
 function EscrowDashboard({ transactionId, userId }: { transactionId: string | null; userId: string }) {
   if (!transactionId) {
@@ -217,49 +217,64 @@ export function PhaseDashboard() {
     });
   }, []);
 
-  const { data: transaction } = useTransaction(activeTransactionId);
-  const { data: savedHomes } = useSavedHomes(userId ?? "");
+  const { data: transaction, isLoading: transactionLoading } = useTransaction(activeTransactionId);
 
-  // Sync phase from transaction on initial load only — don't override local
-  // navigation (e.g. shopping → offer is a local phase change before the
-  // transaction's current_phase updates in the DB)
-  const initialSynced = useRef(false);
+  // Sync phase from DB when entering a new transaction (not on every phase change)
+  const lastSyncedId = useRef<string | null>(null);
   useEffect(() => {
-    if (transaction && !initialSynced.current) {
-      initialSynced.current = true;
+    if (transaction && activeTransactionId !== lastSyncedId.current) {
       setCurrentPhase(transaction.current_phase);
+      lastSyncedId.current = activeTransactionId;
     }
-  }, [transaction, setCurrentPhase]);
+  }, [transaction, activeTransactionId, setCurrentPhase]);
 
   if (!userId) {
     return <div className="text-base text-muted-foreground p-10 text-center">Loading...</div>;
   }
 
+  // Loading guard: transaction ID set but data not yet fetched — prevent phase flash
+  if (activeTransactionId && transactionLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-card rounded-xl border border-border shadow-sm p-6 space-y-3 animate-pulse">
+          <div className="h-5 w-48 bg-muted rounded" />
+          <div className="h-4 w-32 bg-muted rounded" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-card rounded-xl border border-border shadow-sm p-6 space-y-3 animate-pulse">
+              <div className="h-4 w-36 bg-muted rounded" />
+              <div className="h-3 w-full bg-muted rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // No transaction — show journey picker or direct setup form
+  if (!activeTransactionId) {
+    if (showDirectSetup) {
+      return <TransactionSetupForm userId={userId} onComplete={() => setShowDirectSetup(false)} />;
+    }
+    return <OnboardingSelector userId={userId} />;
+  }
+
+  // Has transaction — render phase dashboard
   if (showDirectSetup) {
     return <TransactionSetupForm userId={userId} onComplete={() => setShowDirectSetup(false)} />;
   }
 
-  // Show onboarding for first-time users with no deal and no saved homes
-  const isFirstTime = !activeTransactionId && (!savedHomes || savedHomes.length === 0);
-
   switch (currentPhase) {
     case "shopping":
-      return isFirstTime ? <OnboardingSelector userId={userId} /> : <ShoppingView userId={userId} />;
+      return <ShoppingView userId={userId} />;
     case "offer":
       return <OfferView userId={userId} />;
     case "escrow":
       return <EscrowDashboard transactionId={activeTransactionId} userId={userId} />;
     case "closing":
-      return activeTransactionId ? <ClosingDashboard transactionId={activeTransactionId} userId={userId} /> : (
-        <div className="text-base text-muted-foreground bg-card rounded-xl border border-border shadow-sm p-10 text-center">
-          Create a transaction first to access closing.
-        </div>
-      );
+      return <ClosingDashboard transactionId={activeTransactionId} userId={userId} />;
     case "post-close":
-      return activeTransactionId ? <PostCloseDashboard transactionId={activeTransactionId} /> : (
-        <div className="text-base text-muted-foreground bg-card rounded-xl border border-border shadow-sm p-10 text-center">
-          No transaction selected.
-        </div>
-      );
+      return <PostCloseDashboard transactionId={activeTransactionId} />;
   }
 }

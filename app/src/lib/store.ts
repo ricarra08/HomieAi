@@ -13,12 +13,15 @@ interface UIState {
   copilotOpen: boolean;
   toggleCopilot: () => void;
   setCopilotOpen: (open: boolean) => void;
-  activeSidebarItem: "dashboard" | "documents" | "financing";
+  activeSidebarItem: "dashboard" | "documents" | "financing" | "archived";
   setActiveSidebarItem: (item: UIState["activeSidebarItem"]) => void;
 
   // Active transaction context
   activeTransactionId: string | null;
   setActiveTransactionId: (id: string | null) => void;
+
+  // Clear all transaction-scoped state (used by "Back to clients", logout, etc.)
+  clearTransactionContext: () => void;
 
   // Selected home (Shopping → Offer handoff)
   selectedHomeId: string | null;
@@ -61,6 +64,18 @@ export const useUIStore = create<UIState>()(persist((set) => ({
   activeTransactionId: null,
   setActiveTransactionId: (id) => set({ activeTransactionId: id }),
 
+  // Clear all transaction-scoped state
+  clearTransactionContext: () => set({
+    activeTransactionId: null,
+    currentPhase: "shopping",
+    selectedHomeId: null,
+    showDirectSetup: false,
+    selectedLEIds: [],
+    viewerDocId: null,
+    viewerOpen: false,
+    copilotOpen: false,
+  }),
+
   // Selected home
   selectedHomeId: null,
   setSelectedHomeId: (id) => set({ selectedHomeId: id }),
@@ -92,17 +107,20 @@ export const useUIStore = create<UIState>()(persist((set) => ({
   closeViewer: () => set({ viewerDocId: null, viewerOpen: false }),
 }), {
   name: "homieai-ui",
-  version: 1,
+  version: 2,
   migrate: (persistedState: unknown, version: number) => {
     const state = persistedState as Record<string, unknown>;
     if (version === 0 && "activeDealId" in state) {
       state.activeTransactionId = state.activeDealId;
       delete state.activeDealId;
     }
+    // v1→v2: remove currentPhase from persistence (DB is source of truth now)
+    if (version <= 1) {
+      delete state.currentPhase;
+    }
     return state as unknown as UIState;
   },
   partialize: (state) => ({
     activeTransactionId: state.activeTransactionId,
-    currentPhase: state.currentPhase,
   }),
 }));

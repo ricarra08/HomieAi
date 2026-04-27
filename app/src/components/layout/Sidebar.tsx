@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { useUIStore } from "@/lib/store";
-import { LayoutDashboard, FileText, CreditCard, ChevronLeft, ChevronRight, LogOut, Users, ArrowLeft } from "lucide-react";
+import { LayoutDashboard, FileText, CreditCard, ChevronLeft, ChevronRight, LogOut, Users, ArrowLeft, Archive } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { useProfile, useTransaction } from "@/lib/hooks/queries";
@@ -25,6 +25,7 @@ const buyerNavItems = [
 
 const agentClientListNavItems = [
   { id: "dashboard" as const, label: "Clients", icon: Users, href: "/dashboard" },
+  { id: "archived" as const, label: "Archived", icon: Archive, href: "/dashboard" },
 ];
 
 const agentTransactionNavItems = [
@@ -36,7 +37,7 @@ const agentTransactionNavItems = [
 export function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { setActiveSidebarItem, sidebarCollapsed, toggleSidebar, activeTransactionId, setActiveTransactionId, setCurrentPhase } = useUIStore();
+  const { activeSidebarItem, setActiveSidebarItem, sidebarCollapsed, toggleSidebar, activeTransactionId, clearTransactionContext } = useUIStore();
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
@@ -95,8 +96,7 @@ export function Sidebar() {
           <div className="px-4 pb-3 space-y-2">
             <button
               onClick={() => {
-                setActiveTransactionId(null);
-                setCurrentPhase("shopping");
+                clearTransactionContext();
                 router.push("/dashboard");
               }}
               className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -122,7 +122,9 @@ export function Sidebar() {
         <nav className={`flex-1 space-y-1 ${sidebarCollapsed ? "px-2" : "px-4"}`}>
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const isActive = isAgent && !isAgentInTransaction
+              ? activeSidebarItem === item.id
+              : pathname === item.href;
 
             return (
               <button

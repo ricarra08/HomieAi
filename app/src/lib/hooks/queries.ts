@@ -52,20 +52,20 @@ export function useProfile(userId: string | undefined) {
 
 // -- Shopping phase --
 
-export function useSavedHomes(userId: string | undefined) {
+export function useSavedHomes(transactionId: string | null) {
   return useQuery({
-    queryKey: savedHomeKeys.all(userId ?? ""),
+    queryKey: savedHomeKeys.all(transactionId ?? ""),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("saved_homes")
         .select("*")
-        .eq("user_id", userId!)
+        .eq("deal_id", transactionId!)
         .neq("status", "removed")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as SavedHome[];
     },
-    enabled: !!userId,
+    enabled: !!transactionId,
   });
 }
 
@@ -251,19 +251,14 @@ export function useCopilotMessages(transactionId: string | null) {
   return useQuery({
     queryKey: copilotKeys.messages(transactionId),
     queryFn: async () => {
-      const query = supabase
+      const { data, error } = await supabase
         .from("copilot_messages")
         .select("*")
+        .eq("deal_id", transactionId!)
         .order("created_at", { ascending: true });
-
-      if (transactionId) {
-        query.eq("deal_id", transactionId);
-      }
-
-      const { data, error } = await query;
       if (error) throw error;
       return data as CopilotMessage[];
     },
-    enabled: true,
+    enabled: !!transactionId,
   });
 }

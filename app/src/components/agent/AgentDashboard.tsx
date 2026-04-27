@@ -1,10 +1,20 @@
 "use client";
 
-import { Users, Plus } from "lucide-react";
+import { Users, Plus, MoreHorizontal, Archive, Trash2, RotateCcw } from "lucide-react";
 import { useUIStore } from "@/lib/store";
 import { useAgentTransactions } from "@/lib/hooks/queries";
+import { useDeleteTransaction } from "@/lib/hooks/mutations";
 import { AddClientDialog } from "./AddClientDialog";
 import { useState } from "react";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { createClient } from "@/lib/supabase/client";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import type { Transaction } from "@/lib/types";
 
 const PHASE_BADGES: Record<string, { label: string; className: string }> = {
@@ -15,74 +25,181 @@ const PHASE_BADGES: Record<string, { label: string; className: string }> = {
   "post-close": { label: "Closed", className: "bg-primary/20 text-primary-foreground" },
 };
 
-function ClientCard({ transaction, onClick }: { transaction: Transaction; onClick: () => void }) {
+function ClientCard({
+  transaction,
+  onClick,
+  onArchive,
+  onRestore,
+  onDelete,
+}: {
+  transaction: Transaction;
+  onClick: () => void;
+  onArchive: () => void;
+  onRestore: () => void;
+  onDelete: () => void;
+}) {
   const badge = PHASE_BADGES[transaction.current_phase] ?? PHASE_BADGES.shopping;
+  const isArchived = transaction.archived;
 
   return (
-    <button
-      onClick={onClick}
-      className="bg-card rounded-xl border border-border shadow-sm p-6 text-left hover:border-accent/40 hover:shadow-md transition-all w-full"
-    >
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <h3 className="text-base font-semibold text-foreground">
-            {transaction.client_name || "Unnamed Client"}
-          </h3>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {transaction.property_address || "No property yet"}
-          </p>
+    <div className="bg-card rounded-xl border border-border shadow-sm p-6 text-left hover:border-accent/40 hover:shadow-md transition-all w-full relative">
+      <button onClick={onClick} className="w-full text-left">
+        <div className="flex items-start justify-between mb-3 pr-8">
+          <div>
+            <h3 className="text-base font-semibold text-foreground">
+              {transaction.client_name || "Unnamed Client"}
+            </h3>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {transaction.property_address === "TBD"
+                ? "No property yet"
+                : transaction.property_address}
+            </p>
+          </div>
+          <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${badge.className}`}>
+            {badge.label}
+          </span>
         </div>
-        <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${badge.className}`}>
-          {badge.label}
-        </span>
-      </div>
-      {transaction.purchase_price > 0 && (
-        <p className="text-sm text-muted-foreground">
-          ${transaction.purchase_price.toLocaleString()}
+        {transaction.purchase_price > 0 && (
+          <p className="text-sm text-muted-foreground">
+            ${transaction.purchase_price.toLocaleString()}
+          </p>
+        )}
+        <p className="text-xs text-muted-foreground mt-2">
+          Updated {new Date(transaction.updated_at).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}
         </p>
-      )}
-      <p className="text-xs text-muted-foreground mt-2">
-        Updated {new Date(transaction.updated_at).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        })}
-      </p>
-    </button>
+      </button>
+
+      <div className="absolute bottom-4 right-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreHorizontal className="w-4 h-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="end" sideOffset={4}>
+            {isArchived ? (
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRestore();
+                }}
+              >
+                <RotateCcw className="w-4 h-4" />
+                Restore
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onArchive();
+                }}
+              >
+                <Archive className="w-4 h-4" />
+                Archive
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
   );
 }
 
 interface AgentDashboardProps {
   userId: string;
+  showArchived?: boolean;
 }
 
-export function AgentDashboard({ userId }: AgentDashboardProps) {
+export function AgentDashboard({ userId, showArchived = false }: AgentDashboardProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { data: transactions, isLoading } = useAgentTransactions(userId);
-  const { setActiveTransactionId, setCurrentPhase } = useUIStore();
+  const { data: allTransactions, isLoading } = useAgentTransactions(userId);
+  const { setActiveTransactionId } = useUIStore();
+  const deleteTransaction = useDeleteTransaction(userId);
+  const qc = useQueryClient();
+
+  const transactions = allTransactions?.filter((t) =>
+    showArchived ? t.archived : !t.archived
+  );
 
   function handleClientClick(transaction: Transaction) {
     setActiveTransactionId(transaction.id);
-    setCurrentPhase(transaction.current_phase);
+  }
+
+  async function handleArchive(transaction: Transaction) {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("transactions")
+      .update({ archived: true })
+      .eq("id", transaction.id);
+
+    if (error) {
+      toast.error("Failed to archive. Please try again.");
+      return;
+    }
+
+    qc.invalidateQueries({ queryKey: ["transactions", "agent", userId] });
+    toast.success(`${transaction.client_name || "Client"} archived`);
+  }
+
+  async function handleRestore(transaction: Transaction) {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("transactions")
+      .update({ archived: false })
+      .eq("id", transaction.id);
+
+    if (error) {
+      toast.error("Failed to restore. Please try again.");
+      return;
+    }
+
+    qc.invalidateQueries({ queryKey: ["transactions", "agent", userId] });
+    toast.success(`${transaction.client_name || "Client"} restored`);
+  }
+
+  function handleDelete(transaction: Transaction) {
+    deleteTransaction.mutate(transaction.id, {
+      onSuccess: () => toast.success(`${transaction.client_name || "Client"} deleted`),
+      onError: () => toast.error("Failed to delete. Please try again."),
+    });
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-3xl font-semibold tracking-tight">Your Clients</h2>
+          <h2 className="text-3xl font-semibold tracking-tight">
+            {showArchived ? "Archived" : "Your Clients"}
+          </h2>
           <p className="text-base text-muted-foreground mt-1">
             {transactions?.length
-              ? `${transactions.length} active transaction${transactions.length === 1 ? "" : "s"}`
-              : "Manage transactions for your clients"}
+              ? `${transactions.length} ${showArchived ? "archived" : "active"} transaction${transactions.length === 1 ? "" : "s"}`
+              : showArchived ? "No archived transactions" : "Manage transactions for your clients"}
           </p>
         </div>
-        <button
-          onClick={() => setDialogOpen(true)}
-          className="bg-accent text-accent-foreground shadow-sm rounded-lg px-5 py-2.5 text-base font-medium hover:bg-accent/90 transition-colors flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Add Client
-        </button>
+        {!showArchived && (
+          <button
+            onClick={() => setDialogOpen(true)}
+            className="bg-accent text-accent-foreground shadow-sm rounded-lg px-5 py-2.5 text-base font-medium hover:bg-accent/90 transition-colors flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Add Client
+          </button>
+        )}
       </div>
 
       {isLoading ? (
@@ -102,27 +219,36 @@ export function AgentDashboard({ userId }: AgentDashboardProps) {
               key={t.id}
               transaction={t}
               onClick={() => handleClientClick(t)}
+              onArchive={() => handleArchive(t)}
+              onRestore={() => handleRestore(t)}
+              onDelete={() => handleDelete(t)}
             />
           ))}
         </div>
       ) : (
         <div className="bg-card rounded-xl border border-border shadow-sm p-10 text-center space-y-4">
           <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
-            <Users className="w-8 h-8 text-accent" />
+            {showArchived ? <Archive className="w-8 h-8 text-accent" /> : <Users className="w-8 h-8 text-accent" />}
           </div>
           <div>
-            <p className="text-base font-semibold text-foreground">No clients yet</p>
+            <p className="text-base font-semibold text-foreground">
+              {showArchived ? "No archived transactions" : "No clients yet"}
+            </p>
             <p className="text-sm text-muted-foreground mt-1">
-              Add your first client to start managing their transaction
+              {showArchived
+                ? "Archived transactions will appear here"
+                : "Add your first client to start managing their transaction"}
             </p>
           </div>
-          <button
-            onClick={() => setDialogOpen(true)}
-            className="bg-accent text-accent-foreground shadow-sm rounded-lg px-5 py-2.5 text-base font-medium hover:bg-accent/90 transition-colors inline-flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Add Client
-          </button>
+          {!showArchived && (
+            <button
+              onClick={() => setDialogOpen(true)}
+              className="bg-accent text-accent-foreground shadow-sm rounded-lg px-5 py-2.5 text-base font-medium hover:bg-accent/90 transition-colors inline-flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Client
+            </button>
+          )}
         </div>
       )}
 

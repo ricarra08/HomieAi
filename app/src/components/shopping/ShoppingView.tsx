@@ -5,7 +5,7 @@ import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { ViewEditCard } from "@/components/ui/view-edit-card";
 import { AddPropertyDialog } from "./AddPropertyDialog";
 import { useSavedHomes } from "@/lib/hooks/queries";
-import { useDeleteSavedHome } from "@/lib/hooks/mutations";
+import { useDeleteSavedHome, useUpdateTransaction } from "@/lib/hooks/mutations";
 import { useUIStore } from "@/lib/store";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,12 +25,12 @@ function formatPrice(price: number | null): string {
   return `$${price.toLocaleString()}`;
 }
 
-function SavedHomeRow({ home, userId, onMoveToOffer }: {
+function SavedHomeRow({ home, transactionId, onMoveToOffer }: {
   home: SavedHome;
-  userId: string;
+  transactionId: string;
   onMoveToOffer: (home: SavedHome) => void;
 }) {
-  const deleteHome = useDeleteSavedHome(userId);
+  const deleteHome = useDeleteSavedHome(transactionId);
 
   return (
     <div className="flex items-center justify-between py-3 border-b border-border last:border-0">
@@ -67,8 +67,9 @@ function SavedHomeRow({ home, userId, onMoveToOffer }: {
 }
 
 export function ShoppingView({ userId }: { userId: string }) {
-  const { data: homes, isLoading } = useSavedHomes(userId);
-  const { setCurrentPhase, setSelectedHomeId, ownsCurrentHome, setOwnsCurrentHome, setShowDirectSetup } = useUIStore();
+  const { setCurrentPhase, setSelectedHomeId, ownsCurrentHome, setOwnsCurrentHome, setShowDirectSetup, activeTransactionId } = useUIStore();
+  const { data: homes, isLoading } = useSavedHomes(activeTransactionId);
+  const updateTransaction = useUpdateTransaction(activeTransactionId ?? "", userId);
 
   // Buy Box state (editable, persisted locally for now)
   const [priceMin, setPriceMin] = useState("");
@@ -89,8 +90,24 @@ export function ShoppingView({ userId }: { userId: string }) {
   const estimatedCashToClose = downPayment + estimatedClosingCosts;
 
   function handleMoveToOffer(home: SavedHome) {
+    if (!activeTransactionId) return;
     setSelectedHomeId(home.id);
-    setCurrentPhase("offer");
+    setCurrentPhase("offer"); // Optimistic — instant UI switch
+    updateTransaction.mutate(
+      {
+        current_phase: "offer",
+        property_address: home.address,
+        purchase_price: home.price ?? 0,
+        saved_home_id: home.id,
+      },
+      {
+        onError: () => {
+          setCurrentPhase("shopping");
+          setSelectedHomeId(null);
+          toast.error("Failed to move to offer. Please try again.");
+        },
+      }
+    );
   }
 
   return (
@@ -219,7 +236,7 @@ export function ShoppingView({ userId }: { userId: string }) {
               <SavedHomeRow
                 key={home.id}
                 home={home}
-                userId={userId}
+                transactionId={activeTransactionId!}
                 onMoveToOffer={handleMoveToOffer}
               />
             ))}
@@ -232,7 +249,7 @@ export function ShoppingView({ userId }: { userId: string }) {
           </div>
         )}
         <div className="flex justify-end mt-4 pt-4 border-t border-border">
-          <AddPropertyDialog userId={userId} />
+          <AddPropertyDialog userId={userId} transactionId={activeTransactionId!} />
         </div>
       </CollapsibleCard>
 

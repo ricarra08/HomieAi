@@ -10,9 +10,10 @@ import { useCreateSavedHome } from "@/lib/hooks/mutations";
 
 interface AddPropertyDialogProps {
   userId: string;
+  transactionId: string;
 }
 
-export function AddPropertyDialog({ userId }: AddPropertyDialogProps) {
+export function AddPropertyDialog({ userId, transactionId }: AddPropertyDialogProps) {
   const [open, setOpen] = useState(false);
   const [address, setAddress] = useState("");
   const [price, setPrice] = useState("");
@@ -21,7 +22,7 @@ export function AddPropertyDialog({ userId }: AddPropertyDialogProps) {
   const [sqft, setSqft] = useState("");
   const [notes, setNotes] = useState("");
 
-  const createHome = useCreateSavedHome(userId);
+  const createHome = useCreateSavedHome(userId, transactionId);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

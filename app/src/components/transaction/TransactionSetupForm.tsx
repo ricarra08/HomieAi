@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useCreateTransaction } from "@/lib/hooks/mutations";
+import { useCreateTransaction, useUpdateTransaction } from "@/lib/hooks/mutations";
+import { toast } from "sonner";
 import { useUIStore } from "@/lib/store";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,7 @@ export function TransactionSetupForm({
 }: TransactionSetupFormProps) {
   const createTransaction = useCreateTransaction(userId ?? "");
   const uiStore = useUIStore();
+  const updateTransaction = useUpdateTransaction(uiStore.activeTransactionId ?? "", userId ?? "");
 
   const [address, setAddress] = useState("");
   const [acceptanceDate, setAcceptanceDate] = useState("");
@@ -51,7 +53,7 @@ export function TransactionSetupForm({
   const [appraisalDays, setAppraisalDays] = useState("17");
   const [loanDays, setLoanDays] = useState("21");
 
-  const isSubmitting = createTransaction.isPending;
+  const isSubmitting = createTransaction.isPending || updateTransaction.isPending;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -72,42 +74,55 @@ export function TransactionSetupForm({
       return;
     }
 
-    createTransaction.mutate(
-      {
-        property_address: address,
-        purchase_price: Number(purchasePrice),
-        current_phase: "escrow",
-        contract_acceptance_date: acceptanceDate || undefined,
-        closing_date: closingDate || undefined,
-        earnest_money_amount: earnestMoney ? Number(earnestMoney) : undefined,
-      },
-      {
+    const payload = {
+      property_address: address,
+      purchase_price: Number(purchasePrice),
+      current_phase: "escrow" as const,
+      contract_acceptance_date: acceptanceDate || undefined,
+      closing_date: closingDate || undefined,
+      earnest_money_amount: earnestMoney ? Number(earnestMoney) : undefined,
+    };
+
+    async function createDeadlines(dealId: string) {
+      if (acceptanceDate) {
+        const base = new Date(acceptanceDate);
+        function addDays(d: Date, days: number): string {
+          const r = new Date(d);
+          r.setDate(r.getDate() + days);
+          return r.toISOString().split("T")[0];
+        }
+        const deadlines: { deal_id: string; name: string; type: string; due_date: string }[] = [];
+        if (Number(inspectionDays)) deadlines.push({ deal_id: dealId, name: "Inspection Contingency", type: "inspection", due_date: addDays(base, Number(inspectionDays)) });
+        if (Number(appraisalDays)) deadlines.push({ deal_id: dealId, name: "Appraisal Contingency", type: "appraisal", due_date: addDays(base, Number(appraisalDays)) });
+        if (Number(loanDays)) deadlines.push({ deal_id: dealId, name: "Financing Contingency", type: "financing", due_date: addDays(base, Number(loanDays)) });
+        if (closingDate) deadlines.push({ deal_id: dealId, name: "Closing Date", type: "closing", due_date: closingDate });
+        if (deadlines.length > 0) {
+          const { error: deadlineError } = await createClient().from("deadlines").insert(deadlines);
+          if (deadlineError) console.error("[transaction-setup] Failed to create deadlines:", deadlineError);
+        }
+      }
+    }
+
+    if (uiStore.activeTransactionId) {
+      updateTransaction.mutate(payload, {
+        onSuccess: async () => {
+          uiStore.setCurrentPhase("escrow");
+          toast.success("Transaction updated");
+          await createDeadlines(uiStore.activeTransactionId!);
+          onComplete?.();
+        },
+      });
+    } else {
+      createTransaction.mutate(payload, {
         onSuccess: async (data) => {
           uiStore.setActiveTransactionId(data.id);
           uiStore.setCurrentPhase("escrow");
-
-          if (acceptanceDate) {
-            const base = new Date(acceptanceDate);
-            function addDays(d: Date, days: number): string {
-              const r = new Date(d);
-              r.setDate(r.getDate() + days);
-              return r.toISOString().split("T")[0];
-            }
-            const deadlines: { deal_id: string; name: string; type: string; due_date: string }[] = [];
-            if (Number(inspectionDays)) deadlines.push({ deal_id: data.id, name: "Inspection Contingency", type: "inspection", due_date: addDays(base, Number(inspectionDays)) });
-            if (Number(appraisalDays)) deadlines.push({ deal_id: data.id, name: "Appraisal Contingency", type: "appraisal", due_date: addDays(base, Number(appraisalDays)) });
-            if (Number(loanDays)) deadlines.push({ deal_id: data.id, name: "Financing Contingency", type: "financing", due_date: addDays(base, Number(loanDays)) });
-            if (closingDate) deadlines.push({ deal_id: data.id, name: "Closing Date", type: "closing", due_date: closingDate });
-            if (deadlines.length > 0) {
-              const { error: deadlineError } = await createClient().from("deadlines").insert(deadlines);
-              if (deadlineError) console.error("[transaction-setup] Failed to create deadlines:", deadlineError);
-            }
-          }
-
+          toast.success("Transaction created");
+          await createDeadlines(data.id);
           onComplete?.();
         },
-      }
-    );
+      });
+    }
   }
 
   const defaultSubmitLabel =

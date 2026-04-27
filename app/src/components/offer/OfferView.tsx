@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { ViewEditCard } from "@/components/ui/view-edit-card";
 import { ContingencyRow } from "./ContingencyRow";
@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useUIStore } from "@/lib/store";
-import { useSavedHomes } from "@/lib/hooks/queries";
-import { useCreateTransaction } from "@/lib/hooks/mutations";
+import { useSavedHomes, useTransaction } from "@/lib/hooks/queries";
+import { useUpdateTransaction } from "@/lib/hooks/mutations";
 import { TermTooltip } from "@/components/ui/term-tooltip";
+import { toast } from "sonner";
 import { Upload, FileText, Check, DollarSign, Sparkles, ArrowRight } from "lucide-react";
 import type { SavedHome } from "@/lib/types";
 
@@ -24,16 +25,25 @@ interface OfferViewProps {
 }
 
 export function OfferView({ userId }: OfferViewProps) {
-  const { setCurrentPhase, setActiveTransactionId, selectedHomeId, ownsCurrentHome } = useUIStore();
-  const createTransaction = useCreateTransaction(userId);
-  const { data: homes } = useSavedHomes(userId);
+  const { setCurrentPhase, setActiveTransactionId, selectedHomeId, ownsCurrentHome, activeTransactionId } = useUIStore();
+  const updateTransaction = useUpdateTransaction(activeTransactionId ?? "", userId);
+  const { data: transaction } = useTransaction(activeTransactionId);
+  const { data: homes } = useSavedHomes(activeTransactionId);
 
+  // Use ephemeral selectedHomeId first (optimistic), fall back to DB saved_home_id (re-entry)
+  const resolvedHomeId = selectedHomeId ?? transaction?.saved_home_id ?? null;
   const selectedHome: SavedHome | null =
-    homes?.find((h) => h.id === selectedHomeId) ?? null;
+    homes?.find((h) => h.id === resolvedHomeId) ?? null;
 
-  const [offerPrice, setOfferPrice] = useState(
-    selectedHome?.price?.toString() ?? ""
-  );
+  // Initialize offer price from selected home — update when home resolves
+  const [offerPrice, setOfferPrice] = useState("");
+  const [priceInitialized, setPriceInitialized] = useState(false);
+  useEffect(() => {
+    if (selectedHome?.price && !priceInitialized) {
+      setOfferPrice(selectedHome.price.toString());
+      setPriceInitialized(true);
+    }
+  }, [selectedHome, priceInitialized]);
   const [earnestMoney, setEarnestMoney] = useState("");
   const [downPaymentPct, setDownPaymentPct] = useState("20");
   const [closingDays, setClosingDays] = useState("30");
@@ -76,7 +86,9 @@ export function OfferView({ userId }: OfferViewProps) {
     : "Go back to Shopping to select a property";
 
   function handleAcceptOffer() {
-    createTransaction.mutate(
+    if (!activeTransactionId) return;
+
+    updateTransaction.mutate(
       {
         property_address: propertyAddress,
         purchase_price: Number(offerPrice),
@@ -89,9 +101,9 @@ export function OfferView({ userId }: OfferViewProps) {
           : undefined,
       },
       {
-        onSuccess: async (data) => {
-          setActiveTransactionId(data.id);
+        onSuccess: async () => {
           setCurrentPhase("escrow");
+          toast.success("Transaction updated");
 
           const base = acceptanceDate ? new Date(acceptanceDate) : null;
           if (base) {
@@ -107,10 +119,10 @@ export function OfferView({ userId }: OfferViewProps) {
             const loanDays = c.loan?.enabled === false ? null : (c.loan?.days ?? 21);
 
             const deadlines: { deal_id: string; name: string; type: string; due_date: string }[] = [];
-            if (inspDays) deadlines.push({ deal_id: data.id, name: "Inspection Contingency", type: "inspection", due_date: addDays(base, inspDays) });
-            if (apprDays) deadlines.push({ deal_id: data.id, name: "Appraisal Contingency", type: "appraisal", due_date: addDays(base, apprDays) });
-            if (loanDays) deadlines.push({ deal_id: data.id, name: "Financing Contingency", type: "financing", due_date: addDays(base, loanDays) });
-            if (closingDays) deadlines.push({ deal_id: data.id, name: "Closing Date", type: "closing", due_date: addDays(base, Number(closingDays)) });
+            if (inspDays) deadlines.push({ deal_id: activeTransactionId, name: "Inspection Contingency", type: "inspection", due_date: addDays(base, inspDays) });
+            if (apprDays) deadlines.push({ deal_id: activeTransactionId, name: "Appraisal Contingency", type: "appraisal", due_date: addDays(base, apprDays) });
+            if (loanDays) deadlines.push({ deal_id: activeTransactionId, name: "Financing Contingency", type: "financing", due_date: addDays(base, loanDays) });
+            if (closingDays) deadlines.push({ deal_id: activeTransactionId, name: "Closing Date", type: "closing", due_date: addDays(base, Number(closingDays)) });
             if (deadlines.length > 0) {
               const { createClient } = await import("@/lib/supabase/client");
               await createClient().from("deadlines").insert(deadlines);
@@ -131,10 +143,10 @@ export function OfferView({ userId }: OfferViewProps) {
         <div className="flex items-center gap-3">
           <Button
             onClick={handleAcceptOffer}
-            disabled={createTransaction.isPending || !offerPrice || !selectedHome}
+            disabled={updateTransaction.isPending || !offerPrice || !selectedHome}
             className="bg-accent text-accent-foreground shadow-sm hover:bg-accent/90 text-sm font-medium gap-2"
           >
-            {createTransaction.isPending ? "Creating workspace..." : "Offer Accepted — Start Escrow"}
+            {updateTransaction.isPending ? "Updating transaction..." : "Offer Accepted — Start Escrow"}
             <ArrowRight className="w-4 h-4" />
           </Button>
           <Badge className="bg-accent/15 text-accent border-accent/30 text-sm px-3 py-1">
