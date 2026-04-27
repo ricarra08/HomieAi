@@ -171,7 +171,7 @@ export function LEComparisonTable({ estimates, transactionId }: LEComparisonTabl
                     <p className="text-base font-semibold text-foreground">{le.lender}</p>
                     <p className="text-sm text-muted-foreground">{le.product}</p>
                     {i === bestIdx && (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/20 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-primary/20 px-2 py-0.5 rounded-full">
                         <Check className="w-3 h-3" /> Best Value
                       </span>
                     )}
@@ -184,7 +184,7 @@ export function LEComparisonTable({ estimates, transactionId }: LEComparisonTabl
                       </button>
                     )}
                     {le.is_chosen && (
-                      <span className="text-xs text-primary font-medium">Chosen</span>
+                      <span className="text-xs text-emerald-600 font-medium">Chosen</span>
                     )}
                   </div>
                 </th>

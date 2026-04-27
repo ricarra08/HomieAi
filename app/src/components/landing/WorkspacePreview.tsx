@@ -18,7 +18,7 @@ export function WorkspacePreview() {
                   <div
                     className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
                       phase.done
-                        ? "bg-primary text-primary-foreground"
+                        ? "bg-primary text-emerald-600-foreground"
                         : phase.active
                           ? "bg-accent text-accent-foreground"
                           : "bg-card text-muted-foreground border border-border"
@@ -114,8 +114,8 @@ export function WorkspacePreview() {
           </div>
           <p className="text-2xl font-semibold text-foreground">$8,500</p>
           <div className="flex items-center gap-1.5 mt-2">
-            <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
-            <span className="text-xs font-semibold text-primary">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="text-xs font-semibold text-emerald-600">
               Held in Escrow
             </span>
           </div>

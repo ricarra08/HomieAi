@@ -108,6 +108,13 @@ export function useCreateTransaction(userId: string) {
       agent_id?: string;
       client_name?: string;
       client_email?: string;
+      // State workflow engine fields
+      state?: string;
+      property_type?: string;
+      loan_program?: string;
+      property_in_hoa?: boolean;
+      property_in_special_district?: boolean;
+      special_district_annual_cost?: number;
     }) => {
       const { data, error } = await supabase
         .from("transactions")
@@ -217,6 +224,12 @@ export function useCreateOfferDetails(transactionId: string) {
       contingency_appraisal_days?: number;
       contingency_financing_days?: number;
       contingency_disclosure_days?: number;
+      // State-specific offer fields
+      option_period_days?: number;
+      option_fee?: number;
+      investigation_contingency_days?: number;
+      contract_type?: string;
+      seller_repair_cap_percent?: number;
     }) => {
       const { data, error } = await supabase
         .from("offer_details")

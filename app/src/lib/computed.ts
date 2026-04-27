@@ -1,4 +1,6 @@
 import type { LoanEstimate, Deadline, OfferDetails } from "./types";
+import type { StateConfig } from "./state-configs/types";
+import { addDays as addDaysFromConfig } from "./state-configs/day-counting";
 import { parseLoanTermYears } from "./utils";
 
 /**
@@ -176,53 +178,194 @@ export function computeOfferReadiness(
 /**
  * Compute deadlines from offer contingency days + acceptance date.
  * Used during Offer → Escrow transition to auto-generate deadline rows.
+ *
+ * When stateConfig is provided, generates state-specific deadlines
+ * (TX option period, CA standalone appraisal, etc.) with proper day counting.
+ * When omitted, falls back to legacy calendar-day behavior.
  */
 export function computeDeadlinesFromOffer(
   offer: OfferDetails,
-  acceptanceDate: string
+  acceptanceDate: string,
+  stateConfig?: StateConfig
 ): { name: string; type: string; due_date: string }[] {
-  const base = new Date(acceptanceDate);
   const deadlines: { name: string; type: string; due_date: string }[] = [];
 
-  function addDays(date: Date, days: number): string {
-    const d = new Date(date);
-    d.setDate(d.getDate() + days);
-    return d.toISOString().split("T")[0];
+  const countType = stateConfig?.day_counting.type ?? "calendar";
+  const weekendExt = stateConfig?.day_counting.weekend_extension ?? false;
+
+  function add(days: number): string {
+    return addDaysFromConfig(acceptanceDate, days, countType, weekendExt);
   }
 
-  if (offer.contingency_inspection_days) {
+  // EMD deposit deadline
+  if (stateConfig) {
     deadlines.push({
-      name: "Inspection Contingency",
-      type: "inspection",
-      due_date: addDays(base, offer.contingency_inspection_days),
+      name: "Earnest Money Deposit Due",
+      type: "earnest-money",
+      due_date: addDaysFromConfig(
+        acceptanceDate,
+        stateConfig.earnest_money.deposit_deadline_days,
+        stateConfig.earnest_money.deposit_deadline_type,
+        weekendExt
+      ),
     });
   }
+
+  // TX option period
+  if (stateConfig?.option_period.enabled && offer.option_period_days) {
+    deadlines.push({
+      name: "Option Period Expires",
+      type: "option-period",
+      due_date: add(offer.option_period_days),
+    });
+    if (stateConfig.option_period.fee_delivery_days) {
+      deadlines.push({
+        name: "Option Fee Delivery",
+        type: "option-fee-delivery",
+        due_date: add(stateConfig.option_period.fee_delivery_days),
+      });
+    }
+  }
+
+  // Inspection / Investigation contingency
+  if (offer.contingency_inspection_days) {
+    const isInvestigation = stateConfig?.buyer_protection.type === "investigation_contingency";
+    deadlines.push({
+      name: isInvestigation ? "Investigation Contingency Expires" : (stateConfig?.buyer_protection.label ?? "Inspection Contingency"),
+      type: isInvestigation ? "investigation" : "inspection",
+      due_date: add(offer.contingency_inspection_days),
+    });
+  }
+
+  // CA standalone appraisal contingency
   if (offer.contingency_appraisal_days) {
     deadlines.push({
       name: "Appraisal Contingency",
       type: "appraisal",
-      due_date: addDays(base, offer.contingency_appraisal_days),
+      due_date: add(offer.contingency_appraisal_days),
     });
   }
+
+  // Financing contingency
   if (offer.contingency_financing_days) {
     deadlines.push({
       name: "Financing Contingency",
       type: "financing",
-      due_date: addDays(base, offer.contingency_financing_days),
+      due_date: add(offer.contingency_financing_days),
     });
   }
+
+  // Disclosure review
   if (offer.contingency_disclosure_days) {
     deadlines.push({
       name: "Disclosure Review",
       type: "disclosure",
-      due_date: addDays(base, offer.contingency_disclosure_days),
+      due_date: add(offer.contingency_disclosure_days),
     });
   }
+
+  // Closing date
   if (offer.closing_date) {
     deadlines.push({
       name: "Closing Date",
       type: "closing",
       due_date: offer.closing_date,
+    });
+  }
+
+  return deadlines;
+}
+
+/**
+ * Compute deadlines from setup form values (no OfferDetails row yet).
+ * Used by TransactionSetupForm, AddClientDialog, and OfferView
+ * when creating a transaction directly (not through the offer flow).
+ */
+export function computeDeadlinesFromSetupForm(
+  params: {
+    acceptanceDate: string;
+    closingDate?: string;
+    inspectionDays?: number;
+    appraisalDays?: number;
+    loanDays?: number;
+    optionPeriodDays?: number;
+  },
+  stateConfig?: StateConfig
+): { name: string; type: string; due_date: string }[] {
+  const deadlines: { name: string; type: string; due_date: string }[] = [];
+  const base = params.acceptanceDate;
+
+  const countType = stateConfig?.day_counting.type ?? "calendar";
+  const weekendExt = stateConfig?.day_counting.weekend_extension ?? false;
+
+  function add(days: number): string {
+    return addDaysFromConfig(base, days, countType, weekendExt);
+  }
+
+  // EMD deposit deadline
+  if (stateConfig) {
+    deadlines.push({
+      name: "Earnest Money Deposit Due",
+      type: "earnest-money",
+      due_date: addDaysFromConfig(
+        base,
+        stateConfig.earnest_money.deposit_deadline_days,
+        stateConfig.earnest_money.deposit_deadline_type,
+        weekendExt
+      ),
+    });
+  }
+
+  // TX option period
+  if (stateConfig?.option_period.enabled && params.optionPeriodDays) {
+    deadlines.push({
+      name: "Option Period Expires",
+      type: "option-period",
+      due_date: add(params.optionPeriodDays),
+    });
+    if (stateConfig.option_period.fee_delivery_days) {
+      deadlines.push({
+        name: "Option Fee Delivery",
+        type: "option-fee-delivery",
+        due_date: add(stateConfig.option_period.fee_delivery_days),
+      });
+    }
+  }
+
+  // Inspection / Investigation
+  if (params.inspectionDays) {
+    const isInvestigation = stateConfig?.buyer_protection.type === "investigation_contingency";
+    deadlines.push({
+      name: isInvestigation ? "Investigation Contingency Expires" : (stateConfig?.buyer_protection.label ?? "Inspection Contingency"),
+      type: isInvestigation ? "investigation" : "inspection",
+      due_date: add(params.inspectionDays),
+    });
+  }
+
+  // Appraisal (CA standalone)
+  if (params.appraisalDays) {
+    deadlines.push({
+      name: "Appraisal Contingency",
+      type: "appraisal",
+      due_date: add(params.appraisalDays),
+    });
+  }
+
+  // Financing
+  if (params.loanDays) {
+    deadlines.push({
+      name: "Financing Contingency",
+      type: "financing",
+      due_date: add(params.loanDays),
+    });
+  }
+
+  // Closing date
+  if (params.closingDate) {
+    deadlines.push({
+      name: "Closing Date",
+      type: "closing",
+      due_date: params.closingDate,
     });
   }
 

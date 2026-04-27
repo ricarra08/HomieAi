@@ -66,7 +66,7 @@ export function AppraisalStatus({ transactionId, appraisalDoc, transaction, allD
                 {hasGap && <AlertTriangle className="w-4 h-4 text-destructive" />}
                 <span className="text-sm font-medium">{hasGap ? "Appraisal Gap" : "No Gap"}</span>
               </div>
-              <span className={`text-sm font-semibold ${hasGap ? "text-destructive" : "text-primary"}`}>
+              <span className={`text-sm font-semibold ${hasGap ? "text-destructive" : "text-emerald-600"}`}>
                 {hasGap ? `-${formatCurrency(gap)}` : "At or above value"}
               </span>
             </div>

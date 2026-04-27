@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { useUIStore } from "@/lib/store";
 import { useSavedHomes, useTransaction } from "@/lib/hooks/queries";
 import { useUpdateTransaction } from "@/lib/hooks/mutations";
+import { computeDeadlinesFromSetupForm } from "@/lib/computed";
+import { isValidStateCode, getStateConfig, getContingencyDefaults } from "@/lib/state-configs";
 import { TermTooltip } from "@/components/ui/term-tooltip";
 import { toast } from "sonner";
 import { Upload, FileText, Check, DollarSign, Sparkles, ArrowRight } from "lucide-react";
@@ -105,27 +107,31 @@ export function OfferView({ userId }: OfferViewProps) {
           setCurrentPhase("escrow");
           toast.success("Transaction updated");
 
-          const base = acceptanceDate ? new Date(acceptanceDate) : null;
-          if (base) {
-            function addDays(d: Date, days: number): string {
-              const r = new Date(d);
-              r.setDate(r.getDate() + days);
-              return r.toISOString().split("T")[0];
-            }
-
+          if (acceptanceDate) {
             const c = confirmedContingencies;
-            const inspDays = c.inspection?.enabled === false ? null : (c.inspection?.days ?? 10);
-            const apprDays = c.appraisal?.enabled === false ? null : (c.appraisal?.days ?? 17);
-            const loanDays = c.loan?.enabled === false ? null : (c.loan?.days ?? 21);
+            const txState = transaction?.state;
+            const stateConfig = txState && isValidStateCode(txState) ? getStateConfig(txState) : undefined;
+            const defaults = txState && isValidStateCode(txState) ? getContingencyDefaults(txState) : null;
 
-            const deadlines: { deal_id: string; name: string; type: string; due_date: string }[] = [];
-            if (inspDays) deadlines.push({ deal_id: activeTransactionId, name: "Inspection Contingency", type: "inspection", due_date: addDays(base, inspDays) });
-            if (apprDays) deadlines.push({ deal_id: activeTransactionId, name: "Appraisal Contingency", type: "appraisal", due_date: addDays(base, apprDays) });
-            if (loanDays) deadlines.push({ deal_id: activeTransactionId, name: "Financing Contingency", type: "financing", due_date: addDays(base, loanDays) });
-            if (closingDays) deadlines.push({ deal_id: activeTransactionId, name: "Closing Date", type: "closing", due_date: addDays(base, Number(closingDays)) });
+            const inspDays = c.inspection?.enabled === false ? null : (c.inspection?.days ?? (defaults ? Number(defaults.inspectionDays) : 10));
+            const apprDays = c.appraisal?.enabled === false ? null : (c.appraisal?.days ?? (defaults ? Number(defaults.appraisalDays) || undefined : 17));
+            const loanDays = c.loan?.enabled === false ? null : (c.loan?.days ?? (defaults ? Number(defaults.loanDays) : 21));
+            const closingDate = closingDays && acceptanceDate
+              ? (() => { const d = new Date(acceptanceDate); d.setDate(d.getDate() + Number(closingDays)); return d.toISOString().split("T")[0]; })()
+              : undefined;
+
+            const deadlines = computeDeadlinesFromSetupForm({
+              acceptanceDate,
+              closingDate,
+              inspectionDays: inspDays ?? undefined,
+              appraisalDays: apprDays ?? undefined,
+              loanDays: loanDays ?? undefined,
+            }, stateConfig);
+
             if (deadlines.length > 0) {
               const { createClient } = await import("@/lib/supabase/client");
-              await createClient().from("deadlines").insert(deadlines);
+              const rows = deadlines.map((d) => ({ ...d, deal_id: activeTransactionId }));
+              await createClient().from("deadlines").insert(rows);
             }
           }
         },

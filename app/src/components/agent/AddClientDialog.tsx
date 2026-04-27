@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { X, Search, FileText, ArrowRight, Loader2 } from "lucide-react";
 import { useCreateTransaction } from "@/lib/hooks/mutations";
-import { useCreateDeadlines } from "@/lib/hooks/mutations";
 import { useUIStore } from "@/lib/store";
+import { SUPPORTED_STATES, STATE_LABELS, getStateConfig, getContingencyDefaults } from "@/lib/state-configs";
+import { computeDeadlinesFromSetupForm } from "@/lib/computed";
+import type { StateCode } from "@/lib/state-configs";
 
 interface AddClientDialogProps {
   open: boolean;
@@ -28,9 +30,27 @@ export function AddClientDialog({ open, onClose, userId }: AddClientDialogProps)
   const [inspectionDays, setInspectionDays] = useState("17");
   const [appraisalDays, setAppraisalDays] = useState("21");
   const [loanDays, setLoanDays] = useState("21");
+  const [selectedState, setSelectedState] = useState("");
+  const [optionPeriodDays, setOptionPeriodDays] = useState("");
+  const [optionFee, setOptionFee] = useState("");
 
   const createTransaction = useCreateTransaction(userId);
   const { setActiveTransactionId, setCurrentPhase } = useUIStore();
+
+  const stateConfig = selectedState ? getStateConfig(selectedState) : null;
+
+  function handleStateChange(code: string) {
+    setSelectedState(code);
+    setOptionPeriodDays("");
+    setOptionFee("");
+    const defaults = getContingencyDefaults(code);
+    setInspectionDays(defaults.inspectionDays);
+    setAppraisalDays(defaults.appraisalDays);
+    setLoanDays(defaults.loanDays);
+    if (getStateConfig(code).option_period.enabled) {
+      setOptionPeriodDays(String(getStateConfig(code).option_period.default_days ?? ""));
+    }
+  }
 
   function reset() {
     setClientName("");
@@ -41,9 +61,12 @@ export function AddClientDialog({ open, onClose, userId }: AddClientDialogProps)
     setAcceptanceDate("");
     setClosingDate("");
     setEarnestMoney("");
-    setInspectionDays("17");
-    setAppraisalDays("21");
-    setLoanDays("21");
+    setInspectionDays("");
+    setAppraisalDays("");
+    setLoanDays("");
+    setSelectedState("");
+    setOptionPeriodDays("");
+    setOptionFee("");
   }
 
   function handleClose() {
@@ -62,6 +85,7 @@ export function AddClientDialog({ open, onClose, userId }: AddClientDialogProps)
         agent_id: userId,
         client_name: clientName.trim(),
         client_email: clientEmail.trim() || undefined,
+        state: selectedState || undefined,
       },
       {
         onSuccess: (data) => {
@@ -74,7 +98,7 @@ export function AddClientDialog({ open, onClose, userId }: AddClientDialogProps)
   }
 
   function handleSubmitAccepted() {
-    if (!clientName.trim() || !address.trim() || !purchasePrice) return;
+    if (!clientName.trim() || !address.trim() || !purchasePrice || !acceptanceDate) return;
 
     createTransaction.mutate(
       {
@@ -87,26 +111,24 @@ export function AddClientDialog({ open, onClose, userId }: AddClientDialogProps)
         agent_id: userId,
         client_name: clientName.trim(),
         client_email: clientEmail.trim() || undefined,
+        state: selectedState || undefined,
       },
       {
         onSuccess: async (data) => {
           // Auto-create deadlines
           if (acceptanceDate) {
-            const supabase = (await import("@/lib/supabase/client")).createClient();
-            const base = new Date(acceptanceDate);
-            function addDays(d: Date, days: number) {
-              const r = new Date(d);
-              r.setDate(r.getDate() + days);
-              return r.toISOString().split("T")[0];
-            }
-            const deadlines: { deal_id: string; name: string; type: string; due_date: string }[] = [];
-            if (Number(inspectionDays)) deadlines.push({ deal_id: data.id, name: "Inspection Contingency", type: "inspection", due_date: addDays(base, Number(inspectionDays)) });
-            if (Number(appraisalDays)) deadlines.push({ deal_id: data.id, name: "Appraisal Contingency", type: "appraisal", due_date: addDays(base, Number(appraisalDays)) });
-            if (Number(loanDays)) deadlines.push({ deal_id: data.id, name: "Financing Contingency", type: "financing", due_date: addDays(base, Number(loanDays)) });
-            if (closingDate) deadlines.push({ deal_id: data.id, name: "Closing Date", type: "closing", due_date: closingDate });
-
-            if (deadlines.length) {
-              await supabase.from("deadlines").insert(deadlines);
+            const deadlines = computeDeadlinesFromSetupForm({
+              acceptanceDate,
+              closingDate: closingDate || undefined,
+              inspectionDays: Number(inspectionDays) || undefined,
+              appraisalDays: Number(appraisalDays) || undefined,
+              loanDays: Number(loanDays) || undefined,
+              optionPeriodDays: Number(optionPeriodDays) || undefined,
+            }, stateConfig ?? undefined);
+            if (deadlines.length > 0) {
+              const supabase = (await import("@/lib/supabase/client")).createClient();
+              const rows = deadlines.map((d) => ({ ...d, deal_id: data.id }));
+              await supabase.from("deadlines").insert(rows);
             }
           }
 
@@ -159,6 +181,20 @@ export function AddClientDialog({ open, onClose, userId }: AddClientDialogProps)
               className="w-full text-base px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40"
             />
           </div>
+          <div className="space-y-2">
+            <label htmlFor="client-state" className="text-base font-medium text-foreground">State</label>
+            <select
+              id="client-state"
+              value={selectedState}
+              onChange={(e) => handleStateChange(e.target.value)}
+              className="w-full text-base px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40"
+            >
+              <option value="">Select state...</option>
+              {SUPPORTED_STATES.map((code) => (
+                <option key={code} value={code}>{STATE_LABELS[code as StateCode]}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Stage selection */}
@@ -190,7 +226,7 @@ export function AddClientDialog({ open, onClose, userId }: AddClientDialogProps)
         {stage === "shopping" && (
           <button
             onClick={handleSubmitShopping}
-            disabled={!clientName.trim() || isSubmitting}
+            disabled={!clientName.trim() || !selectedState || isSubmitting}
             className="w-full bg-accent text-accent-foreground shadow-sm rounded-lg px-5 py-2.5 text-base font-medium hover:bg-accent/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
@@ -255,22 +291,36 @@ export function AddClientDialog({ open, onClose, userId }: AddClientDialogProps)
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Inspection days</label>
+                <label className="text-sm font-medium text-foreground">{stateConfig?.buyer_protection.type === "investigation_contingency" ? "Investigation" : stateConfig?.buyer_protection.type === "option_period" ? "Inspection" : "Inspection"} days</label>
                 <input type="number" value={inspectionDays} onChange={(e) => setInspectionDays(e.target.value)} className="w-full text-base px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40" />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Appraisal days</label>
-                <input type="number" value={appraisalDays} onChange={(e) => setAppraisalDays(e.target.value)} className="w-full text-base px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40" />
-              </div>
+              {(!stateConfig || stateConfig.contingency_defaults.appraisal_days !== null) && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Appraisal days</label>
+                  <input type="number" value={appraisalDays} onChange={(e) => setAppraisalDays(e.target.value)} className="w-full text-base px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40" />
+                </div>
+              )}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Loan days</label>
                 <input type="number" value={loanDays} onChange={(e) => setLoanDays(e.target.value)} className="w-full text-base px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40" />
               </div>
             </div>
+            {stateConfig?.option_period.enabled && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Option period days</label>
+                  <input type="number" value={optionPeriodDays} onChange={(e) => setOptionPeriodDays(e.target.value)} className="w-full text-base px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Option fee</label>
+                  <input type="number" value={optionFee} onChange={(e) => setOptionFee(e.target.value)} className="w-full text-base px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40" />
+                </div>
+              </div>
+            )}
 
             <button
               onClick={handleSubmitAccepted}
-              disabled={!clientName.trim() || !address.trim() || !purchasePrice || isSubmitting}
+              disabled={!clientName.trim() || !address.trim() || !purchasePrice || !acceptanceDate || !selectedState || isSubmitting}
               className="w-full bg-accent text-accent-foreground shadow-sm rounded-lg px-5 py-2.5 text-base font-medium hover:bg-accent/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}

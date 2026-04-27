@@ -9,8 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { TermTooltip } from "@/components/ui/term-tooltip";
+import { SUPPORTED_STATES, STATE_LABELS, getStateConfig, getContingencyDefaults } from "@/lib/state-configs";
+import { computeDeadlinesFromSetupForm } from "@/lib/computed";
+import type { StateCode } from "@/lib/state-configs";
 
 export interface TransactionFormData {
+  state: string;
   address: string;
   acceptanceDate: string;
   closingDate: string;
@@ -49,16 +53,40 @@ export function TransactionSetupForm({
   const [closingDate, setClosingDate] = useState("");
   const [purchasePrice, setPurchasePrice] = useState("");
   const [earnestMoney, setEarnestMoney] = useState("");
-  const [inspectionDays, setInspectionDays] = useState("17");
-  const [appraisalDays, setAppraisalDays] = useState("17");
-  const [loanDays, setLoanDays] = useState("21");
+  const [inspectionDays, setInspectionDays] = useState("");
+  const [appraisalDays, setAppraisalDays] = useState("");
+  const [loanDays, setLoanDays] = useState("");
+  const [selectedState, setSelectedState] = useState<string>("");
+  const [optionPeriodDays, setOptionPeriodDays] = useState("");
+  const [optionFee, setOptionFee] = useState("");
+  const [contractType, setContractType] = useState("");
+  const [userEditedContingencies, setUserEditedContingencies] = useState(false);
+
+  const stateConfig = selectedState ? getStateConfig(selectedState) : null;
 
   const isSubmitting = createTransaction.isPending || updateTransaction.isPending;
+
+  function handleStateChange(code: string) {
+    setSelectedState(code);
+    setOptionPeriodDays("");
+    setOptionFee("");
+    setContractType("");
+    if (!userEditedContingencies) {
+      const defaults = getContingencyDefaults(code);
+      setInspectionDays(defaults.inspectionDays);
+      setAppraisalDays(defaults.appraisalDays);
+      setLoanDays(defaults.loanDays);
+    }
+    if (getStateConfig(code).option_period.enabled) {
+      setOptionPeriodDays(String(getStateConfig(code).option_period.default_days ?? ""));
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     const formData: TransactionFormData = {
+      state: selectedState,
       address,
       acceptanceDate,
       closingDate,
@@ -75,6 +103,7 @@ export function TransactionSetupForm({
     }
 
     const payload = {
+      state: selectedState || undefined,
       property_address: address,
       purchase_price: Number(purchasePrice),
       current_phase: "escrow" as const,
@@ -84,22 +113,19 @@ export function TransactionSetupForm({
     };
 
     async function createDeadlines(dealId: string) {
-      if (acceptanceDate) {
-        const base = new Date(acceptanceDate);
-        function addDays(d: Date, days: number): string {
-          const r = new Date(d);
-          r.setDate(r.getDate() + days);
-          return r.toISOString().split("T")[0];
-        }
-        const deadlines: { deal_id: string; name: string; type: string; due_date: string }[] = [];
-        if (Number(inspectionDays)) deadlines.push({ deal_id: dealId, name: "Inspection Contingency", type: "inspection", due_date: addDays(base, Number(inspectionDays)) });
-        if (Number(appraisalDays)) deadlines.push({ deal_id: dealId, name: "Appraisal Contingency", type: "appraisal", due_date: addDays(base, Number(appraisalDays)) });
-        if (Number(loanDays)) deadlines.push({ deal_id: dealId, name: "Financing Contingency", type: "financing", due_date: addDays(base, Number(loanDays)) });
-        if (closingDate) deadlines.push({ deal_id: dealId, name: "Closing Date", type: "closing", due_date: closingDate });
-        if (deadlines.length > 0) {
-          const { error: deadlineError } = await createClient().from("deadlines").insert(deadlines);
-          if (deadlineError) console.error("[transaction-setup] Failed to create deadlines:", deadlineError);
-        }
+      if (!acceptanceDate) return;
+      const deadlines = computeDeadlinesFromSetupForm({
+        acceptanceDate,
+        closingDate: closingDate || undefined,
+        inspectionDays: Number(inspectionDays) || undefined,
+        appraisalDays: Number(appraisalDays) || undefined,
+        loanDays: Number(loanDays) || undefined,
+        optionPeriodDays: Number(optionPeriodDays) || undefined,
+      }, stateConfig ?? undefined);
+      if (deadlines.length > 0) {
+        const rows = deadlines.map((d) => ({ ...d, deal_id: dealId }));
+        const { error: deadlineError } = await createClient().from("deadlines").insert(rows);
+        if (deadlineError) console.error("[transaction-setup] Failed to create deadlines:", deadlineError);
       }
     }
 
@@ -141,6 +167,22 @@ export function TransactionSetupForm({
       </div>
 
       <form onSubmit={handleSubmit} className="bg-card rounded-xl border border-border shadow-sm p-8 space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="state">State</Label>
+          <select
+            id="state"
+            value={selectedState}
+            onChange={(e) => handleStateChange(e.target.value)}
+            required
+            className="w-full text-base px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40"
+          >
+            <option value="">Select state...</option>
+            {SUPPORTED_STATES.map((code) => (
+              <option key={code} value={code}>{STATE_LABELS[code as StateCode]}</option>
+            ))}
+          </select>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="address">Property Address</Label>
           <Input
@@ -219,28 +261,32 @@ export function TransactionSetupForm({
           <div className="grid grid-cols-3 gap-4 mt-3">
             <div className="space-y-2">
               <Label htmlFor="inspection">
-                <TermTooltip term="Inspection" definition="Time allowed to have the property professionally inspected and negotiate repairs. Typical: 7–14 days." />
+                <TermTooltip term={stateConfig?.buyer_protection.label ?? "Inspection"} definition="Time allowed to have the property professionally inspected and negotiate repairs. Typical: 7–14 days." />
               </Label>
               <Input
                 id="inspection"
                 type="number"
                 value={inspectionDays}
                 onChange={(e) => setInspectionDays(e.target.value)}
+                onFocus={() => setUserEditedContingencies(true)}
                 className="text-base"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="appraisal">
-                <TermTooltip term="Appraisal" definition="Time for a lender-ordered property valuation. If the appraisal comes in low, you can renegotiate or walk away. Typical: 14–21 days." />
-              </Label>
-              <Input
-                id="appraisal"
-                type="number"
-                value={appraisalDays}
-                onChange={(e) => setAppraisalDays(e.target.value)}
-                className="text-base"
-              />
-            </div>
+            {(!stateConfig || stateConfig.contingency_defaults.appraisal_days !== null) && (
+              <div className="space-y-2">
+                <Label htmlFor="appraisal">
+                  <TermTooltip term="Appraisal" definition="Time for a lender-ordered property valuation. If the appraisal comes in low, you can renegotiate or walk away. Typical: 14–21 days." />
+                </Label>
+                <Input
+                  id="appraisal"
+                  type="number"
+                  value={appraisalDays}
+                  onChange={(e) => setAppraisalDays(e.target.value)}
+                  onFocus={() => setUserEditedContingencies(true)}
+                  className="text-base"
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="loan">
                 <TermTooltip term="Loan" definition="Time to secure final mortgage approval. If financing falls through, you can cancel the purchase. Typical: 21–30 days." />
@@ -250,15 +296,44 @@ export function TransactionSetupForm({
                 type="number"
                 value={loanDays}
                 onChange={(e) => setLoanDays(e.target.value)}
+                onFocus={() => setUserEditedContingencies(true)}
                 className="text-base"
               />
             </div>
           </div>
+          {stateConfig?.option_period.enabled && (
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="optionDays">Option Period Days</Label>
+                <Input
+                  id="optionDays"
+                  type="number"
+                  value={optionPeriodDays}
+                  onChange={(e) => setOptionPeriodDays(e.target.value)}
+                  className="text-base"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="optionFee">Option Fee</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-base">$</span>
+                  <Input
+                    id="optionFee"
+                    type="number"
+                    placeholder="100"
+                    value={optionFee}
+                    onChange={(e) => setOptionFee(e.target.value)}
+                    className="text-base pl-7"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <Button
           type="submit"
-          disabled={isSubmitting || !address || !purchasePrice}
+          disabled={isSubmitting || !address || !purchasePrice || !selectedState}
           className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm text-base py-6 font-medium"
         >
           {isSubmitting ? "Creating..." : (submitLabel ?? defaultSubmitLabel)}

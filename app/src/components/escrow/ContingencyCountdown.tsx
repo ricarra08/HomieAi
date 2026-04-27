@@ -9,7 +9,7 @@ import { useUIStore } from "@/lib/store";
 import type { Deadline } from "@/lib/types";
 
 const urgencyStyles: Record<string, string> = {
-  upcoming: "text-primary",
+  upcoming: "text-emerald-600",
   "due-soon": "text-warning",
   overdue: "text-destructive",
   completed: "text-muted-foreground",

@@ -46,6 +46,13 @@ export interface Transaction {
   escrow_contact: string | null;
   closing_metadata: ClosingMetadata | null;
   archived: boolean;
+  // State workflow engine fields
+  state: string | null;
+  property_type: "single_family" | "condo" | "townhome" | "new_construction" | "vacant_land" | null;
+  loan_program: "conventional" | "fha" | "va" | "usda" | "jumbo" | "cash" | null;
+  property_in_hoa: boolean;
+  property_in_special_district: boolean;
+  special_district_annual_cost: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -64,6 +71,14 @@ export interface OfferDetails {
   proof_of_funds_doc_id: string | null;
   checklist_items: Record<string, boolean>;
   status: "draft" | "submitted" | "accepted" | "rejected" | "countered";
+  // State-specific offer fields
+  option_period_days: number | null;              // TX
+  option_fee: number | null;                      // TX
+  option_fee_delivered: boolean;                   // TX
+  option_fee_delivery_date: string | null;         // TX
+  investigation_contingency_days: number | null;   // CA
+  contract_type: string | null;                    // FL: "standard" | "as_is"
+  seller_repair_cap_percent: number | null;        // FL Standard: 1.5%
   created_at: string;
 }
 
@@ -92,7 +107,13 @@ export interface Deadline {
   id: string;
   deal_id: string;
   name: string;
-  type: "earnest-money" | "inspection" | "appraisal" | "financing" | "disclosure" | "closing" | "custom";
+  type:
+    | "earnest-money" | "inspection" | "appraisal" | "financing" | "disclosure" | "closing" | "custom"
+    // State-specific deadline types
+    | "option-period" | "option-fee-delivery" | "investigation"
+    | "title-commitment-delivery" | "title-review" | "hoa-doc-review"
+    | "loan-application" | "contingency-removal" | "nbp-response"
+    | "insurance-binder" | "survey" | "seller-disclosure-delivery";
   due_date: string;
   status: "upcoming" | "due-soon" | "overdue" | "completed" | "waived";
   notes: string | null;
@@ -153,6 +174,14 @@ export interface InsuranceInfo {
   binder_document_id: string | null;
   is_chosen: boolean;
   notes: string | null;
+  // State-specific insurance fields
+  insurance_type: "homeowners" | "wind" | "flood" | "earthquake" | "sinkhole" | "title_owner" | "title_lender" | null;
+  flood_zone: string | null;
+  flood_insurance_required: boolean | null;
+  wind_separate_policy: boolean | null;
+  hurricane_deductible_percent: number | null;
+  wildfire_zone: boolean | null;
+  fair_plan: boolean | null;
   created_at: string;
   updated_at: string;
 }

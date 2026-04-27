@@ -71,6 +71,13 @@ function makeOffer(overrides: Partial<OfferDetails> = {}): OfferDetails {
     proof_of_funds_doc_id: null,
     checklist_items: {},
     status: "accepted",
+    option_period_days: null,
+    option_fee: null,
+    option_fee_delivered: false,
+    option_fee_delivery_date: null,
+    investigation_contingency_days: null,
+    contract_type: null,
+    seller_repair_cap_percent: null,
     created_at: "2026-01-01T00:00:00Z",
     ...overrides,
   };

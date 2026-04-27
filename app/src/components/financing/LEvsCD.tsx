@@ -26,7 +26,7 @@ export function LEvsCD({ chosenLE, cdDocument }: LEvsCDProps) {
     return (
       <div className="bg-card rounded-xl border border-border shadow-sm p-6">
         <div className="flex items-center gap-2 mb-2">
-          <CheckCircle2 className="w-5 h-5 text-primary" />
+          <CheckCircle2 className="w-5 h-5 text-emerald-600" />
           <h3 className="text-base font-semibold text-foreground">LE vs CD Comparison</h3>
         </div>
         <p className="text-sm text-muted-foreground">
@@ -58,7 +58,7 @@ export function LEvsCD({ chosenLE, cdDocument }: LEvsCDProps) {
           {hasIssues ? (
             <AlertTriangle className="w-5 h-5 text-destructive" />
           ) : (
-            <CheckCircle2 className="w-5 h-5 text-primary" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
           )}
           <h3 className="text-base font-semibold text-foreground">LE vs CD Comparison</h3>
           {hasIssues && (
@@ -90,7 +90,7 @@ export function LEvsCD({ chosenLE, cdDocument }: LEvsCDProps) {
               <td className="text-sm text-foreground px-6 py-2.5">{v.field}</td>
               <td className="text-sm text-muted-foreground text-right px-4 py-2.5">{formatCurrency(v.leValue)}</td>
               <td className="text-sm text-foreground font-medium text-right px-4 py-2.5">{formatCurrency(v.cdValue)}</td>
-              <td className={`text-sm font-medium text-right px-6 py-2.5 ${!v.toleranceOk ? "text-destructive" : v.noteworthy ? "text-warning" : v.delta > 0 ? "text-warning" : "text-primary"}`}>
+              <td className={`text-sm font-medium text-right px-6 py-2.5 ${!v.toleranceOk ? "text-destructive" : v.noteworthy ? "text-warning" : v.delta > 0 ? "text-warning" : "text-emerald-600"}`}>
                 {formatDelta(v.delta)}
                 {!v.toleranceOk && <AlertTriangle className="w-3.5 h-3.5 inline ml-1" />}
                 {v.noteworthy && <Eye className="w-3.5 h-3.5 inline ml-1" />}

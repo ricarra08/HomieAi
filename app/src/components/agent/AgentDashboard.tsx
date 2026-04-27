@@ -15,6 +15,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { isValidStateCode, STATE_LABELS } from "@/lib/state-configs";
+import type { StateCode } from "@/lib/state-configs";
 import type { Transaction } from "@/lib/types";
 
 const PHASE_BADGES: Record<string, { label: string; className: string }> = {
@@ -55,9 +57,16 @@ function ClientCard({
                 : transaction.property_address}
             </p>
           </div>
-          <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${badge.className}`}>
-            {badge.label}
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {transaction.state && isValidStateCode(transaction.state) && (
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-secondary text-muted-foreground border border-border">
+                {STATE_LABELS[transaction.state as StateCode]}
+              </span>
+            )}
+            <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${badge.className}`}>
+              {badge.label}
+            </span>
+          </div>
         </div>
         {transaction.purchase_price > 0 && (
           <p className="text-sm text-muted-foreground">

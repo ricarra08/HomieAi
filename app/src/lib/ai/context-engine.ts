@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { computeDeadlineUrgency, computeDaysRemaining } from "@/lib/computed";
+import { isValidStateCode, getStateConfig } from "@/lib/state-configs";
+import type { StateConfig } from "@/lib/state-configs";
 import type { Phase, Transaction, Document, Deadline, LoanEstimate, RepairItem, SavedHome } from "@/lib/types";
 
 function getSupabaseAdmin() {
@@ -131,6 +133,53 @@ function buildSavedHomesBlock(homes: SavedHome[]): string {
   return `## Saved Homes (${homes.length})\n${lines.join("\n")}${summary}`;
 }
 
+function buildStateContextBlock(config: StateConfig, transaction: Transaction): string {
+  const lines: string[] = [
+    `State: ${config.state_name} (${config.state_code})`,
+    `Closing type: ${config.closing.type.replace("_", " ")} — ${config.closing.style} closing`,
+    `Buyer protection: ${config.buyer_protection.label} — ${config.buyer_protection.description}`,
+  ];
+
+  if (config.option_period.enabled) {
+    lines.push(`Option period: ${config.option_period.default_days} days typical. Non-refundable option fee ($${config.option_period.fee_typical_range?.[0]}-$${config.option_period.fee_typical_range?.[1]}) paid directly to seller.`);
+  }
+
+  if (config.contingency_removal.active_removal_required) {
+    lines.push(`IMPORTANT: ${config.state_name} requires ACTIVE contingency removal. Buyer must submit a CR form — contingencies do NOT expire automatically.`);
+    if (config.contingency_removal.nbp_mechanism) {
+      lines.push(`Seller can issue a Notice to Buyer to Perform (NBP) — buyer then has ${config.contingency_removal.nbp_response_hours} hours to respond.`);
+    }
+  }
+
+  // Insurance alerts
+  const stateInsurance = config.insurance_types.filter((i) => i.state_specific);
+  if (stateInsurance.length > 0) {
+    const insuranceNotes = stateInsurance.map((i) => `${i.label}: ${i.notes ?? ""}`).join("; ");
+    lines.push(`State insurance considerations: ${insuranceNotes}`);
+  }
+
+  // Tax notes
+  if (config.taxes.mortgage_tax.exists) {
+    lines.push(`Mortgage tax: $${config.taxes.mortgage_tax.rate_per_thousand}/K on mortgage amount (${config.state_name}-specific).`);
+  }
+  if (config.taxes.supplemental_tax) {
+    lines.push(`HEADS UP: ${config.state_name} has supplemental property tax — buyer will receive an additional tax bill 6-12 months after closing.`);
+  }
+  const specialDistricts = config.taxes.special_districts.filter((d) => d.exists);
+  if (specialDistricts.length > 0 && transaction.property_in_special_district) {
+    const districtInfo = specialDistricts.map((d) => `${d.label} ($${d.typical_annual_range?.[0]}-$${d.typical_annual_range?.[1]}/yr)`).join(", ");
+    lines.push(`Special tax district: ${districtInfo}`);
+  }
+
+  // Unique features summary
+  if (config.unique_features.length > 0) {
+    const features = config.unique_features.map((f) => f.feature).join(", ");
+    lines.push(`Key ${config.state_name} features: ${features}`);
+  }
+
+  return `## State Context (${config.state_name})\n${lines.join("\n")}`;
+}
+
 function truncateContext(blocks: string[]): string {
   let total = "";
   for (const block of blocks) {
@@ -193,6 +242,12 @@ export async function assembleContext(dealId: string | null, phase: Phase, userI
   const blocks: string[] = [];
 
   blocks.push(buildTransactionSummary(transaction));
+
+  // Inject state context when available
+  if (transaction.state && isValidStateCode(transaction.state)) {
+    const stateConfig = getStateConfig(transaction.state);
+    blocks.push(buildStateContextBlock(stateConfig, transaction));
+  }
 
   if (phase === "offer") {
     return truncateContext(blocks);

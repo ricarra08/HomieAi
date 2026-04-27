@@ -335,7 +335,7 @@ export function ShoppingView({ userId }: { userId: string }) {
           </div>
           <div>
             <span className="text-sm text-muted-foreground">Market Trend</span>
-            <p className="text-base font-medium text-primary">Competitive</p>
+            <p className="text-base font-medium text-emerald-600">Competitive</p>
           </div>
         </div>
       </CollapsibleCard>

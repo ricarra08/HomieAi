@@ -123,7 +123,7 @@ export function RedFlagSummary({ transactionId, inspectionDocs, repairItems }: R
             </div>
             {addedFindings.has(String(i)) || existingDescriptions.has(f.description) ? (
               <div className="p-1 shrink-0" title="Added to repairs">
-                <Check className="w-4 h-4 text-primary" />
+                <Check className="w-4 h-4 text-emerald-600" />
               </div>
             ) : (
               <button

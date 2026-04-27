@@ -49,7 +49,7 @@ function ExtractedFieldRow({
         {flag ? (
           <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
         ) : (
-          <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
         )}
         <span
           className={`text-sm font-medium ${
@@ -89,7 +89,7 @@ export function ExtractionPanel({ started }: { started: boolean }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className={`ml-auto text-xs font-medium ${
-              showSummary ? "text-primary" : "text-accent"
+              showSummary ? "text-emerald-600" : "text-accent"
             }`}
           >
             {showSummary ? (

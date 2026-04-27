@@ -57,7 +57,7 @@ export function LoanProgress({ chosenLE, documents }: LoanProgressProps) {
               </p>
             </div>
             {item.label === "Rate Lock" && chosenLE?.lock_status === "locked" && (
-              <Lock className="w-4 h-4 text-primary shrink-0" />
+              <Lock className="w-4 h-4 text-emerald-600 shrink-0" />
             )}
           </div>
         ))}

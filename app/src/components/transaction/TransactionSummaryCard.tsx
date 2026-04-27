@@ -2,6 +2,8 @@
 
 import { useTransaction } from "@/lib/hooks/queries";
 import { computeDaysRemaining } from "@/lib/computed";
+import { isValidStateCode, STATE_LABELS } from "@/lib/state-configs";
+import type { StateCode } from "@/lib/state-configs";
 import { Badge } from "@/components/ui/badge";
 
 function formatPrice(price: number): string {
@@ -35,7 +37,14 @@ export function TransactionSummaryCard({ transactionId }: { transactionId: strin
     <div className="bg-card rounded-xl border border-border shadow-sm p-6">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-xl font-semibold text-foreground">{transaction.property_address}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-semibold text-foreground">{transaction.property_address}</h3>
+            {transaction.state && isValidStateCode(transaction.state) && (
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-secondary text-muted-foreground border border-border shrink-0">
+                {STATE_LABELS[transaction.state as StateCode]}
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
             {transaction.closing_date && <span>Closing: {formatDate(transaction.closing_date)}</span>}
             {transaction.closing_date && <span>&middot;</span>}

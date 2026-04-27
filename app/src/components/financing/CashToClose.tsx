@@ -74,7 +74,7 @@ export function CashToClose({ chosenLE, transaction, cdFields }: CashToCloseProp
         <DollarSign className="w-5 h-5 text-accent" />
         <h3 className="text-base font-semibold text-foreground">Cash to Close</h3>
         {hasCd && (
-          <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">Updated from CD</span>
+          <span className="text-xs font-medium text-emerald-600 bg-primary/10 px-2 py-0.5 rounded-full">Updated from CD</span>
         )}
       </div>
 
@@ -108,7 +108,7 @@ export function CashToClose({ chosenLE, transaction, cdFields }: CashToCloseProp
               {cdCashToClose !== leCashToClose && (
                 <div className="flex justify-between items-baseline py-1">
                   <span className="text-xs text-muted-foreground">Change from LE estimate ({formatCurrency(leCashToClose)})</span>
-                  <span className={`text-sm font-medium ${(cdCashToClose - leCashToClose) > 0 ? "text-destructive" : "text-primary"}`}>
+                  <span className={`text-sm font-medium ${(cdCashToClose - leCashToClose) > 0 ? "text-destructive" : "text-emerald-600"}`}>
                     {(cdCashToClose - leCashToClose) > 0 ? "+" : ""}{formatCurrency(cdCashToClose - leCashToClose)}
                   </span>
                 </div>

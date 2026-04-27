@@ -172,7 +172,7 @@ export default function LandingPage() {
                   "Locks the wire action until all steps are complete",
                 ].map((point) => (
                   <div key={point} className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
                     <span className="text-sm text-foreground">{point}</span>
                   </div>
                 ))}
@@ -294,7 +294,7 @@ export default function LandingPage() {
             >
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <BarChart3 className="w-4 h-4 text-primary-foreground" />
+                  <BarChart3 className="w-4 h-4 text-emerald-600-foreground" />
                 </div>
                 <span className="text-sm font-semibold text-foreground uppercase tracking-wide">
                   Loan Comparison
@@ -334,7 +334,7 @@ export default function LandingPage() {
                     <span className="text-sm font-semibold text-foreground">
                       Ficus Bank
                     </span>
-                    <span className="px-1.5 py-0.5 rounded-full bg-primary/20 text-xs font-semibold text-primary-foreground whitespace-nowrap">
+                    <span className="px-1.5 py-0.5 rounded-full bg-primary/20 text-xs font-semibold text-emerald-600-foreground whitespace-nowrap">
                       Best Value
                     </span>
                   </div>
@@ -424,7 +424,7 @@ export default function LandingPage() {
                     "Free to use — send it to every client",
                   ].map((point) => (
                     <div key={point} className="flex items-start gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
                       <span className="text-sm text-foreground">{point}</span>
                     </div>
                   ))}
@@ -480,7 +480,7 @@ export default function LandingPage() {
                 <div className="bg-card rounded-lg border-2 border-primary/30 p-4 shadow-sm">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                      <CheckCircle2 className="w-4 h-4 text-primary" />
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     </div>
                     <p className="text-sm font-medium text-foreground">
                       After HomeBuyer Pro

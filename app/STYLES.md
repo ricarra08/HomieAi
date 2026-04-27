@@ -67,6 +67,7 @@ Use these consistently. Do not freestyle sizes.
 | Accent foreground | `text-accent-foreground` | #FFFFFF | Text on accent buttons |
 | Primary | `bg-primary` | #6EE7B7 | Completed steps, progress bars, upload buttons, send button, positive badges |
 | Primary foreground | `text-primary-foreground` | #2D3748 | Text on primary/mint surfaces |
+| Primary text | `text-emerald-600` | #059669 | Green text on white/light backgrounds (values, status, icons). Never use `text-primary` (#6EE7B7) for text — it's too washed out on white. |
 
 ### Status
 | Token | Variable | Hex | Use for |

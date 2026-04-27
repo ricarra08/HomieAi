@@ -58,7 +58,7 @@ function RepairRow({ item, transactionId }: { item: RepairItem; transactionId: s
           {showCostInput && !editingCost && item.agreed_cost != null && (
             <button
               onClick={() => { setEditingCost(true); setTimeout(() => costInputRef.current?.focus(), 50); }}
-              className="text-xs text-primary font-medium hover:underline"
+              className="text-xs text-emerald-600 font-medium hover:underline"
             >
               Agreed: {formatCurrency(item.agreed_cost)}
             </button>
@@ -87,7 +87,7 @@ function RepairRow({ item, transactionId }: { item: RepairItem; transactionId: s
                 className="w-full text-xs px-2 py-1 pl-5 rounded-lg border border-border bg-background"
               />
             </div>
-            <button onClick={handleCostSave} className="text-xs text-primary font-medium hover:underline">
+            <button onClick={handleCostSave} className="text-xs text-emerald-600 font-medium hover:underline">
               Save
             </button>
           </div>
@@ -149,7 +149,7 @@ export function RepairTracker({ transactionId, repairItems, isLoading }: RepairT
             {totalAgreed > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Total Agreed</span>
-                <span className="font-semibold text-primary">{formatCurrency(totalAgreed)}</span>
+                <span className="font-semibold text-emerald-600">{formatCurrency(totalAgreed)}</span>
               </div>
             )}
           </>
