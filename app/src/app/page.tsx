@@ -14,6 +14,7 @@ import {
   Users,
   Link2,
   FileText,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -92,24 +93,56 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex items-center justify-center gap-4 mt-8"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8"
           >
             <Button
               onClick={() => router.push("/try")}
               className="bg-accent text-accent-foreground hover:bg-accent/90 text-base shadow-sm px-6 py-3 h-auto gap-2"
             >
-              See Your Workspace
+              Start Free Workspace
               <ArrowRight className="w-4 h-4" />
             </Button>
             <Button
               variant="outline"
-              onClick={replayDemo}
-              className="text-base px-6 py-3 h-auto bg-white text-foreground border border-border shadow-sm hover:bg-muted"
+              onClick={() => router.push("/signup?role=agent")}
+              className="text-base px-6 py-3 h-auto bg-white text-foreground border border-border shadow-sm hover:bg-muted gap-2"
             >
-              Watch the AI in Action
+              <Users className="w-4 h-4" />
+              Create Agent Account
             </Button>
           </motion.div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.45 }}
+            className="flex items-center justify-center gap-2 mt-5"
+          >
+            <button
+              onClick={replayDemo}
+              className="text-sm font-medium text-accent hover:text-accent/80 transition-colors underline underline-offset-4"
+            >
+              Watch the AI in action &darr;
+            </button>
+          </motion.div>
         </div>
+      </section>
+
+      {/* ── STATE BADGES ── */}
+      <section className="max-w-6xl mx-auto px-6 pb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="flex items-center justify-center gap-2 flex-wrap"
+        >
+          <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">Built for</span>
+          {["Florida", "Texas", "Arizona", "California"].map((state, i) => (
+            <span key={state} className="text-sm font-medium text-foreground">
+              {state}{i < 3 && <span className="text-muted-foreground ml-2">·</span>}
+            </span>
+          ))}
+        </motion.div>
       </section>
 
       {/* ── PAIN POINTS ── */}
@@ -249,9 +282,12 @@ export default function LandingPage() {
             <h2 className="text-3xl font-semibold tracking-tight">
               Everything you need from offer to keys
             </h2>
-            <p className="text-base text-muted-foreground mt-3 max-w-xl mx-auto">
+            <p className="text-base text-muted-foreground mt-3 max-w-2xl mx-auto">
               One workspace for your entire homebuying journey. No more scattered
-              emails, confusing documents, or missed deadlines.
+              emails, confusing documents, or missed deadlines. State-specific
+              workflows — from Texas option periods to Florida SIRS compliance.
+              Your transaction follows your state&apos;s rules, not a generic
+              checklist.
             </p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
