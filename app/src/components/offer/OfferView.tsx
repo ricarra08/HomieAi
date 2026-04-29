@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { ViewEditCard } from "@/components/ui/view-edit-card";
 import { ContingencyRow } from "./ContingencyRow";
@@ -27,7 +27,7 @@ interface OfferViewProps {
 }
 
 export function OfferView({ userId }: OfferViewProps) {
-  const { setCurrentPhase, setActiveTransactionId, selectedHomeId, ownsCurrentHome, activeTransactionId } = useUIStore();
+  const { setCurrentPhase, selectedHomeId, ownsCurrentHome, activeTransactionId } = useUIStore();
   const updateTransaction = useUpdateTransaction(activeTransactionId ?? "", userId);
   const { data: transaction } = useTransaction(activeTransactionId);
   const { data: homes } = useSavedHomes(activeTransactionId);
@@ -38,14 +38,16 @@ export function OfferView({ userId }: OfferViewProps) {
     homes?.find((h) => h.id === resolvedHomeId) ?? null;
 
   // Initialize offer price from selected home — update when home resolves
-  const [offerPrice, setOfferPrice] = useState("");
-  const [priceInitialized, setPriceInitialized] = useState(false);
+  const priceInitialized = useRef(false);
+  const [offerPrice, setOfferPrice] = useState(() =>
+    selectedHome?.price ? selectedHome.price.toString() : ""
+  );
   useEffect(() => {
-    if (selectedHome?.price && !priceInitialized) {
+    if (selectedHome?.price && !priceInitialized.current) {
+      priceInitialized.current = true;
       setOfferPrice(selectedHome.price.toString());
-      setPriceInitialized(true);
     }
-  }, [selectedHome, priceInitialized]);
+  }, [selectedHome]);
   const [earnestMoney, setEarnestMoney] = useState("");
   const [downPaymentPct, setDownPaymentPct] = useState("20");
   const [closingDays, setClosingDays] = useState("30");

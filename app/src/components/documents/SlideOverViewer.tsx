@@ -139,7 +139,6 @@ function DraftQuestionPanel({ doc }: { doc: Document }) {
   }
 
   function handleSendToCopilot(question: string) {
-    (window as unknown as Record<string, string>).__pendingCopilotPrefill = question;
     setCopilotOpen(true);
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent("copilot:prefill", { detail: question }));
