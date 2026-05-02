@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, FileText, Home, Wrench, TrendingUp, Loader2 } from "lucide-react";
+import { Download, FileText, Wrench, TrendingUp, Loader2 } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

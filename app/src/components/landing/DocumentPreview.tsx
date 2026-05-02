@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { FileText } from "lucide-react";
 import { DEMO_LE_PAGES } from "./data";
 
@@ -17,11 +18,13 @@ export function DocumentPreview() {
         <span className="ml-auto text-xs text-muted-foreground">3 pages</span>
       </div>
       <div className="flex-1 overflow-y-auto bg-gray-100 p-3">
-        <img
+        <Image
           src={DEMO_LE_PAGES[activePage].src}
           alt={DEMO_LE_PAGES[activePage].label}
           className="w-full rounded shadow-sm border border-gray-200"
           draggable={false}
+          width={600}
+          height={776}
         />
       </div>
       <div className="flex items-center gap-1.5 px-4 py-2.5 border-t border-border bg-secondary/50 shrink-0">

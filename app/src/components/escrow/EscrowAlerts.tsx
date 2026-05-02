@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Clock, FileText, DollarSign, Shield } from "lucide-react";
+import { Clock, FileText, DollarSign, Shield } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { useUIStore } from "@/lib/store";
 import { computeDeadlineUrgency, computeDaysRemaining } from "@/lib/computed";

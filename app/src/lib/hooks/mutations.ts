@@ -18,10 +18,6 @@ import type { Phase, UserRole } from "@/lib/types";
 
 const supabase = createClient();
 
-function handleMutationError(error: Error, context?: string) {
-  console.error(`[mutation${context ? `:${context}` : ""}]`, error);
-  toast.error(context ? `Failed to ${context}` : "Something went wrong. Please try again.");
-}
 
 // -- Profile --
 

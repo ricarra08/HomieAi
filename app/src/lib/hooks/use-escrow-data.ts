@@ -26,7 +26,7 @@ export function useEscrowData(transactionId: string): EscrowData {
   const { data: loanEstimates, isLoading: lesLoading } = useLoanEstimates(transactionId);
   const { data: repairItems, isLoading: repairsLoading } = useRepairItems(transactionId);
 
-  const allDocs = documents ?? [];
+  const allDocs = useMemo(() => documents ?? [], [documents]);
 
   const inspectionDocs = useMemo(
     () => allDocs.filter((d) => d.doc_type === "inspection_report"),

@@ -17,7 +17,6 @@ import { useUpdateDocument, useDeleteDocument } from "@/lib/hooks/mutations";
 import {
   INSPECTION_SUBTYPES,
   INSPECTION_SUBTYPE_LABELS,
-  isInspectionSubtype,
 } from "@/lib/documents/inspection-subtype";
 import type { Document } from "@/lib/types";
 

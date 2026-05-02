@@ -59,7 +59,6 @@ export function TransactionSetupForm({
   const [selectedState, setSelectedState] = useState<string>("");
   const [optionPeriodDays, setOptionPeriodDays] = useState("");
   const [optionFee, setOptionFee] = useState("");
-  const [contractType, setContractType] = useState("");
   const [userEditedContingencies, setUserEditedContingencies] = useState(false);
 
   const stateConfig = selectedState ? getStateConfig(selectedState) : null;
@@ -70,7 +69,6 @@ export function TransactionSetupForm({
     setSelectedState(code);
     setOptionPeriodDays("");
     setOptionFee("");
-    setContractType("");
     if (!userEditedContingencies) {
       const defaults = getContingencyDefaults(code);
       setInspectionDays(defaults.inspectionDays);

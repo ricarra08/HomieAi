@@ -8,8 +8,7 @@ import { useUpdateTransaction } from "@/lib/hooks/mutations";
 import type { ClosingData } from "@/lib/hooks/use-closing-data";
 import type { ClosingMetadata } from "@/lib/types";
 
-const CONDITION_STATUSES = ["outstanding", "submitted", "cleared"] as const;
-type ConditionStatus = (typeof CONDITION_STATUSES)[number];
+type ConditionStatus = "outstanding" | "submitted" | "cleared";
 
 const STATUS_STYLES: Record<ConditionStatus, { icon: React.ReactNode; className: string }> = {
   outstanding: { icon: <Circle className="w-3.5 h-3.5" />, className: "text-destructive" },
