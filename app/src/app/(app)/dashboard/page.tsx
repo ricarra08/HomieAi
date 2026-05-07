@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { PhaseDashboard } from "@/components/transaction/PhaseDashboard";
 import { AgentDashboard } from "@/components/agent/AgentDashboard";
 import { DocumentDetailView } from "@/components/documents/SlideOverViewer";
@@ -8,11 +9,14 @@ import { useUIStore } from "@/lib/store";
 import { useDocuments, useProfile } from "@/lib/hooks/queries";
 import { createClient } from "@/lib/supabase/client";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 
 export default function DashboardPage() {
   const { viewerDocId, viewerOpen, activeTransactionId, clearTransactionContext, activeSidebarItem } = useUIStore();
   const { data: documents } = useDocuments(activeTransactionId);
   const [userId, setUserId] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const supabase = createClient();
@@ -20,6 +24,13 @@ export default function DashboardPage() {
       setUserId(data.user?.id ?? null);
     });
   }, []);
+
+  useEffect(() => {
+    if (searchParams.get("confirmed") === "true") {
+      toast.success("Email confirmed! Welcome to HomeBuyer Pro.");
+      window.history.replaceState({}, "", "/dashboard");
+    }
+  }, [searchParams]);
 
   const { data: profile } = useProfile(userId ?? undefined);
 

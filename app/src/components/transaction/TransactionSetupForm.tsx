@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useUIStore } from "@/lib/store";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
+import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { TermTooltip } from "@/components/ui/term-tooltip";
@@ -183,13 +184,14 @@ export function TransactionSetupForm({
 
         <div className="space-y-2">
           <Label htmlFor="address">Property Address</Label>
-          <Input
+          <AddressAutocomplete
             id="address"
             placeholder="123 Main Street, San Francisco, CA 94102"
             value={address}
-            onChange={(e) => setAddress(e.target.value)}
+            onChange={(val) => setAddress(val)}
             required
             className="text-base"
+            stateCode={selectedState}
           />
         </div>
 

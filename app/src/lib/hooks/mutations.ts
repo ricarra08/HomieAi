@@ -43,6 +43,24 @@ export function useCreateProfile(userId: string) {
   });
 }
 
+// -- Phase Guide --
+
+export function useMarkPhaseGuideSeen(userId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (phase: Phase) => {
+      const { error } = await supabase.rpc("append_seen_phase_guide", {
+        p_user_id: userId,
+        p_phase: phase,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: profileKeys.detail(userId) });
+    },
+  });
+}
+
 // -- Saved Homes (Shopping) --
 
 export function useCreateSavedHome(userId: string, transactionId: string) {
@@ -58,7 +76,7 @@ export function useCreateSavedHome(userId: string, transactionId: string) {
     }) => {
       const { data, error } = await supabase
         .from("saved_homes")
-        .insert({ ...home, user_id: userId, deal_id: transactionId })
+        .insert({ ...home, user_id: userId, deal_id: transactionId || undefined })
         .select()
         .single();
       if (error) throw error;
@@ -554,7 +572,7 @@ export function useSendCopilotMessage(
         .from("copilot_messages")
         .insert({
           user_id: userId,
-          deal_id: transactionId,
+          deal_id: transactionId || null,
           role: "user",
           content,
           phase,

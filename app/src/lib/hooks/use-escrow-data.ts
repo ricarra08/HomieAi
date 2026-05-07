@@ -2,10 +2,13 @@
 
 import { useMemo } from "react";
 import { useDocuments, useDeadlines, useLoanEstimates, useRepairItems, useTransaction } from "./queries";
+import { isValidStateCode, getStateConfig } from "@/lib/state-configs";
+import type { StateConfig } from "@/lib/state-configs";
 import type { Transaction, Document, Deadline, LoanEstimate, RepairItem } from "@/lib/types";
 
 export interface EscrowData {
   transaction: Transaction | null;
+  stateConfig: StateConfig | null;
   documents: Document[];
   inspectionDocs: Document[];
   appraisalDoc: Document | null;
@@ -58,10 +61,18 @@ export function useEscrowData(transactionId: string): EscrowData {
     [loanEstimates]
   );
 
+  const stateConfig = useMemo(() => {
+    if (transaction?.state && isValidStateCode(transaction.state)) {
+      return getStateConfig(transaction.state);
+    }
+    return null;
+  }, [transaction]);
+
   const isLoading = transactionLoading || docsLoading || deadlinesLoading || lesLoading || repairsLoading;
 
   return {
     transaction: transaction ?? null,
+    stateConfig,
     documents: allDocs,
     inspectionDocs,
     appraisalDoc,

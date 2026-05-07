@@ -7,6 +7,7 @@ export interface Profile {
   user_id: string;
   role: UserRole;
   display_name: string;
+  seen_phase_guides: Phase[];
   created_at: string;
   updated_at: string;
 }

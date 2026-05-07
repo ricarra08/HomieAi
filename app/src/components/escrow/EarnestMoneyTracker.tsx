@@ -7,6 +7,8 @@ import { useUpdateTransaction } from "@/lib/hooks/mutations";
 import { computeDaysRemaining } from "@/lib/computed";
 import { formatCurrency } from "@/lib/utils";
 import type { Transaction, Deadline } from "@/lib/types";
+import type { StateConfig } from "@/lib/state-configs";
+import { addDays } from "@/lib/state-configs";
 
 const STATUS_STEPS = ["pending", "sent", "confirmed", "held"] as const;
 
@@ -59,11 +61,20 @@ interface EarnestMoneyTrackerProps {
   transaction: Transaction;
   userId: string;
   emdDeadline?: Deadline | null;
+  stateConfig?: StateConfig | null;
 }
 
-function computeEmdDueDate(transaction: Transaction, emdDeadline?: Deadline | null): string | null {
+function computeEmdDueDate(transaction: Transaction, emdDeadline?: Deadline | null, stateConfig?: StateConfig | null): string | null {
   if (emdDeadline) return emdDeadline.due_date;
   if (!transaction.contract_acceptance_date) return null;
+  if (stateConfig) {
+    return addDays(
+      transaction.contract_acceptance_date,
+      stateConfig.earnest_money.deposit_deadline_days,
+      stateConfig.earnest_money.deposit_deadline_type,
+      stateConfig.day_counting.weekend_extension
+    );
+  }
   // Default: EMD due 3 business days after acceptance
   const start = new Date(transaction.contract_acceptance_date);
   let bizDays = 0;
@@ -75,7 +86,7 @@ function computeEmdDueDate(transaction: Transaction, emdDeadline?: Deadline | nu
   return start.toISOString().split("T")[0];
 }
 
-export function EarnestMoneyTracker({ transaction, userId, emdDeadline }: EarnestMoneyTrackerProps) {
+export function EarnestMoneyTracker({ transaction, userId, emdDeadline, stateConfig }: EarnestMoneyTrackerProps) {
   const updateTransaction = useUpdateTransaction(transaction.id, userId);
 
   const status = transaction.earnest_money_status ?? "pending";
@@ -103,7 +114,7 @@ export function EarnestMoneyTracker({ transaction, userId, emdDeadline }: Earnes
         <StatusStepper current={status} />
 
         {status !== "confirmed" && status !== "held" && (() => {
-          const emdDue = computeEmdDueDate(transaction, emdDeadline);
+          const emdDue = computeEmdDueDate(transaction, emdDeadline, stateConfig);
           if (!emdDue) return null;
           const days = computeDaysRemaining(emdDue);
           if (days === null) return null;
@@ -124,6 +135,10 @@ export function EarnestMoneyTracker({ transaction, userId, emdDeadline }: Earnes
             {transaction.escrow_company && <p className="text-sm font-medium text-foreground">{transaction.escrow_company}</p>}
             {transaction.escrow_contact && <p className="text-sm text-muted-foreground">{transaction.escrow_contact}</p>}
           </div>
+        )}
+
+        {stateConfig && !transaction.escrow_company && !transaction.escrow_contact && (
+          <p className="text-xs text-muted-foreground">Typically held by {stateConfig.earnest_money.holder.replace("_", " ")}</p>
         )}
 
         {nextLabel && (

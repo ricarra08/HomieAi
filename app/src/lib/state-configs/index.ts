@@ -1,5 +1,7 @@
 export type { StateCode, StateConfig } from "./types";
 export { addDays, addCalendarDays } from "./day-counting";
+export { getDefaultFundingSteps, getSigningNote } from "./closing-defaults";
+export type { FundingStep } from "./closing-defaults";
 
 import type { StateCode, StateConfig } from "./types";
 import { FLORIDA_CONFIG } from "./fl";

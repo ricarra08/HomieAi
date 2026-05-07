@@ -5,6 +5,7 @@ import { X, Search, FileText, ArrowRight, Loader2 } from "lucide-react";
 import { useCreateTransaction } from "@/lib/hooks/mutations";
 import { useUIStore } from "@/lib/store";
 import { SUPPORTED_STATES, STATE_LABELS, getStateConfig, getContingencyDefaults } from "@/lib/state-configs";
+import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { computeDeadlinesFromSetupForm } from "@/lib/computed";
 import type { StateCode } from "@/lib/state-configs";
 
@@ -239,11 +240,11 @@ export function AddClientDialog({ open, onClose, userId }: AddClientDialogProps)
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-base font-medium text-foreground">Property address</label>
-              <input
-                type="text"
+              <AddressAutocomplete
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                onChange={(val) => setAddress(val)}
                 placeholder="123 Main St, City, ST 12345"
+                stateCode={selectedState}
                 className="w-full text-base px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/40"
               />
             </div>

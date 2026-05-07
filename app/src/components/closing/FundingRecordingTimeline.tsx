@@ -4,6 +4,8 @@ import { CheckCircle2, Circle, Loader2, Key } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
 import { useUpdateTransaction } from "@/lib/hooks/mutations";
+import { getDefaultFundingSteps } from "@/lib/state-configs";
+import { DEFAULT_CLOSING_METADATA } from "@/lib/types";
 import type { ClosingData } from "@/lib/hooks/use-closing-data";
 
 const STEP_ICONS: Record<string, React.ReactNode> = {
@@ -25,7 +27,11 @@ export function FundingRecordingTimeline({
 }) {
   const { meta } = data;
   const updateTransaction = useUpdateTransaction(transactionId, userId);
-  const steps = meta.funding_steps;
+
+  const isGenericDefault = meta.funding_steps.length === DEFAULT_CLOSING_METADATA.funding_steps.length && meta.funding_steps.every((s, i) => s.step === DEFAULT_CLOSING_METADATA.funding_steps[i].step);
+  const steps = isGenericDefault && data.stateConfig
+    ? getDefaultFundingSteps(data.stateConfig.closing.style)
+    : meta.funding_steps;
 
   const completedCount = steps.filter((s) => s.status === "complete").length;
   const allComplete = completedCount === steps.length;
@@ -78,6 +84,14 @@ export function FundingRecordingTimeline({
           </Button>
         ) : (
           <p className="text-xs text-muted-foreground text-center">Click each step icon to advance its status.</p>
+        )}
+
+        {data.stateConfig && (
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            {data.stateConfig.closing.signing_to_keys_gap_days === 0
+              ? "Keys typically released same day (wet closing)"
+              : `Keys typically available ${data.stateConfig.closing.signing_to_keys_gap_days} business day${data.stateConfig.closing.signing_to_keys_gap_days !== 1 ? 's' : ''} after signing`}
+          </p>
         )}
       </div>
     </CollapsibleCard>

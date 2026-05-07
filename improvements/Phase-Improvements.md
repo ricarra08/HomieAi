@@ -18,7 +18,25 @@
 ## General 
 - add translations
 
-## Onboarding
+## Onboarding (completed)
 - support realtor onboarding vs home buyer on boarding
+
 ## Wire Fraud Prevention
-- architect SafeSend verification which ensures you never wire funds based on fraudulent instructions.
+- architect SafeSend verification which ensures you never wire funds based on fraudulent instructions. (needs to be reviewed )
+
+
+
+## cash to close calculator (from offer to closing)
+- prevent final number surprises from homebuyers
+
+
+## fix address input to auto fill (completed)
+
+## fix chat push down when homie gives a back a streamed response (completed)
+
+## we need to send an email when we a generate a upload link 
+
+## fix email template from supabase (fix)
+
+
+## onboarding to dashboard fails (completed)

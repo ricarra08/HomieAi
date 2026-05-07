@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Calendar, MapPin, Check, CheckCircle2 } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
+import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { Button } from "@/components/ui/button";
 import { useUpdateTransaction } from "@/lib/hooks/mutations";
+import { getSigningNote } from "@/lib/state-configs";
 import type { ClosingData } from "@/lib/hooks/use-closing-data";
 import type { ClosingMetadata } from "@/lib/types";
 
@@ -47,10 +49,9 @@ export function SigningAppointment({ data, transactionId, userId }: { data: Clos
             <label className="text-xs font-medium text-muted-foreground block mb-1">Location</label>
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
-              <input
-                type="text"
+              <AddressAutocomplete
                 value={localLocation}
-                onChange={(e) => setLocalLocation(e.target.value)}
+                onChange={(val) => setLocalLocation(val)}
                 onBlur={() => updateMeta({ signing_location: localLocation || null })}
                 placeholder="e.g., Title company office"
                 className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground"
@@ -68,6 +69,15 @@ export function SigningAppointment({ data, transactionId, userId }: { data: Clos
             </div>
           ))}
         </div>
+
+        {data.stateConfig && (
+          <div className="bg-muted/30 rounded-lg p-3 space-y-1.5">
+            <p className="text-sm text-foreground">{getSigningNote(data.stateConfig.closing.style)}</p>
+            {data.stateConfig.closing.ron_available && (
+              <p className="text-xs text-muted-foreground">Remote Online Notarization (RON) is available in {data.stateConfig.state_name}.</p>
+            )}
+          </div>
+        )}
 
         <Button
           variant={meta.signing_confirmed ? "outline" : "default"}

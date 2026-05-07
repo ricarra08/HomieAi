@@ -33,8 +33,12 @@ import { FundingRecordingTimeline } from "@/components/closing/FundingRecordingT
 import { PostCloseView } from "@/components/post-close/PostCloseView";
 import { OnboardingSelector } from "@/components/onboarding/OnboardingSelector";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, HelpCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useProfile } from "@/lib/hooks/queries";
+import { useMarkPhaseGuideSeen } from "@/lib/hooks/mutations";
+import { PHASE_GUIDE_CONTENT } from "@/lib/phase-guide-content";
+import { PhaseWelcomeModal } from "@/components/phase-guide/PhaseWelcomeModal";
 
 
 function EscrowDashboard({ transactionId, userId }: { transactionId: string | null; userId: string }) {
@@ -107,11 +111,11 @@ function EscrowDashboardContent({ transactionId, userId }: { transactionId: stri
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
         <ContingencyCountdown transactionId={transactionId} deadlines={data.deadlines} />
-        {data.transaction && <EarnestMoneyTracker transaction={data.transaction} userId={userId} emdDeadline={data.deadlines.find((d) => d.type === "earnest-money") ?? null} />}
+        {data.transaction && <EarnestMoneyTracker transaction={data.transaction} userId={userId} emdDeadline={data.deadlines.find((d) => d.type === "earnest-money") ?? null} stateConfig={data.stateConfig} />}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-        <InspectionChecklist transactionId={transactionId} inspectionDocs={data.inspectionDocs} allDocs={data.documents} />
+        <InspectionChecklist transactionId={transactionId} inspectionDocs={data.inspectionDocs} allDocs={data.documents} stateConfig={data.stateConfig} />
         <AppraisalStatus transactionId={transactionId} appraisalDoc={data.appraisalDoc} transaction={data.transaction} allDocs={data.documents} />
       </div>
 
@@ -122,7 +126,7 @@ function EscrowDashboardContent({ transactionId, userId }: { transactionId: stri
         <LoanProgress chosenLE={data.chosenLE} documents={data.documents} />
       </div>
 
-      <DisclosureTracker transactionId={transactionId} disclosureDocs={data.disclosureDocs} allDocs={data.documents} />
+      <DisclosureTracker transactionId={transactionId} disclosureDocs={data.disclosureDocs} allDocs={data.documents} stateConfig={data.stateConfig} />
       <EscrowCashToClose chosenLE={data.chosenLE} transaction={data.transaction} cdDocument={data.cdDocument} />
     </div>
   );
@@ -207,8 +211,9 @@ function PostCloseDashboard({ transactionId }: { transactionId: string }) {
 }
 
 export function PhaseDashboard() {
-  const { currentPhase, activeTransactionId, showDirectSetup, setShowDirectSetup, setCurrentPhase } = useUIStore();
+  const { currentPhase, activeTransactionId, showDirectSetup, setShowDirectSetup, setCurrentPhase, setCopilotOpen } = useUIStore();
   const [userId, setUserId] = useState<string | null>(null);
+  const [guideOpen, setGuideOpen] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -217,7 +222,17 @@ export function PhaseDashboard() {
     });
   }, []);
 
+  const { data: profile } = useProfile(userId ?? undefined);
+  const markSeen = useMarkPhaseGuideSeen(userId ?? "");
   const { data: transaction, isLoading: transactionLoading } = useTransaction(activeTransactionId);
+  const setActiveTransactionId = useUIStore((s) => s.setActiveTransactionId);
+
+  // Clear stale transaction ID if it no longer exists in DB (e.g. after data wipe)
+  useEffect(() => {
+    if (activeTransactionId && !transactionLoading && !transaction) {
+      setActiveTransactionId(null);
+    }
+  }, [activeTransactionId, transactionLoading, transaction, setActiveTransactionId]);
 
   // Sync phase from DB when entering a new transaction (not on every phase change)
   const lastSyncedId = useRef<string | null>(null);
@@ -227,6 +242,38 @@ export function PhaseDashboard() {
       lastSyncedId.current = activeTransactionId;
     }
   }, [transaction, activeTransactionId, setCurrentPhase]);
+
+  // Auto-show phase guide on first visit to a phase
+  const lastGuidePhase = useRef<string | null>(null);
+  useEffect(() => {
+    if (!profile || !currentPhase || !activeTransactionId) return;
+    if (lastGuidePhase.current === currentPhase) return;
+    const seen = profile.seen_phase_guides ?? [];
+    if (!seen.includes(currentPhase)) {
+      setGuideOpen(true);
+      lastGuidePhase.current = currentPhase;
+    }
+  }, [currentPhase, profile, activeTransactionId]);
+
+  function handleDismissGuide() {
+    setGuideOpen(false);
+    if (userId && currentPhase) {
+      markSeen.mutate(currentPhase);
+    }
+  }
+
+  function handleAskHomie() {
+    setGuideOpen(false);
+    if (userId && currentPhase) {
+      markSeen.mutate(currentPhase);
+    }
+    setCopilotOpen(true);
+    const prompt = PHASE_GUIDE_CONTENT[currentPhase].homieBriefingPrompt;
+    (window as unknown as Record<string, string>).__pendingCopilotPrefill = prompt;
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("copilot:prefill", { detail: prompt }));
+    }, 150);
+  }
 
   if (!userId) {
     return <div className="text-base text-muted-foreground p-10 text-center">Loading...</div>;
@@ -265,16 +312,41 @@ export function PhaseDashboard() {
     return <TransactionSetupForm userId={userId} onComplete={() => setShowDirectSetup(false)} />;
   }
 
-  switch (currentPhase) {
-    case "shopping":
-      return <ShoppingView userId={userId} />;
-    case "offer":
-      return <OfferView userId={userId} />;
-    case "escrow":
-      return <EscrowDashboard transactionId={activeTransactionId} userId={userId} />;
-    case "closing":
-      return <ClosingDashboard transactionId={activeTransactionId} userId={userId} />;
-    case "post-close":
-      return <PostCloseDashboard transactionId={activeTransactionId} />;
+  function renderPhase() {
+    switch (currentPhase) {
+      case "shopping":
+        return <ShoppingView userId={userId!} />;
+      case "offer":
+        return <OfferView userId={userId!} />;
+      case "escrow":
+        return <EscrowDashboard transactionId={activeTransactionId!} userId={userId!} />;
+      case "closing":
+        return <ClosingDashboard transactionId={activeTransactionId!} userId={userId!} />;
+      case "post-close":
+        return <PostCloseDashboard transactionId={activeTransactionId!} />;
+    }
   }
+
+  return (
+    <>
+      <div className="flex justify-end mb-2">
+        <button
+          type="button"
+          onClick={() => setGuideOpen(true)}
+          aria-label="Phase guide"
+          className="flex items-center gap-1.5 rounded-lg border border-border bg-card shadow-sm px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:shadow-md transition-all"
+        >
+          <HelpCircle className="w-4 h-4" />
+          Phase Guide
+        </button>
+      </div>
+      {renderPhase()}
+      <PhaseWelcomeModal
+        phase={currentPhase}
+        open={guideOpen}
+        onClose={handleDismissGuide}
+        onAskHomie={handleAskHomie}
+      />
+    </>
+  );
 }

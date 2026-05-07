@@ -94,6 +94,31 @@ export function InsuranceBinderVerification({ data, transactionId }: { data: Clo
             <span className="text-xs font-medium">Insurance binder verified — premium included in closing costs</span>
           </div>
         )}
+
+        {data.stateConfig && data.stateConfig.insurance_types.length > 0 && (
+          <div className="border-t border-border pt-3 mt-3 space-y-2">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Required Insurance Types</p>
+            {data.stateConfig.insurance_types.map((ins) => (
+              <div key={ins.type} className="flex items-start gap-2">
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
+                  ins.required_by === "law" ? "bg-destructive/10 text-destructive"
+                    : ins.required_by === "lender" ? "bg-primary/20 text-primary-foreground"
+                      : ins.required_by === "recommended" ? "bg-muted text-muted-foreground"
+                        : "bg-warning/10 text-warning"
+                }`}>
+                  {ins.required_by}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm text-foreground">{ins.label}</p>
+                  {ins.notes && <p className="text-xs text-muted-foreground">{ins.notes}</p>}
+                  {ins.insurer_of_last_resort && (
+                    <p className="text-xs text-muted-foreground">Last resort: {ins.insurer_of_last_resort}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </CollapsibleCard>
   );

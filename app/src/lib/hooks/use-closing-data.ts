@@ -2,11 +2,14 @@
 
 import { useMemo } from "react";
 import { useDocuments, useDeadlines, useLoanEstimates, useRepairItems, useTransaction, useInsuranceInfo } from "./queries";
+import { isValidStateCode, getStateConfig } from "@/lib/state-configs";
+import type { StateConfig } from "@/lib/state-configs";
 import type { Transaction, Document, Deadline, LoanEstimate, RepairItem, InsuranceInfo, ClosingMetadata } from "@/lib/types";
 import { DEFAULT_CLOSING_METADATA } from "@/lib/types";
 
 export interface ClosingData {
   transaction: Transaction | null;
+  stateConfig: StateConfig | null;
   meta: ClosingMetadata;
   documents: Document[];
   cdDocument: Document | null;
@@ -68,10 +71,18 @@ export function useClosingData(transactionId: string): ClosingData {
     return DEFAULT_CLOSING_METADATA;
   }, [transaction]);
 
+  const stateConfig = useMemo(() => {
+    if (transaction?.state && isValidStateCode(transaction.state)) {
+      return getStateConfig(transaction.state);
+    }
+    return null;
+  }, [transaction]);
+
   const isLoading = transactionLoading || docsLoading || deadlinesLoading || lesLoading || repairsLoading || insuranceLoading;
 
   return {
     transaction: transaction ?? null,
+    stateConfig,
     meta,
     documents: allDocs,
     cdDocument,

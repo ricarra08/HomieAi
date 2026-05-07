@@ -102,6 +102,41 @@ export function EscrowAlerts({ data }: { data: EscrowData }) {
     });
   }
 
+  // State-specific alerts
+  const stateConfig = data.stateConfig;
+  if (stateConfig) {
+    // FL: wind mitigation reminder
+    if (stateConfig.state_code === "FL") {
+      const hasWindMit = documents.some((d) => d.name.toLowerCase().includes("wind") && d.name.toLowerCase().includes("mitigation"));
+      if (!hasWindMit) {
+        alerts.push({ id: "fl-wind-mit", severity: "info", icon: <Shield className="w-4 h-4" />, message: "Schedule a wind mitigation inspection — it can save 20-50% on your homeowner's insurance premium." });
+      }
+      alerts.push({ id: "fl-insurance-market", severity: "info", icon: <Shield className="w-4 h-4" />, message: "Florida's insurance market is challenging. Start shopping for homeowner's insurance early to avoid closing delays." });
+    }
+
+    // TX: option fee delivery
+    if (stateConfig.option_period.enabled) {
+      const optionDeadline = deadlines.find((d) => d.type === "option-fee-delivery");
+      if (optionDeadline && optionDeadline.status !== "completed" && optionDeadline.status !== "waived") {
+        alerts.push({ id: "tx-option-fee", severity: "warning", icon: <DollarSign className="w-4 h-4" />, message: "Option fee must be delivered directly to the seller (not through escrow)." });
+      }
+    }
+
+    // CA: active contingency removal
+    if (stateConfig.contingency_removal.active_removal_required) {
+      alerts.push({ id: "ca-contingency-removal", severity: "info", icon: <FileText className="w-4 h-4" />, message: "You must submit a Contingency Removal (CR) form to remove each contingency. They do not expire automatically." });
+    }
+
+    // Special district warning
+    if (transaction?.property_in_special_district) {
+      const districts = stateConfig.taxes.special_districts.filter((d) => d.exists);
+      for (const district of districts) {
+        const range = district.typical_annual_range;
+        alerts.push({ id: `special-district-${district.type}`, severity: "info", icon: <DollarSign className="w-4 h-4" />, message: `This property is in a ${district.label}. Expect ~$${range?.[0]?.toLocaleString()}-$${range?.[1]?.toLocaleString()}/yr added to property taxes.` });
+      }
+    }
+  }
+
   const sevOrder = { destructive: 0, warning: 1, info: 2 };
   alerts.sort((a, b) => sevOrder[a.severity] - sevOrder[b.severity]);
 

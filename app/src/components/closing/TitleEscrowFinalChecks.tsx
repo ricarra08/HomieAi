@@ -53,6 +53,24 @@ export function TitleEscrowFinalChecks({ data, transactionId, userId }: { data: 
           </div>
         )}
 
+        {data.stateConfig && (
+          <div className="border-t border-border pt-3 mt-3 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Owner&apos;s Policy Paid By</span>
+              <span className="text-foreground capitalize">{data.stateConfig.title_insurance.owner_policy_paid_by.replace(/_/g, ' ')}</span>
+            </div>
+            {data.stateConfig.title_insurance.survey_standard && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Survey</span>
+                <span className="text-foreground">Standard (typically required)</span>
+              </div>
+            )}
+            {data.stateConfig.title_insurance.regional_variations && data.stateConfig.title_insurance.regional_variations.length > 0 && (
+              <p className="text-xs text-muted-foreground">Note: Title insurance payment customs vary by county in {data.stateConfig.state_name}.</p>
+            )}
+          </div>
+        )}
+
         <div className="flex gap-2">
           {titleReport && (
             <Button variant="outline" size="sm" onClick={() => openViewer(titleReport.id)} className="gap-1.5">

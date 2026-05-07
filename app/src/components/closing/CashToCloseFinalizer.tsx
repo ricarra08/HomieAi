@@ -65,6 +65,34 @@ export function CashToCloseFinalizer({ data, transactionId, userId }: { data: Cl
           </div>
         )}
 
+        {data.stateConfig && (
+          <div className="border-t border-border pt-2 mt-2 space-y-2 text-sm">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">State-Specific Costs ({data.stateConfig.state_name})</p>
+            {data.stateConfig.taxes.transfer_tax.exists ? (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Transfer Tax (${data.stateConfig.taxes.transfer_tax.rate_per_thousand}/K)</span>
+                <span className="text-foreground">{data.stateConfig.taxes.transfer_tax.paid_by} pays</span>
+              </div>
+            ) : (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Transfer Tax</span>
+                <span className="text-emerald-600">None in {data.stateConfig.state_name}</span>
+              </div>
+            )}
+            {data.stateConfig.taxes.mortgage_tax.exists ? (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Mortgage Tax (${data.stateConfig.taxes.mortgage_tax.rate_per_thousand}/K)</span>
+                <span className="text-foreground">{data.stateConfig.taxes.mortgage_tax.paid_by} pays</span>
+              </div>
+            ) : (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Mortgage Tax</span>
+                <span className="text-emerald-600">None in {data.stateConfig.state_name}</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {wireDueDate && (
           <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
             <p className="text-sm text-muted-foreground">

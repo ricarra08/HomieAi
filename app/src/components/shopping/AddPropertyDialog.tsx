@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateSavedHome } from "@/lib/hooks/mutations";
@@ -63,11 +64,11 @@ export function AddPropertyDialog({ userId, transactionId }: AddPropertyDialogPr
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
-            <Input
+            <AddressAutocomplete
               id="address"
               placeholder="123 Main St, Springfield, IL"
               value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              onChange={(val) => setAddress(val)}
               required
             />
           </div>

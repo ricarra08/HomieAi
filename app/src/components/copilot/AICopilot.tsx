@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { useUIStore, type Phase } from "@/lib/store";
@@ -143,18 +143,42 @@ export function AICopilotPanel() {
     });
   }, []);
 
-  const scrollToBottom = useCallback(() => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const stickToBottom = useRef(true);
+
+  // Scroll listener: track whether user is near the bottom.
+  // Runs outside React's render cycle — no re-renders, no stutter.
+  useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
     const viewport = el.querySelector("[data-slot='scroll-area-viewport']");
-    if (viewport) {
-      viewport.scrollTop = viewport.scrollHeight;
+    if (!viewport) return;
+    function handleScroll() {
+      const v = viewport!;
+      const distanceFromBottom = v.scrollHeight - v.scrollTop - v.clientHeight;
+      stickToBottom.current = distanceFromBottom < 80;
     }
+    viewport.addEventListener("scroll", handleScroll, { passive: true });
+    return () => viewport.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // ResizeObserver on the inner content: when content grows (new message
+  // or streaming token), scroll to bottom — but only if user hasn't
+  // scrolled up. Fires after layout, before paint → no stutter.
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, streamingContent, scrollToBottom]);
+    const sentinel = messagesEndRef.current;
+    const el = scrollContainerRef.current;
+    if (!sentinel || !el) return;
+    const viewport = el.querySelector("[data-slot='scroll-area-viewport']");
+    if (!viewport) return;
+    const ro = new ResizeObserver(() => {
+      if (stickToBottom.current) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
+    });
+    ro.observe(sentinel);
+    return () => ro.disconnect();
+  }, []);
 
   const handleSendRef = useRef<(text: string) => void>(() => {});
 
@@ -163,6 +187,7 @@ export function AICopilotPanel() {
       const content = text.trim();
       if (!content || !userId || isStreaming) return;
       setInput("");
+      stickToBottom.current = true;
       sendUserMsg.mutate(content);
       const history = (messages ?? []).slice(-20).map((m) => ({
         role: m.role as "user" | "assistant",
@@ -221,7 +246,7 @@ export function AICopilotPanel() {
           className="h-full overflow-y-auto"
           data-slot="scroll-area-viewport"
         >
-          <div className="p-4 space-y-4">
+          <div ref={messagesEndRef} className="p-4 space-y-4">
             {/* Welcome message if no history */}
             {(!messages || messages.length === 0) && !streamingContent && (
               <div className="bg-muted rounded-xl p-4 text-base text-foreground leading-relaxed">

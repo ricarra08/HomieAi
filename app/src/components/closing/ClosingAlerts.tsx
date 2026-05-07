@@ -109,6 +109,36 @@ export function ClosingAlerts({ data }: { data: ClosingData }) {
     });
   }
 
+  // State-specific alerts
+  if (data.stateConfig) {
+    if (data.stateConfig.taxes.supplemental_tax) {
+      alerts.push({
+        id: "supplemental-tax",
+        severity: "info",
+        icon: <DollarSign className="w-4 h-4" />,
+        message: `${data.stateConfig.state_name} charges a supplemental property tax — expect a bill 6-12 months after closing`,
+      });
+    }
+
+    if (data.stateConfig.state_code === "FL" && transaction?.property_type === "condo") {
+      alerts.push({
+        id: "fl-condo-sirs",
+        severity: "warning",
+        icon: <AlertTriangle className="w-4 h-4" />,
+        message: "Florida condos require SIRS (Structural Integrity Reserve Study) compliance — confirm with HOA before closing",
+      });
+    }
+
+    if (transaction?.property_in_special_district) {
+      alerts.push({
+        id: "special-district",
+        severity: "info",
+        icon: <DollarSign className="w-4 h-4" />,
+        message: "Property is in a special district — expect an annual assessment in addition to regular property taxes",
+      });
+    }
+  }
+
   const sevOrder = { destructive: 0, warning: 1, info: 2 };
   alerts.sort((a, b) => sevOrder[a.severity] - sevOrder[b.severity]);
 
