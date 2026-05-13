@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useUIStore } from "@/lib/store";
 import { useSavedHomes, useTransaction } from "@/lib/hooks/queries";
-import { useUpdateTransaction } from "@/lib/hooks/mutations";
+import { useUpdateTransaction, useCreateDeadlines } from "@/lib/hooks/mutations";
 import { computeDeadlinesFromSetupForm } from "@/lib/computed";
 import { isValidStateCode, getStateConfig, getContingencyDefaults } from "@/lib/state-configs";
 import { TermTooltip } from "@/components/ui/term-tooltip";
@@ -29,6 +29,7 @@ interface OfferViewProps {
 export function OfferView({ userId }: OfferViewProps) {
   const { setCurrentPhase, selectedHomeId, ownsCurrentHome, activeTransactionId } = useUIStore();
   const updateTransaction = useUpdateTransaction(activeTransactionId ?? "", userId);
+  const createDeadlines = useCreateDeadlines(activeTransactionId ?? "");
   const { data: transaction } = useTransaction(activeTransactionId);
   const { data: homes } = useSavedHomes(activeTransactionId);
 
@@ -92,6 +93,13 @@ export function OfferView({ userId }: OfferViewProps) {
   function handleAcceptOffer() {
     if (!activeTransactionId) return;
 
+    // Use acceptance date if provided, otherwise default to today.
+    // This ensures contingency deadlines are always created when entering escrow.
+    const effectiveAcceptanceDate = acceptanceDate || new Date().toISOString().split("T")[0];
+    const computedClosingDate = closingDays
+      ? (() => { const d = new Date(effectiveAcceptanceDate); d.setDate(d.getDate() + Number(closingDays)); return d.toISOString().split("T")[0]; })()
+      : undefined;
+
     updateTransaction.mutate(
       {
         property_address: propertyAddress,
@@ -99,42 +107,35 @@ export function OfferView({ userId }: OfferViewProps) {
         current_phase: "escrow",
         earnest_money_amount: Number(earnestMoney) || undefined,
         saved_home_id: selectedHomeId ?? undefined,
-        contract_acceptance_date: acceptanceDate || undefined,
-        closing_date: closingDays && acceptanceDate
-          ? (() => { const d = new Date(acceptanceDate); d.setDate(d.getDate() + Number(closingDays)); return d.toISOString().split("T")[0]; })()
-          : undefined,
+        contract_acceptance_date: effectiveAcceptanceDate,
+        closing_date: computedClosingDate,
       },
       {
-        onSuccess: async () => {
+        onSuccess: () => {
           setCurrentPhase("escrow");
           toast.success("Transaction updated");
 
-          if (acceptanceDate) {
-            const c = confirmedContingencies;
-            const txState = transaction?.state;
-            const stateConfig = txState && isValidStateCode(txState) ? getStateConfig(txState) : undefined;
-            const defaults = txState && isValidStateCode(txState) ? getContingencyDefaults(txState) : null;
+          const c = confirmedContingencies;
+          const txState = transaction?.state;
+          const stateConfig = txState && isValidStateCode(txState) ? getStateConfig(txState) : undefined;
+          const defaults = txState && isValidStateCode(txState) ? getContingencyDefaults(txState) : null;
 
-            const inspDays = c.inspection?.enabled === false ? null : (c.inspection?.days ?? (defaults ? Number(defaults.inspectionDays) : 10));
-            const apprDays = c.appraisal?.enabled === false ? null : (c.appraisal?.days ?? (defaults ? Number(defaults.appraisalDays) || undefined : 17));
-            const loanDays = c.loan?.enabled === false ? null : (c.loan?.days ?? (defaults ? Number(defaults.loanDays) : 21));
-            const closingDate = closingDays && acceptanceDate
-              ? (() => { const d = new Date(acceptanceDate); d.setDate(d.getDate() + Number(closingDays)); return d.toISOString().split("T")[0]; })()
-              : undefined;
+          const inspDays = c.inspection?.enabled === false ? null : (c.inspection?.days ?? (defaults ? Number(defaults.inspectionDays) : 10));
+          const apprDays = c.appraisal?.enabled === false ? null : (c.appraisal?.days ?? (defaults ? Number(defaults.appraisalDays) || undefined : 17));
+          const loanDays = c.loan?.enabled === false ? null : (c.loan?.days ?? (defaults ? Number(defaults.loanDays) : 21));
 
-            const deadlines = computeDeadlinesFromSetupForm({
-              acceptanceDate,
-              closingDate,
-              inspectionDays: inspDays ?? undefined,
-              appraisalDays: apprDays ?? undefined,
-              loanDays: loanDays ?? undefined,
-            }, stateConfig);
+          const deadlines = computeDeadlinesFromSetupForm({
+            acceptanceDate: effectiveAcceptanceDate,
+            closingDate: computedClosingDate,
+            inspectionDays: inspDays ?? undefined,
+            appraisalDays: apprDays ?? undefined,
+            loanDays: loanDays ?? undefined,
+          }, stateConfig);
 
-            if (deadlines.length > 0) {
-              const { createClient } = await import("@/lib/supabase/client");
-              const rows = deadlines.map((d) => ({ ...d, deal_id: activeTransactionId }));
-              await createClient().from("deadlines").insert(rows);
-            }
+          if (deadlines.length > 0) {
+            // Use mutation so React Query invalidates the deadlines cache —
+            // otherwise the Escrow phase's ContingencyCountdown shows stale empty data.
+            createDeadlines.mutate(deadlines);
           }
         },
       }
