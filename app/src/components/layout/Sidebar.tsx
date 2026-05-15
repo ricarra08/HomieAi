@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useUIStore } from "@/lib/store";
 import { LayoutDashboard, FileText, CreditCard, ChevronLeft, ChevronRight, LogOut, Users, ArrowLeft, Archive } from "lucide-react";
@@ -82,12 +83,29 @@ export function Sidebar() {
       >
         <div className={`${sidebarCollapsed ? "p-4 flex justify-center" : "p-6 pb-5"}`}>
           {!sidebarCollapsed && (
-            <h1 className="text-2xl font-semibold text-sidebar-foreground tracking-tight">
-              HomeBuyer Pro
-            </h1>
+            <div className="flex items-center gap-2">
+              <Image
+                src="/PHAZR-Logo.png"
+                alt="Phazr"
+                width={32}
+                height={32}
+                priority
+                className="w-8 h-8"
+              />
+              <h1 className="text-2xl font-semibold text-sidebar-foreground tracking-tight">
+                Phazr
+              </h1>
+            </div>
           )}
           {sidebarCollapsed && (
-            <span className="text-lg font-semibold text-sidebar-foreground">HP</span>
+            <Image
+              src="/PHAZR-Logo.png"
+              alt="Phazr"
+              width={32}
+              height={32}
+              priority
+              className="w-8 h-8"
+            />
           )}
         </div>
 

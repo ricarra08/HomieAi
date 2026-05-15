@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { ViewEditCard } from "@/components/ui/view-edit-card";
 import { AddPropertyDialog } from "./AddPropertyDialog";
+import { HomeValueProjectionCard } from "./HomeValueProjectionCard";
 import { useSavedHomes } from "@/lib/hooks/queries";
 import { useDeleteSavedHome, useUpdateTransaction } from "@/lib/hooks/mutations";
 import { useUIStore } from "@/lib/store";
@@ -252,6 +253,8 @@ export function ShoppingView({ userId }: { userId: string }) {
           <AddPropertyDialog userId={userId} transactionId={activeTransactionId!} />
         </div>
       </CollapsibleCard>
+
+      <HomeValueProjectionCard transactionId={activeTransactionId} />
 
       <CollapsibleCard title="Affordability Estimate" subtitle="Quick cash-to-close estimate">
         <div className="space-y-4">

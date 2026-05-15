@@ -142,7 +142,7 @@ export function PostCloseView({ transactionId }: { transactionId: string }) {
       </div>
 
       <div className="text-center py-6 border-t border-border">
-        <p className="text-base font-medium text-foreground">Thank you for using HomeBuyer Pro</p>
+        <p className="text-base font-medium text-foreground">Thank you for using Phazr</p>
         <p className="text-sm text-muted-foreground mt-1">We hope we helped make your homebuying journey clearer and less stressful.</p>
       </div>
     </div>

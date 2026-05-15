@@ -245,3 +245,53 @@ export interface CopilotMessage {
   phase: Phase;
   created_at: string;
 }
+
+export type RegimeName =
+  | "stagnant"
+  | "stable"
+  | "improving"
+  | "accelerating"
+  | "overheated"
+  | "correcting";
+
+export interface HomeValueProjectionSeriesPoint {
+  monthOffset: number;
+  conservative: number;
+  moderate: number;
+  optimistic: number;
+  range50?: [number, number];
+  range80?: [number, number];
+  range95?: [number, number];
+}
+
+export interface HomeValueAttribution {
+  structure: number;
+  microLocation: number;
+  macro: number;
+  neighborhood: number;
+  propertySpecific: number;
+  compResidual: number;
+}
+
+export interface HomeValueProjection {
+  id: string;
+  savedHomeId: string;
+  transactionId: string;
+  modelVersion: string;
+  anchorPrice: number;
+  address: string;
+  currentValue: {
+    fairValue: number;
+    range50: [number, number];
+    range80: [number, number];
+    range95: [number, number];
+    confidenceScore: number;
+  };
+  scenarios: { conservative: number; moderate: number; optimistic: number };
+  series: HomeValueProjectionSeriesPoint[];
+  attribution: HomeValueAttribution;
+  regime: Partial<Record<RegimeName, number>>;
+  explanation: string;
+  warnings: string[];
+  generatedAt: string;
+}

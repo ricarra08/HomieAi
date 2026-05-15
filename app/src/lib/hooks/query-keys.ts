@@ -42,3 +42,7 @@ export const collaboratorKeys = {
 export const copilotKeys = {
   messages: (transactionId: string | null) => ["copilot-messages", transactionId] as const,
 };
+
+export const valuationKeys = {
+  byHome: (savedHomeId: string | null) => ["home-valuation", savedHomeId] as const,
+};

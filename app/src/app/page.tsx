@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, useInView } from "motion/react";
 import {
@@ -48,7 +49,17 @@ export default function LandingPage() {
       {/* ── NAV ── */}
       <nav className="sticky top-0 z-50 bg-secondary/80 backdrop-blur-md border-b border-border">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight">HomeBuyer Pro</h1>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/PHAZR-Logo.png"
+              alt="Phazr"
+              width={56}
+              height={56}
+              priority
+              className="w-14 h-14"
+            />
+            <h1 className="text-5xl font-semibold tracking-tight">Phazr</h1>
+          </div>
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -85,7 +96,7 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.15 }}
             className="text-xl text-muted-foreground mt-6 max-w-2xl mx-auto font-normal leading-relaxed"
           >
-            From serious shopping to keys in hand — HomeBuyer Pro organizes your
+            From serious shopping to keys in hand — Phazr organizes your
             escrow, explains your documents, tracks your deadlines, and catches
             costly mistakes before they happen.
           </motion.p>
@@ -194,7 +205,7 @@ export default function LandingPage() {
                 and it&apos;s almost never recovered.
               </p>
               <p className="text-base text-muted-foreground mt-3 leading-relaxed">
-                HomeBuyer Pro&apos;s SafeSend verification walks you through three
+                Phazr&apos;s SafeSend verification walks you through three
                 required steps before you can mark your wire as sent. No shortcuts.
                 Your $16,000+ closing wire is protected.
               </p>
@@ -238,7 +249,7 @@ export default function LandingPage() {
               Everything in one workspace
             </h2>
             <p className="text-base text-muted-foreground mt-3 max-w-xl mx-auto">
-              From the first showing to recording your deed — HomeBuyer Pro guides
+              From the first showing to recording your deed — Phazr guides
               you through every phase of the transaction so nothing falls through
               the cracks.
             </p>
@@ -345,7 +356,7 @@ export default function LandingPage() {
                 better deal — and they rarely all point to the same lender.
               </p>
               <p className="text-base text-muted-foreground mt-3 leading-relaxed">
-                HomeBuyer Pro shows you every number side-by-side, highlights the
+                Phazr shows you every number side-by-side, highlights the
                 best value, and tells you exactly what you&apos;d save by choosing
                 each option.
               </p>
@@ -483,7 +494,7 @@ export default function LandingPage() {
                   </div>
                   <div className="bg-secondary rounded-md px-3 py-2 border border-border">
                     <p className="text-sm font-medium text-foreground truncate">
-                      homebuyerpro.com/join/
+                      phazr.co/join/
                       <span className="text-accent">sarah-chen-realty</span>
                     </p>
                   </div>
@@ -498,7 +509,7 @@ export default function LandingPage() {
                       <MessageSquare className="w-4 h-4 text-accent" />
                     </div>
                     <p className="text-sm font-medium text-foreground">
-                      Before HomeBuyer Pro
+                      Before Phazr
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -519,12 +530,12 @@ export default function LandingPage() {
                       <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     </div>
                     <p className="text-sm font-medium text-foreground">
-                      After HomeBuyer Pro
+                      After Phazr
                     </p>
                   </div>
                   <div className="space-y-2">
                     <div className="bg-primary/10 rounded-lg px-3 py-2 text-sm text-foreground">
-                      Hey! I reviewed my LE in HomeBuyer Pro. The origination fee
+                      Hey! I reviewed my LE in Phazr. The origination fee
                       seems high at 0.5 points — should we ask for a no-point option?
                     </div>
                     <p className="text-xs text-muted-foreground pt-1">
@@ -693,7 +704,7 @@ export default function LandingPage() {
               What homebuyers and realtors are saying
             </h2>
             <p className="text-base text-muted-foreground mt-3 max-w-lg mx-auto">
-              From anxious to confident — HomeBuyer Pro guides buyers through the
+              From anxious to confident — Phazr guides buyers through the
               process they never learned in school.
             </p>
           </motion.div>
@@ -797,14 +808,14 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
           <div>
             <p className="text-base font-semibold text-foreground">
-              HomeBuyer Pro
+              Phazr
             </p>
             <p className="text-sm text-muted-foreground mt-1">
               From serious shopping to keys in hand.
             </p>
           </div>
           <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} HomeBuyer Pro. All rights reserved.
+            &copy; {new Date().getFullYear()} Phazr. All rights reserved.
           </p>
         </div>
       </footer>

@@ -1,3 +1,5 @@
+import "server-only";
+
 const GEOAPIFY_BASE = "https://api.geoapify.com/v1/geocode/autocomplete";
 
 export interface AutocompleteAddress {
@@ -17,20 +19,28 @@ export async function searchAddresses(
 ): Promise<AutocompleteAddress[]> {
   if (query.length < 3) return [];
 
-  const key = process.env.NEXT_PUBLIC_GEOAPIFY_KEY;
-  if (!key) return [];
+  const key = process.env.GEOAPIFY_KEY;
+  if (!key) {
+    console.error("GEOAPIFY_KEY not configured");
+    return [];
+  }
+
+  // Geoapify's Autocomplete API doesn't support a state filter — only
+  // countrycode, rect, circle, and place. To bias results to a state, we
+  // append the state code to the query text, then filter the response.
+  // Oversample (limit=10) when filtering to survive dropouts; otherwise 5.
+  const stateCodeUpper = options?.stateCode?.toUpperCase();
+  const queryText = stateCodeUpper && !query.toUpperCase().includes(stateCodeUpper)
+    ? `${query}, ${stateCodeUpper}`
+    : query;
 
   const params = new URLSearchParams({
-    text: query,
+    text: queryText,
     filter: "countrycode:us",
     format: "json",
-    limit: "5",
+    limit: stateCodeUpper ? "10" : "5",
     apiKey: key,
   });
-
-  if (options?.stateCode) {
-    params.set("filter", `countrycode:us,state:${options.stateCode}`);
-  }
 
   const res = await fetch(`${GEOAPIFY_BASE}?${params}`, {
     signal: options?.signal,
@@ -38,7 +48,7 @@ export async function searchAddresses(
   if (!res.ok) return [];
 
   const data = await res.json();
-  return (data.results ?? []).map((r: Record<string, string>) => ({
+  const results: AutocompleteAddress[] = (data.results ?? []).map((r: Record<string, string>) => ({
     formattedAddress: r.formatted ?? "",
     addressLine: r.address_line1 ?? "",
     city: r.city ?? "",
@@ -48,4 +58,10 @@ export async function searchAddresses(
     county: r.county ?? "",
     country: r.country ?? "",
   }));
+
+  const filtered = stateCodeUpper
+    ? results.filter((r) => r.stateCode.toUpperCase() === stateCodeUpper)
+    : results;
+
+  return filtered.slice(0, 5);
 }

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — HomeBuyer Pro",
-  description: "Terms of Service governing your use of HomeBuyer Pro.",
+  title: "Terms of Service — Phazr",
+  description: "Terms of Service governing your use of Phazr.",
 };
 
 export default function TermsPage() {
@@ -16,7 +16,7 @@ export default function TermsPage() {
             href="/"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            &larr; Back to HomeBuyer Pro
+            &larr; Back to Phazr
           </Link>
           <h1 className="text-3xl font-semibold tracking-tight mt-6">
             Terms of Service
@@ -33,10 +33,10 @@ export default function TermsPage() {
             <P>
               These Terms of Service (&ldquo;Terms&rdquo;) constitute a legally
               binding agreement between you (&ldquo;User,&rdquo;
-              &ldquo;you,&rdquo; or &ldquo;your&rdquo;) and HomeBuyer Pro, Inc.
+              &ldquo;you,&rdquo; or &ldquo;your&rdquo;) and Phazr, Inc.
               (&ldquo;Company,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or
               &ldquo;our&rdquo;), a Florida corporation, governing your access
-              to and use of the HomeBuyer Pro platform, website, and related
+              to and use of the Phazr platform, website, and related
               services (collectively, the &ldquo;Service&rdquo;).
             </P>
             <P>
@@ -59,7 +59,7 @@ export default function TermsPage() {
           {/* ------------------------------------------------------------ */}
           <Section n="2" title="Description of Service">
             <P>
-              HomeBuyer Pro is a consumer information technology platform that
+              Phazr is a consumer information technology platform that
               provides document summarization, transaction organization, and
               deadline tracking functionality to residential homebuyers. The
               Service utilizes artificial intelligence to parse user-uploaded
@@ -341,7 +341,7 @@ export default function TermsPage() {
           {/* ------------------------------------------------------------ */}
           <Section n="8" title="Fees and Payment">
             <P>
-              HomeBuyer Pro currently offers a free tier for individual
+              Phazr currently offers a free tier for individual
               homebuyers. Certain features, premium tiers, or agent-specific
               functionality may require payment in the future. If we introduce
               paid features:
@@ -580,22 +580,22 @@ export default function TermsPage() {
               legal notices:
             </P>
             <div className="bg-card rounded-xl border border-border p-5 mt-3">
-              <p className="text-sm font-medium">HomeBuyer Pro, Inc.</p>
+              <p className="text-sm font-medium">Phazr, Inc.</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Email: legal@homebuyerpro.com
+                Email: legal@phazr.co
               </p>
               <p className="text-sm text-muted-foreground">
                 Mailing Address: [Registered Agent Address or PO Box, City, FL
                 ZIP]
               </p>
               <p className="text-sm text-muted-foreground">
-                Web: homebuyerpro.com
+                Web: phazr.co
               </p>
             </div>
             <P>
               Legal notices (including arbitration opt-out notices under Section
               12.5) must be sent to the mailing address above or by email to
-              legal@homebuyerpro.com. Notices are deemed received upon delivery
+              legal@phazr.co. Notices are deemed received upon delivery
               (for physical mail) or upon confirmed transmission (for email).
             </P>
           </Section>
@@ -697,7 +697,7 @@ export default function TermsPage() {
         {/* Footer */}
         <div className="mt-16 pt-8 border-t border-border">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} HomeBuyer Pro, Inc. All rights
+            &copy; {new Date().getFullYear()} Phazr, Inc. All rights
             reserved.
           </p>
           <div className="flex gap-4 mt-2">

@@ -1,4 +1,4 @@
-# HomeBuyer Pro — State Management Reference
+# Phazr — State Management Reference
 ## The single source of truth for how data flows through the app
 
 Reference this file when building any feature in any phase. All hooks, stores, and computed functions follow these patterns.

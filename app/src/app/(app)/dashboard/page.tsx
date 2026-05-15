@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { PhaseDashboard } from "@/components/transaction/PhaseDashboard";
 import { AgentDashboard } from "@/components/agent/AgentDashboard";
@@ -12,6 +12,14 @@ import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="text-base text-muted-foreground p-10 text-center">Loading...</div>}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
   const { viewerDocId, viewerOpen, activeTransactionId, clearTransactionContext, activeSidebarItem } = useUIStore();
   const { data: documents } = useDocuments(activeTransactionId);
   const [userId, setUserId] = useState<string | null>(null);
@@ -27,7 +35,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (searchParams.get("confirmed") === "true") {
-      toast.success("Email confirmed! Welcome to HomeBuyer Pro.");
+      toast.success("Email confirmed! Welcome to Phazr.");
       window.history.replaceState({}, "", "/dashboard");
     }
   }, [searchParams]);

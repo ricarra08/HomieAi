@@ -302,14 +302,26 @@ export function PhaseDashboard() {
   // No transaction — show journey picker or direct setup form
   if (!activeTransactionId) {
     if (showDirectSetup) {
-      return <TransactionSetupForm userId={userId} onComplete={() => setShowDirectSetup(false)} />;
+      return (
+        <TransactionSetupForm
+          userId={userId}
+          onComplete={() => setShowDirectSetup(false)}
+          onBack={() => setShowDirectSetup(false)}
+        />
+      );
     }
     return <OnboardingSelector userId={userId} />;
   }
 
   // Has transaction — render phase dashboard
   if (showDirectSetup) {
-    return <TransactionSetupForm userId={userId} onComplete={() => setShowDirectSetup(false)} />;
+    return (
+      <TransactionSetupForm
+        userId={userId}
+        onComplete={() => setShowDirectSetup(false)}
+        onBack={() => setShowDirectSetup(false)}
+      />
+    );
   }
 
   function renderPhase() {

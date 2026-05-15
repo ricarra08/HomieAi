@@ -12,6 +12,7 @@ import {
   insuranceKeys,
   collaboratorKeys,
   copilotKeys,
+  valuationKeys,
 } from "./query-keys";
 import type {
   Profile,
@@ -25,6 +26,7 @@ import type {
   InsuranceInfo,
   CollaboratorLink,
   CopilotMessage,
+  HomeValueProjection,
 } from "@/lib/types";
 
 const supabase = createClient();
@@ -260,5 +262,49 @@ export function useCopilotMessages(transactionId: string | null) {
       return data as CopilotMessage[];
     },
     enabled: !!transactionId,
+  });
+}
+
+// -- Home Value Projection --
+
+export class HomeValuationError extends Error {
+  status: number;
+  retryAfterSeconds: number | null;
+  constructor(message: string, status: number, retryAfterSeconds: number | null) {
+    super(message);
+    this.status = status;
+    this.retryAfterSeconds = retryAfterSeconds;
+  }
+}
+
+export function useHomeValuation(savedHomeId: string | null) {
+  return useQuery<HomeValueProjection, HomeValuationError>({
+    queryKey: valuationKeys.byHome(savedHomeId),
+    queryFn: async () => {
+      const res = await fetch("/api/valuation/project", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ savedHomeId }),
+      });
+      if (!res.ok) {
+        const retryAfter = res.headers.get("Retry-After");
+        let message = `Projection failed (${res.status})`;
+        try {
+          const body = await res.json();
+          if (body?.error) message = body.error;
+        } catch {
+          // ignore
+        }
+        throw new HomeValuationError(
+          message,
+          res.status,
+          retryAfter ? parseInt(retryAfter, 10) : null,
+        );
+      }
+      return (await res.json()) as HomeValueProjection;
+    },
+    enabled: !!savedHomeId,
+    staleTime: 60 * 60 * 1000,
+    retry: false,
   });
 }

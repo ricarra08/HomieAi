@@ -88,7 +88,7 @@ export const DEMO_LE_ROWS = [
 export const DEMO_TESTIMONIALS = [
   {
     quote:
-      "I've been through three closings before and never actually understood my Closing Disclosure. HomeBuyer Pro flagged that my lender fees went up $400 from the Loan Estimate — I would have just signed.",
+      "I've been through three closings before and never actually understood my Closing Disclosure. Phazr flagged that my lender fees went up $400 from the Loan Estimate — I would have just signed.",
     name: "Sarah M.",
     role: "Homebuyer, Tampa FL",
     initials: "SM",

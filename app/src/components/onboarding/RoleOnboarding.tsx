@@ -33,7 +33,7 @@ export function RoleOnboarding({ userId }: RoleOnboardingProps) {
     <div className="max-w-lg w-full mx-auto space-y-8 text-center">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">
-          Welcome to HomeBuyer Pro
+          Welcome to Phazr
         </h1>
         <p className="text-base text-muted-foreground mt-2">
           Let&apos;s set up your account

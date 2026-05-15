@@ -18,20 +18,20 @@ const dmSerif = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  title: "HomeBuyer Pro — Finally Understand Your Home Purchase",
+  title: "Phazr — Finally Understand Your Home Purchase",
   description:
-    "HomeBuyer Pro organizes your escrow, explains your documents, tracks your deadlines, and catches costly mistakes — so you close with confidence.",
+    "Phazr organizes your escrow, explains your documents, tracks your deadlines, and catches costly mistakes — so you close with confidence.",
   openGraph: {
-    title: "HomeBuyer Pro — Finally Understand Your Home Purchase",
+    title: "Phazr — Finally Understand Your Home Purchase",
     description:
       "From serious shopping to keys in hand. AI-powered document intelligence, deadline tracking, loan comparison, and wire fraud protection for homebuyers.",
-    siteName: "HomeBuyer Pro",
+    siteName: "Phazr",
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "HomeBuyer Pro — Finally Understand Your Home Purchase",
+    title: "Phazr — Finally Understand Your Home Purchase",
     description:
       "AI reads your real estate documents and tells you what they mean. Track deadlines, compare loans, prevent wire fraud. Free to start.",
   },

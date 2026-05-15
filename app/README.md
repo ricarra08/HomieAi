@@ -1,4 +1,4 @@
-# HomeBuyer Pro
+# Phazr
 
 AI-powered real estate transaction management for homebuyers and their agents.
 

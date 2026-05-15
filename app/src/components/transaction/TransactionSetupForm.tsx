@@ -10,6 +10,7 @@ import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { TermTooltip } from "@/components/ui/term-tooltip";
+import { ArrowLeft } from "lucide-react";
 import { SUPPORTED_STATES, STATE_LABELS, getStateConfig, getContingencyDefaults } from "@/lib/state-configs";
 import { computeDeadlinesFromSetupForm } from "@/lib/computed";
 import type { StateCode } from "@/lib/state-configs";
@@ -31,6 +32,7 @@ interface TransactionSetupFormProps {
   mode?: "authenticated" | "guest";
   onComplete?: () => void;
   onGuestSubmit?: (data: TransactionFormData) => void;
+  onBack?: () => void;
   title?: string;
   subtitle?: string;
   submitLabel?: string;
@@ -41,6 +43,7 @@ export function TransactionSetupForm({
   mode = "authenticated",
   onComplete,
   onGuestSubmit,
+  onBack,
   title = "Welcome to Your Transaction Workspace",
   subtitle = "Let\u2019s set up your escrow and closing dashboard. You can update these details anytime.",
   submitLabel,
@@ -155,6 +158,14 @@ export function TransactionSetupForm({
 
   return (
     <div className="max-w-[768px] mx-auto">
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors mb-4"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+      )}
       <div className="text-center mb-8">
         <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
           <span className="text-2xl">🏠</span>

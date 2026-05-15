@@ -1,4 +1,4 @@
-# HomeBuyer Pro — Style Reference
+# Phazr — Style Reference
 ## The single source of truth for all UI styling decisions
 
 Reference this file when building any component in any phase. Do not deviate without updating this document.
@@ -182,7 +182,7 @@ Button radius is always `rounded-lg` (8px). Never `rounded-md` or `rounded-full`
 | Concept | Name in UI | Name in code |
 |---------|-----------|--------------|
 | AI assistant | Homie | `AICopilot` (component), `copilot_messages` (DB) |
-| Product | HomeBuyer Pro | — |
+| Product | Phazr | — |
 | Left panel | Sidebar | `Sidebar.tsx` |
 | Right panel | Homie panel | `AICopilotPanel` |
 | Top bar | Progress stepper | `ProgressStepper.tsx` |

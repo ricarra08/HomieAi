@@ -24,7 +24,7 @@ export function WelcomeStep({ onContinue }: { onContinue: () => void }) {
   return (
     <div className="max-w-lg mx-auto text-center space-y-8">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Welcome to HomeBuyer Pro</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Welcome to Phazr</h1>
         <p className="text-base text-muted-foreground mt-2">
           Your AI-powered workspace for understanding every step of your home purchase
         </p>
