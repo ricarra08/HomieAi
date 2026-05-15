@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useUIStore } from "@/lib/store";
 import { LayoutDashboard, FileText, CreditCard, ChevronLeft, ChevronRight, LogOut, Users, ArrowLeft, Archive } from "lucide-react";
@@ -81,32 +80,22 @@ export function Sidebar() {
           sidebarCollapsed ? "w-16" : "w-64"
         }`}
       >
-        <div className={`${sidebarCollapsed ? "p-4 flex justify-center" : "p-6 pb-5"}`}>
-          {!sidebarCollapsed && (
-            <div className="flex items-center gap-2">
-              <Image
-                src="/PHAZR-Logo.png"
-                alt="Phazr"
-                width={32}
-                height={32}
-                priority
-                className="w-8 h-8"
-              />
-              <h1 className="text-2xl font-semibold text-sidebar-foreground tracking-tight">
-                Phazr
-              </h1>
-            </div>
-          )}
-          {sidebarCollapsed && (
-            <Image
-              src="/PHAZR-Logo.png"
-              alt="Phazr"
-              width={32}
-              height={32}
-              priority
-              className="w-8 h-8"
-            />
-          )}
+        <div className={sidebarCollapsed ? "px-2 py-5 flex justify-center" : "px-4 py-5"}>
+          <button
+            type="button"
+            onClick={() => {
+              if (isAgentInTransaction) clearTransactionContext();
+              router.push("/dashboard");
+            }}
+            aria-label="Phazr — go to dashboard"
+            className={`rounded-lg hover:bg-muted transition-colors font-heading font-semibold tracking-tight text-sidebar-foreground ${
+              sidebarCollapsed
+                ? "w-10 h-10 flex items-center justify-center text-3xl"
+                : "px-3 py-2 text-4xl"
+            }`}
+          >
+            {sidebarCollapsed ? "P" : "Phazr"}
+          </button>
         </div>
 
         {/* Agent inside a transaction: back button + client context */}
