@@ -53,7 +53,6 @@ export function useStreamingChat(): UseStreamingChatReturn {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             transactionId: params.transactionId,
-            userId: params.userId,
             phase: params.phase,
             message: params.message,
             history: params.history,

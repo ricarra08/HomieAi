@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { timingSafeEqual } from "node:crypto";
 import { extractText } from "unpdf";
 import OpenAI from "openai";
 import { isTier1, EXTRACTION_SCHEMAS, type Tier1DocType } from "@/lib/ai/extraction-schemas";
@@ -7,6 +8,49 @@ import { getExtractionSystemPrompt, getSummarizationSystemPrompt, TEXT_LIMITS } 
 import { mapExtractedToLE } from "@/lib/ai/le-auto-populate";
 import { isInspectionSubtype } from "@/lib/documents/inspection-subtype";
 import { rateLimit } from "@/lib/rate-limit";
+import { createClient as createSupabaseServer } from "@/lib/supabase/server";
+
+/**
+ * Constant-time comparison of two strings. Returns false if either is empty or lengths differ.
+ * Used to authenticate server-to-server callers (e.g., /api/collaborator/upload) that don't have
+ * an end-user session.
+ */
+function safeEqual(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  const aBuf = Buffer.from(a);
+  const bBuf = Buffer.from(b);
+  if (aBuf.length !== bBuf.length) return false;
+  return timingSafeEqual(aBuf, bBuf);
+}
+
+async function authorize(request: NextRequest, documentId: string): Promise<
+  | { ok: true; mode: "user" | "internal" }
+  | { ok: false; status: number; error: string }
+> {
+  // Internal trigger path: collaborator-upload route invokes us server-to-server because the
+  // collaborator is unauthenticated. Gate that path on a shared secret.
+  const internalSecret = request.headers.get("x-internal-secret");
+  const expectedSecret = process.env.INTERNAL_API_SECRET;
+  if (internalSecret && expectedSecret && safeEqual(internalSecret, expectedSecret)) {
+    return { ok: true, mode: "internal" };
+  }
+
+  // End-user path: verify session, then prove ownership through the RLS-bound client.
+  const supabase = await createSupabaseServer();
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData.user) {
+    return { ok: false, status: 401, error: "unauthenticated" };
+  }
+  const { data: doc, error } = await supabase
+    .from("documents")
+    .select("id")
+    .eq("id", documentId)
+    .maybeSingle();
+  if (error || !doc) {
+    return { ok: false, status: 404, error: "Document not found" };
+  }
+  return { ok: true, mode: "user" };
+}
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -90,6 +134,13 @@ export async function POST(request: NextRequest) {
 
     if (!documentId) {
       return NextResponse.json({ error: "documentId is required" }, { status: 400 });
+    }
+
+    // Previously this route was unauthenticated. Anyone who knew (or guessed) a documentId
+    // could trigger reprocessing of any document and force OpenAI calls. Gate it here.
+    const authResult = await authorize(request, documentId);
+    if (!authResult.ok) {
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
     // Rate limit by documentId to prevent reprocess spam

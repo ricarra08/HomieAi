@@ -128,10 +128,21 @@ export async function POST(request: NextRequest) {
       .eq("id", link.id);
   }
 
-  const origin = request.headers.get("origin") ?? request.nextUrl.origin;
+  // Use nextUrl.origin (not the request's Origin header) so an attacker can't redirect this
+  // fire-and-forget call to a host they control. The request originates server-side.
+  const origin = request.nextUrl.origin;
+  const internalSecret = process.env.INTERNAL_API_SECRET;
+  if (!internalSecret) {
+    console.error("[collaborator-upload] INTERNAL_API_SECRET not configured — skipping processing");
+    await supabase.from("documents").update({ status: "failed" }).eq("id", doc.id);
+    return NextResponse.json({ success: true, documentId: doc.id, fileName: file.name });
+  }
   fetch(`${origin}/api/documents/process`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-internal-secret": internalSecret,
+    },
     body: JSON.stringify({ documentId: doc.id }),
   }).then(async (res) => {
     if (!res.ok) {

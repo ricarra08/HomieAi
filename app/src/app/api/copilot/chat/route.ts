@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import { assembleContext } from "@/lib/ai/context-engine";
 import { getCopilotSystemPrompt } from "@/lib/ai/system-prompts";
 import { rateLimit } from "@/lib/rate-limit";
+import { createClient as createSupabaseServer } from "@/lib/supabase/server";
 import type { Phase } from "@/lib/types";
 
 const MAX_MESSAGE_LENGTH = 2000;
@@ -45,16 +46,27 @@ function parseCitations(content: string): { documentName: string; page?: number;
 
 export async function POST(request: NextRequest) {
   try {
-    const { transactionId, userId, phase, message, history } = (await request.json()) as {
+    // Auth: trust the session, never the body. Previously `userId` came from the JSON body,
+    // which let any caller impersonate any user and exfiltrate their context through the LLM.
+    const supabaseUser = await createSupabaseServer();
+    const { data: authData, error: authError } = await supabaseUser.auth.getUser();
+    if (authError || !authData.user) {
+      return new Response(JSON.stringify({ error: "unauthenticated" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const userId = authData.user.id;
+
+    const { transactionId, phase, message, history } = (await request.json()) as {
       transactionId: string | null;
-      userId: string;
       phase: Phase;
       message: string;
       history: { role: "user" | "assistant"; content: string }[];
     };
 
-    if (!message || !userId) {
-      return new Response(JSON.stringify({ error: "message and userId required" }), {
+    if (!message) {
+      return new Response(JSON.stringify({ error: "message required" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -66,6 +78,22 @@ export async function POST(request: NextRequest) {
         JSON.stringify({ error: `Message must be 1-${MAX_MESSAGE_LENGTH} characters` }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
+    }
+
+    // If a transactionId is supplied, verify the user owns it (or is its agent) through the
+    // RLS-bound client before assembleContext promotes to the admin client.
+    if (transactionId) {
+      const { data: txn, error: txnError } = await supabaseUser
+        .from("transactions")
+        .select("id")
+        .eq("id", transactionId)
+        .maybeSingle();
+      if (txnError || !txn) {
+        return new Response(JSON.stringify({ error: "transaction_not_found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
     }
 
     const { limited } = rateLimit(`copilot:${userId}`, 30, 60_000);

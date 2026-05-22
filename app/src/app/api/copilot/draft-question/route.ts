@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
+import { createClient as createSupabaseServer } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
-
-function getSupabaseAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
 
 function getOpenAI() {
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -29,20 +22,28 @@ const DOC_TYPE_CONTEXT: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth + ownership via RLS-bound client. Previously this route used the service-role admin
+    // client with no auth check, exposing any document's AI summary/extracted fields to anyone
+    // who could guess (or harvest) a documentId.
+    const supabase = await createSupabaseServer();
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData.user) {
+      return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+    }
+
     const { documentId } = await request.json();
 
     if (!documentId) {
       return NextResponse.json({ error: "documentId is required" }, { status: 400 });
     }
 
-    const supabase = getSupabaseAdmin();
     const openai = getOpenAI();
 
     const { data: doc, error } = await supabase
       .from("documents")
       .select("name, doc_type, ai_summary, extracted_fields")
       .eq("id", documentId)
-      .single();
+      .maybeSingle();
 
     if (error || !doc) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
