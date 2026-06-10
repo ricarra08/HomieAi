@@ -114,6 +114,9 @@ export async function POST(request: NextRequest) {
       mime_type: file.type,
       status: "uploaded",
       source_type: "collaborator-upload",
+      // Record the originating link so the processing pipeline can enforce this link's
+      // recipient_role / requested_documents scope after classification (M-2).
+      collaborator_link_id: link.id,
     })
     .select()
     .single();

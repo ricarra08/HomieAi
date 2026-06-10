@@ -7,6 +7,7 @@ import { isTier1, EXTRACTION_SCHEMAS, type Tier1DocType } from "@/lib/ai/extract
 import { getExtractionSystemPrompt, getSummarizationSystemPrompt, TEXT_LIMITS } from "@/lib/ai/prompts";
 import { mapExtractedToLE } from "@/lib/ai/le-auto-populate";
 import { isInspectionSubtype } from "@/lib/documents/inspection-subtype";
+import { isDocTypeInScope, shouldAutoPopulateFinancials } from "@/lib/documents/collaborator-scope";
 import { rateLimit } from "@/lib/rate-limit";
 import { createClient as createSupabaseServer } from "@/lib/supabase/server";
 
@@ -359,6 +360,27 @@ Stage mapping:
       finalStatus = "processed";
     }
 
+    // --- Step 5.5: Enforce collaborator link scope (M-2) ---
+    // Collaborator uploads are unauthenticated (token-only). Flag for owner review any document
+    // whose classified type falls outside the originating link's role/requested scope — e.g. an
+    // "inspector" link that yields a "loan_estimate". Advisory (recorded in extracted_fields), so
+    // it never blocks a legitimate-but-misclassified upload; the financial-write gate below is the
+    // hard control.
+    let scopeFlagged = false;
+    if (doc.source_type === "collaborator-upload" && doc.collaborator_link_id) {
+      const { data: link } = await supabaseAdmin
+        .from("collaborator_links")
+        .select("recipient_role, requested_documents")
+        .eq("id", doc.collaborator_link_id)
+        .maybeSingle();
+      if (link && !isDocTypeInScope(link.recipient_role, link.requested_documents, docType)) {
+        scopeFlagged = true;
+        console.warn(
+          `[doc-process] Out-of-scope collaborator upload: role=${link.recipient_role} classified=${docType} doc=${documentId}`,
+        );
+      }
+    }
+
     // --- Step 6: Final save (merge prior extracted_fields with AI output) ---
     const priorFields = (doc.extracted_fields && typeof doc.extracted_fields === "object" && !Array.isArray(doc.extracted_fields))
       ? (doc.extracted_fields as Record<string, unknown>)
@@ -373,6 +395,12 @@ Stage mapping:
       if (typeof slot === "string" && isInspectionSubtype(slot)) {
         mergedFields.inspection_type = { value: slot, confidence: 1 };
       }
+    }
+
+    // Metadata-only key (no `.value`), so it is excluded from LLM context/prompt assembly and from
+    // LE field mapping; the UI can surface it to warn the owner this upload was outside link scope.
+    if (scopeFlagged) {
+      mergedFields._scope_warning = { classified: docType, in_scope: false };
     }
 
     const finalFields = Object.keys(mergedFields).length > 0 ? mergedFields : null;
@@ -392,8 +420,15 @@ Stage mapping:
     }
 
     // --- Step 7: Auto-populate loan_estimates if LE extracted ---
+    // Hard control (M-2): NEVER auto-populate the authoritative loan_estimates table from a
+    // collaborator-sourced upload — those are unauthenticated and could carry attacker-chosen
+    // lender/rate/fee values. The owner reviews the classified doc and adds the LE manually.
     let leAutoCreated = false;
-    if (docType === "loan_estimate" && extractedFields && doc.deal_id) {
+    let leAutoSkippedForReview = false;
+    if (docType === "loan_estimate" && extractedFields && doc.deal_id && !shouldAutoPopulateFinancials(doc.source_type)) {
+      leAutoSkippedForReview = true;
+      console.log("[doc-process] Skipping LE auto-populate for collaborator upload — owner review required");
+    } else if (docType === "loan_estimate" && extractedFields && doc.deal_id) {
       try {
         const leRow = mapExtractedToLE(extractedFields, documentId!, doc.deal_id);
 
@@ -441,6 +476,8 @@ Stage mapping:
       fieldsExtracted: extractedFields !== null,
       summarized: aiSummary !== null && aiSummary.length > 0,
       leAutoCreated,
+      leAutoSkippedForReview,
+      scopeFlagged,
       status: finalStatus,
     });
   } catch (error) {
