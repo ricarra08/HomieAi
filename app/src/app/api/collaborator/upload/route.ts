@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sanitizeFilename } from "@/lib/valuation/prompt-safety";
 
 export const dynamic = "force-dynamic";
 
@@ -101,11 +102,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "File upload failed" }, { status: 500 });
   }
 
+  // Store a sanitized display name. The raw filename is attacker-controlled (collaborator upload)
+  // and later flows into the buyer's LLM context; defense-in-depth alongside prompt-time sanitization.
   const { data: doc, error: insertError } = await supabase
     .from("documents")
     .insert({
       deal_id: dealId,
-      name: file.name,
+      name: sanitizeFilename(file.name),
       file_path: filePath,
       file_size: file.size,
       mime_type: file.type,

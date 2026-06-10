@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { computeDeadlineUrgency, computeDaysRemaining } from "@/lib/computed";
 import { isValidStateCode, getStateConfig } from "@/lib/state-configs";
+import { fenceUntrustedContent, sanitizeFilename, makePromptNonce } from "@/lib/valuation/prompt-safety";
 import type { StateConfig } from "@/lib/state-configs";
 import type { Phase, Transaction, Document, Deadline, LoanEstimate, RepairItem, SavedHome } from "@/lib/types";
 
@@ -49,16 +50,21 @@ function buildDeadlinesBlock(deadlines: Deadline[]): string {
   return `## Deadlines\n${lines.join("\n")}`;
 }
 
-function buildDocumentsBlock(documents: Document[]): string {
+function buildDocumentsBlock(documents: Document[], nonce: string): string {
   if (!documents.length) return "";
   const sections: string[] = [];
 
   for (const doc of documents) {
-    const header = `### ${doc.name} (${doc.doc_type ?? "unclassified"})`;
-    const parts: string[] = [header];
+    // Filename is attacker-controlled on collaborator uploads — sanitize before it reaches the model.
+    const header = `### ${sanitizeFilename(doc.name)} (${doc.doc_type ?? "unclassified"})`;
+
+    // Everything below is derived from the uploaded file (third-party / collaborator controlled).
+    // Collect it, then wrap the whole block in a nonce fence so the model treats it as data, not
+    // instructions (defends against indirect prompt injection via document text / OCR).
+    const untrusted: string[] = [];
 
     if (doc.ai_summary) {
-      parts.push(`**AI Summary:**\n${doc.ai_summary}`);
+      untrusted.push(`**AI Summary:**\n${doc.ai_summary}`);
     }
 
     if (doc.extracted_fields) {
@@ -71,7 +77,7 @@ function buildDocumentsBlock(documents: Document[]): string {
           return `- ${k}: ${display}`;
         });
       if (fieldLines.length) {
-        parts.push(`**Extracted Fields:**\n${fieldLines.join("\n")}`);
+        untrusted.push(`**Extracted Fields:**\n${fieldLines.join("\n")}`);
       }
     }
 
@@ -79,10 +85,13 @@ function buildDocumentsBlock(documents: Document[]): string {
       const rawText = doc.extracted_text.length > MAX_RAW_TEXT_PER_DOC
         ? doc.extracted_text.slice(0, MAX_RAW_TEXT_PER_DOC) + "\n...(document text truncated)"
         : doc.extracted_text;
-      parts.push(`**Full Document Text:**\n${rawText}`);
+      untrusted.push(`**Full Document Text:**\n${rawText}`);
     }
 
-    sections.push(parts.join("\n\n"));
+    const section = untrusted.length
+      ? `${header}\n\n${fenceUntrustedContent(untrusted.join("\n\n"), nonce)}`
+      : header;
+    sections.push(section);
   }
 
   return `## Documents (${documents.length} uploaded)\n\n${sections.join("\n\n---\n\n")}`;
@@ -197,6 +206,8 @@ function truncateContext(blocks: string[]): string {
 
 export async function assembleContext(dealId: string | null, phase: Phase, userId?: string): Promise<string> {
   const supabase = getSupabaseAdmin();
+  // One nonce per assembled context; tags every untrusted document-content fence.
+  const nonce = makePromptNonce();
 
   if (phase === "shopping") {
     if (!userId) return "";
@@ -259,7 +270,7 @@ export async function assembleContext(dealId: string | null, phase: Phase, userI
   if (phase === "post-close") {
     if (estimates.length) blocks.push(buildLoanEstimatesBlock(estimates));
     if (documents.length) {
-      const docList = documents.map((d) => `- ${d.name} (${d.doc_type ?? "unclassified"})`).join("\n");
+      const docList = documents.map((d) => `- ${sanitizeFilename(d.name)} (${d.doc_type ?? "unclassified"})`).join("\n");
       blocks.push(`## Document Archive (${documents.length})\n${docList}`);
     }
     return truncateContext(blocks);
@@ -268,7 +279,7 @@ export async function assembleContext(dealId: string | null, phase: Phase, userI
   const deadlines = (deadlinesRes.data ?? []) as Deadline[];
   if (deadlines.length) blocks.push(buildDeadlinesBlock(deadlines));
 
-  if (documents.length) blocks.push(buildDocumentsBlock(documents));
+  if (documents.length) blocks.push(buildDocumentsBlock(documents, nonce));
 
   if (estimates.length) blocks.push(buildLoanEstimatesBlock(estimates));
 
