@@ -100,14 +100,36 @@ function unwrapCDValue(cdFields: Record<string, unknown>, key: string): number |
 // is the consumer-protection layer on top.
 const NOTEWORTHY_DELTA = 250;
 
+// Rate/APR are expressed in percentage points, NOT dollars — the dollar tolerance below is
+// meaningless for them (a 6.5%→7.5% jump is a delta of 1.0, which trivially passes "<= $100").
+// TRID treats a disclosed APR as "accurate" only within 1/8 of one percentage point; for the
+// note rate, any increase costs the buyer money over the life of the loan, so we flag every
+// positive change. Rate/APR *decreases* are favorable and always within tolerance.
+const APR_TOLERANCE_PP = 0.125;
+
+type FieldKind = "currency" | "percent";
+
 export interface LEVarianceRow {
   field: string;
+  /** How to format and tolerance-check this row: dollar amount vs. percentage-point rate. */
+  kind: FieldKind;
   leValue: number;
   cdValue: number;
   delta: number;
   toleranceOk: boolean;
-  /** Within TRID tolerance but still a significant dollar change worth reviewing. */
+  /** Within tolerance but still a change worth reviewing (large $ change, or any rate/APR uptick). */
   noteworthy: boolean;
+}
+
+function isWithinTolerance(kind: FieldKind, key: string, delta: number, leValue: number): boolean {
+  if (kind === "percent") {
+    if (delta <= 0) return true; // rate/APR went down or unchanged — favorable
+    if (key === "apr") return delta <= APR_TOLERANCE_PP; // APR up within 1/8 pt is "accurate"
+    return false; // note rate: any increase is flagged
+  }
+  // Currency: TRID $100-or-10% tolerance.
+  const absDelta = Math.abs(delta);
+  return absDelta <= 100 || (leValue > 0 && absDelta / leValue <= 0.1);
 }
 
 export function computeLEVariance(
@@ -116,14 +138,14 @@ export function computeLEVariance(
 ): LEVarianceRow[] {
   if (!cdFields) return [];
 
-  const fieldsToCompare: { key: string; label: string }[] = [
-    { key: "loan_amount", label: "Loan Amount" },
-    { key: "interest_rate", label: "Interest Rate" },
-    { key: "apr", label: "APR" },
-    { key: "lender_fees", label: "Lender Fees" },
-    { key: "third_party_fees", label: "Third-Party Fees" },
-    { key: "cash_to_close", label: "Cash to Close" },
-    { key: "pmi_monthly", label: "Monthly PMI" },
+  const fieldsToCompare: { key: string; label: string; kind: FieldKind }[] = [
+    { key: "loan_amount", label: "Loan Amount", kind: "currency" },
+    { key: "interest_rate", label: "Interest Rate", kind: "percent" },
+    { key: "apr", label: "APR", kind: "percent" },
+    { key: "lender_fees", label: "Lender Fees", kind: "currency" },
+    { key: "third_party_fees", label: "Third-Party Fees", kind: "currency" },
+    { key: "cash_to_close", label: "Cash to Close", kind: "currency" },
+    { key: "pmi_monthly", label: "Monthly PMI", kind: "currency" },
   ];
 
   const leKeyMap: Record<string, keyof LoanEstimate> = {
@@ -137,16 +159,17 @@ export function computeLEVariance(
   };
 
   return fieldsToCompare
-    .map(({ key, label }) => {
+    .map(({ key, label, kind }) => {
       const leValue = (le[leKeyMap[key]] as number) ?? 0;
       const cdValue = unwrapCDValue(cdFields, key);
       if (cdValue === null) return null;
       const delta = cdValue - leValue;
-      const absDelta = Math.abs(delta);
-      const toleranceOk = absDelta <= 100 || (leValue > 0 && (absDelta / leValue) <= 0.1);
-      const noteworthy = toleranceOk && absDelta > NOTEWORTHY_DELTA;
+      const toleranceOk = isWithinTolerance(kind, key, delta, leValue);
+      const noteworthy =
+        toleranceOk &&
+        (kind === "percent" ? delta > 0 : Math.abs(delta) > NOTEWORTHY_DELTA);
 
-      return { field: label, leValue, cdValue, delta, toleranceOk, noteworthy };
+      return { field: label, kind, leValue, cdValue, delta, toleranceOk, noteworthy };
     })
     .filter((row): row is NonNullable<typeof row> => row !== null && row.delta !== 0);
 }

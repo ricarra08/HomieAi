@@ -433,6 +433,49 @@ describe("computeLEVariance", () => {
     const tpRow = result.find((r) => r.field === "Third-Party Fees");
     expect(tpRow!.toleranceOk).toBe(true);
   });
+
+  /* --- Rate/APR are percentage points, not dollars (M-4 display kind + M-5 tolerance) --- */
+
+  it("tags currency vs percent field kinds", () => {
+    const le = makeLE({ loan_amount: 300_000, rate: 6.5 });
+    const cdFields = { loan_amount: 305_000, interest_rate: 7.0 };
+    const result = computeLEVariance(le, cdFields);
+    expect(result.find((r) => r.field === "Loan Amount")!.kind).toBe("currency");
+    expect(result.find((r) => r.field === "Interest Rate")!.kind).toBe("percent");
+  });
+
+  it("flags ANY interest-rate increase (the old dollar rule passed these silently)", () => {
+    // 6.5% → 7.0% is a delta of 0.5, which trivially passed "absDelta <= 100" before this fix.
+    const le = makeLE({ rate: 6.5 });
+    const cdFields = { interest_rate: 7.0 };
+    const row = computeLEVariance(le, cdFields).find((r) => r.field === "Interest Rate");
+    expect(row).toBeDefined();
+    expect(row!.toleranceOk).toBe(false);
+    expect(row!.delta).toBeCloseTo(0.5, 5);
+  });
+
+  it("treats an interest-rate DECREASE as within tolerance (favorable to buyer)", () => {
+    const le = makeLE({ rate: 7.0 });
+    const cdFields = { interest_rate: 6.75 };
+    const row = computeLEVariance(le, cdFields).find((r) => r.field === "Interest Rate");
+    expect(row!.toleranceOk).toBe(true);
+    expect(row!.noteworthy).toBe(false);
+  });
+
+  it("allows an APR uptick within 1/8 point but marks it noteworthy", () => {
+    const le = makeLE({ apr: 6.8 });
+    const cdFields = { apr: 6.9 }; // +0.10 pt ≤ 0.125 → within tolerance, but an increase
+    const row = computeLEVariance(le, cdFields).find((r) => r.field === "APR");
+    expect(row!.toleranceOk).toBe(true);
+    expect(row!.noteworthy).toBe(true);
+  });
+
+  it("flags an APR increase beyond 1/8 point", () => {
+    const le = makeLE({ apr: 6.8 });
+    const cdFields = { apr: 7.0 }; // +0.20 pt > 0.125 → flagged
+    const row = computeLEVariance(le, cdFields).find((r) => r.field === "APR");
+    expect(row!.toleranceOk).toBe(false);
+  });
 });
 
 /* ================================================================== */

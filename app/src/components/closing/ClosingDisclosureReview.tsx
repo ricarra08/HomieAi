@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useUIStore } from "@/lib/store";
 import { useUpdateTransaction } from "@/lib/hooks/mutations";
 import { computeLEVariance, computeDaysRemaining } from "@/lib/computed";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatPercent } from "@/lib/utils";
 import type { ClosingData } from "@/lib/hooks/use-closing-data";
 import type { ClosingMetadata } from "@/lib/types";
 
@@ -80,9 +80,9 @@ export function ClosingDisclosureReview({ data, transactionId, userId }: { data:
                   <div key={v.field} className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">{v.field}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">{formatCurrency(v.leValue)}</span>
+                      <span className="text-muted-foreground">{v.kind === "percent" ? formatPercent(v.leValue) : formatCurrency(v.leValue)}</span>
                       <span className="text-foreground font-medium">→</span>
-                      <span className={!v.toleranceOk ? "text-destructive font-medium" : v.noteworthy ? "text-warning font-medium" : "text-foreground"}>{formatCurrency(v.cdValue)}</span>
+                      <span className={!v.toleranceOk ? "text-destructive font-medium" : v.noteworthy ? "text-warning font-medium" : "text-foreground"}>{v.kind === "percent" ? formatPercent(v.cdValue) : formatCurrency(v.cdValue)}</span>
                       {!v.toleranceOk && <Badge className="bg-destructive/10 text-destructive text-xs">Flag</Badge>}
                       {v.noteworthy && <Badge className="bg-warning/10 text-warning text-xs">Review</Badge>}
                     </div>
