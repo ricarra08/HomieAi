@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sanitizeFilename } from "@/lib/valuation/prompt-safety";
+import { isAllowedFileContent } from "@/lib/documents/file-signature";
 
 export const dynamic = "force-dynamic";
 
@@ -93,6 +94,15 @@ export async function POST(request: NextRequest) {
   const dealId = link.deal_id;
   const filePath = `${dealId}/${crypto.randomUUID()}/${file.name}`;
   const buffer = Buffer.from(await file.arrayBuffer());
+
+  // Validate by content (magic bytes), not just the client-supplied MIME/extension, so a disguised
+  // payload renamed to .pdf can't be stored or fed to the PDF/vision pipeline (H6).
+  if (!isAllowedFileContent(new Uint8Array(buffer.subarray(0, 16)), file.type)) {
+    return NextResponse.json(
+      { error: "File content does not match an allowed type (PDF, JPEG, PNG, WebP)." },
+      { status: 415 }
+    );
+  }
 
   const { error: uploadError } = await supabase.storage
     .from("deal-documents")
