@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { useHomeValuation, HomeValuationError } from "@/lib/hooks/queries";
@@ -24,19 +24,13 @@ interface Props {
 
 export function HomeValueProjectionCard({ transactionId }: Props) {
   const { data: homes } = useSavedHomes(transactionId);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  // Default to most recently added saved home with a price.
-  useEffect(() => {
-    if (!homes || homes.length === 0) {
-      setSelectedId(null);
-      return;
-    }
-    const withPrice = homes.find((h) => h.price && h.price > 0);
-    if (withPrice && (!selectedId || !homes.some((h) => h.id === selectedId))) {
-      setSelectedId(withPrice.id);
-    }
-  }, [homes, selectedId]);
+  // Only the user's explicit pick lives in state; the effective selection is derived in
+  // render — defaults to the first saved home with a price, and self-heals on deletion.
+  const [pickedId, setPickedId] = useState<string | null>(null);
+  const selectedId =
+    pickedId && homes?.some((h) => h.id === pickedId)
+      ? pickedId
+      : homes?.find((h) => h.price && h.price > 0)?.id ?? null;
 
   const projection = useHomeValuation(selectedId);
   const selectedHome = useMemo(
@@ -63,7 +57,7 @@ export function HomeValueProjectionCard({ transactionId }: Props) {
             <select
               id="home-valuation-picker"
               value={selectedId ?? ""}
-              onChange={(e) => setSelectedId(e.target.value || null)}
+              onChange={(e) => setPickedId(e.target.value || null)}
               className="text-base bg-card border border-border rounded-lg px-3 py-2 max-w-[60%] truncate"
             >
               {homes.map((h) => (
@@ -75,7 +69,9 @@ export function HomeValueProjectionCard({ transactionId }: Props) {
           </div>
 
           <ProjectionBody
-            isLoading={projection.isLoading || projection.isFetching}
+            // isPending (not isFetching): a background refresh shouldn't blank data the
+            // user is already looking at back into the loading spinner.
+            isLoading={projection.isPending}
             error={projection.error}
             data={projection.data ?? null}
           />

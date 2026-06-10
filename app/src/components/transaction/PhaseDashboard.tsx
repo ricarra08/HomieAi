@@ -213,7 +213,10 @@ function PostCloseDashboard({ transactionId }: { transactionId: string }) {
 export function PhaseDashboard() {
   const { currentPhase, activeTransactionId, showDirectSetup, setShowDirectSetup, setCurrentPhase, setCopilotOpen } = useUIStore();
   const [userId, setUserId] = useState<string | null>(null);
-  const [guideOpen, setGuideOpen] = useState(false);
+  // Guide visibility is derived (auto-open on first unseen visit) rather than effect-set;
+  // these track only the user's explicit actions this session.
+  const [guideManuallyOpened, setGuideManuallyOpened] = useState(false);
+  const [dismissedGuidePhase, setDismissedGuidePhase] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -243,27 +246,31 @@ export function PhaseDashboard() {
     }
   }, [transaction, activeTransactionId, setCurrentPhase]);
 
-  // Auto-show phase guide on first visit to a phase
-  const lastGuidePhase = useRef<string | null>(null);
-  useEffect(() => {
-    if (!profile || !currentPhase || !activeTransactionId) return;
-    if (lastGuidePhase.current === currentPhase) return;
-    const seen = profile.seen_phase_guides ?? [];
-    if (!seen.includes(currentPhase)) {
-      setGuideOpen(true);
-      lastGuidePhase.current = currentPhase;
-    }
-  }, [currentPhase, profile, activeTransactionId]);
+  // Auto-show phase guide on first visit to a phase (derived, not effect-set): open when the
+  // phase hasn't been marked seen and wasn't dismissed this session, or on manual reopen.
+  const seenGuides = profile?.seen_phase_guides ?? [];
+  const guideAutoOpen =
+    !!profile &&
+    !!currentPhase &&
+    !!activeTransactionId &&
+    !seenGuides.includes(currentPhase) &&
+    dismissedGuidePhase !== currentPhase;
+  const guideOpen = guideManuallyOpened || guideAutoOpen;
+
+  function closeGuide() {
+    setGuideManuallyOpened(false);
+    setDismissedGuidePhase(currentPhase ?? null);
+  }
 
   function handleDismissGuide() {
-    setGuideOpen(false);
+    closeGuide();
     if (userId && currentPhase) {
       markSeen.mutate(currentPhase);
     }
   }
 
   function handleAskHomie() {
-    setGuideOpen(false);
+    closeGuide();
     if (userId && currentPhase) {
       markSeen.mutate(currentPhase);
     }
@@ -344,7 +351,7 @@ export function PhaseDashboard() {
       <div className="flex justify-end mb-2">
         <button
           type="button"
-          onClick={() => setGuideOpen(true)}
+          onClick={() => setGuideManuallyOpened(true)}
           aria-label="Phase guide"
           className="flex items-center gap-1.5 rounded-lg border border-border bg-card shadow-sm px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:shadow-md transition-all"
         >
