@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { createClient as createSupabaseServer } from "@/lib/supabase/server";
+import { isSameOrigin } from "@/lib/security/same-origin";
 import {
   fenceUntrustedContent,
   sanitizeFilename,
@@ -28,6 +29,11 @@ const DOC_TYPE_CONTEXT: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
+    // CSRF defense-in-depth: reject cross-site POSTs (cookie-authenticated route).
+    if (!isSameOrigin(request)) {
+      return NextResponse.json({ error: "invalid_origin" }, { status: 403 });
+    }
+
     // Auth + ownership via RLS-bound client. Previously this route used the service-role admin
     // client with no auth check, exposing any document's AI summary/extracted fields to anyone
     // who could guess (or harvest) a documentId.

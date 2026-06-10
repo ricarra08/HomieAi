@@ -19,6 +19,7 @@ import { normalizeAddress, projectHome, MODEL_VERSION } from "@/lib/valuation";
 import { ensureSnapshot, SnapshotPersistError } from "@/lib/valuation/snapshot-fetcher";
 import { PromptSafetyError, escapeForPrompt } from "@/lib/valuation/prompt-safety";
 import { logRouteError } from "@/lib/log";
+import { isSameOrigin } from "@/lib/security/same-origin";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -66,6 +67,11 @@ interface ProjectionResponse {
 }
 
 export async function POST(request: NextRequest) {
+  // CSRF defense-in-depth: reject cross-site POSTs (cookie-authenticated route).
+  if (!isSameOrigin(request)) {
+    return json(403, { error: "invalid_origin" });
+  }
+
   let body: { savedHomeId?: string };
   try {
     body = await request.json();

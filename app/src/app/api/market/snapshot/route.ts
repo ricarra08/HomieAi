@@ -20,6 +20,7 @@ import { sanitizeSnapshot } from "@/lib/valuation/sanitize";
 import { PromptSafetyError, escapeForPrompt } from "@/lib/valuation/prompt-safety";
 import { deriveMarketSnapshot } from "@/lib/market/derive";
 import { logRouteError } from "@/lib/log";
+import { isSameOrigin } from "@/lib/security/same-origin";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -43,6 +44,11 @@ function json(status: number, body: unknown, extraHeaders: Record<string, string
 }
 
 export async function POST(request: NextRequest) {
+  // CSRF defense-in-depth: reject cross-site POSTs (cookie-authenticated route).
+  if (!isSameOrigin(request)) {
+    return json(403, { error: "invalid_origin" });
+  }
+
   let body: { savedHomeId?: string };
   try {
     body = await request.json();

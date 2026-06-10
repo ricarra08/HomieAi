@@ -5,6 +5,7 @@ import { assembleContext } from "@/lib/ai/context-engine";
 import { getCopilotSystemPrompt } from "@/lib/ai/system-prompts";
 import { rateLimit } from "@/lib/rate-limit";
 import { createClient as createSupabaseServer } from "@/lib/supabase/server";
+import { isSameOrigin } from "@/lib/security/same-origin";
 import type { Phase } from "@/lib/types";
 
 const MAX_MESSAGE_LENGTH = 2000;
@@ -46,6 +47,14 @@ function parseCitations(content: string): { documentName: string; page?: number;
 
 export async function POST(request: NextRequest) {
   try {
+    // CSRF defense-in-depth: reject cross-site POSTs (cookie-authenticated route).
+    if (!isSameOrigin(request)) {
+      return new Response(JSON.stringify({ error: "invalid_origin" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Auth: trust the session, never the body. Previously `userId` came from the JSON body,
     // which let any caller impersonate any user and exfiltrate their context through the LLM.
     const supabaseUser = await createSupabaseServer();

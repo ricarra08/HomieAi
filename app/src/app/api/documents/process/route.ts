@@ -10,6 +10,7 @@ import { isInspectionSubtype } from "@/lib/documents/inspection-subtype";
 import { isDocTypeInScope, shouldAutoPopulateFinancials } from "@/lib/documents/collaborator-scope";
 import { rateLimit } from "@/lib/rate-limit";
 import { createClient as createSupabaseServer } from "@/lib/supabase/server";
+import { isSameOrigin } from "@/lib/security/same-origin";
 
 /**
  * Constant-time comparison of two strings. Returns false if either is empty or lengths differ.
@@ -36,7 +37,13 @@ async function authorize(request: NextRequest, documentId: string): Promise<
     return { ok: true, mode: "internal" };
   }
 
-  // End-user path: verify session, then prove ownership through the RLS-bound client.
+  // End-user path: this is a cookie-authenticated browser request, so apply CSRF defense-in-depth
+  // (the internal server-to-server path above is exempt — it carries the secret, not a cookie).
+  if (!isSameOrigin(request)) {
+    return { ok: false, status: 403, error: "invalid_origin" };
+  }
+
+  // Verify session, then prove ownership through the RLS-bound client.
   const supabase = await createSupabaseServer();
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData.user) {
