@@ -13,6 +13,7 @@ import {
   collaboratorKeys,
   copilotKeys,
   valuationKeys,
+  marketKeys,
 } from "./query-keys";
 import type {
   Profile,
@@ -27,6 +28,7 @@ import type {
   CollaboratorLink,
   CopilotMessage,
   HomeValueProjection,
+  MarketSnapshot,
 } from "@/lib/types";
 
 const supabase = createClient();
@@ -302,6 +304,40 @@ export function useHomeValuation(savedHomeId: string | null) {
         );
       }
       return (await res.json()) as HomeValueProjection;
+    },
+    enabled: !!savedHomeId,
+    staleTime: 60 * 60 * 1000,
+    retry: false,
+  });
+}
+
+// -- Market Snapshot --
+
+export function useMarketSnapshot(savedHomeId: string | null) {
+  return useQuery<MarketSnapshot, HomeValuationError>({
+    queryKey: marketKeys.byHome(savedHomeId),
+    queryFn: async () => {
+      const res = await fetch("/api/market/snapshot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ savedHomeId }),
+      });
+      if (!res.ok) {
+        const retryAfter = res.headers.get("Retry-After");
+        let message = `Market data failed (${res.status})`;
+        try {
+          const body = await res.json();
+          if (body?.error) message = body.error;
+        } catch {
+          // ignore
+        }
+        throw new HomeValuationError(
+          message,
+          res.status,
+          retryAfter ? parseInt(retryAfter, 10) : null,
+        );
+      }
+      return (await res.json()) as MarketSnapshot;
     },
     enabled: !!savedHomeId,
     staleTime: 60 * 60 * 1000,

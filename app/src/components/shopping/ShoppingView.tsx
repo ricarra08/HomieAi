@@ -5,6 +5,7 @@ import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { ViewEditCard } from "@/components/ui/view-edit-card";
 import { AddPropertyDialog } from "./AddPropertyDialog";
 import { HomeValueProjectionCard } from "./HomeValueProjectionCard";
+import { MarketSnapshotCard } from "./MarketSnapshotCard";
 import { useSavedHomes } from "@/lib/hooks/queries";
 import { useDeleteSavedHome, useUpdateTransaction } from "@/lib/hooks/mutations";
 import { useUIStore } from "@/lib/store";
@@ -326,22 +327,7 @@ export function ShoppingView({ userId }: { userId: string }) {
         </div>
       </CollapsibleCard>
 
-      <CollapsibleCard title="Market Snapshot" subtitle="Light neighborhood insights">
-        <div className="grid grid-cols-3 gap-6">
-          <div>
-            <span className="text-sm text-muted-foreground">Median Home Price</span>
-            <p className="text-base font-medium text-foreground">$415,000</p>
-          </div>
-          <div>
-            <span className="text-sm text-muted-foreground">Avg Days on Market</span>
-            <p className="text-base font-medium text-foreground">18 days</p>
-          </div>
-          <div>
-            <span className="text-sm text-muted-foreground">Market Trend</span>
-            <p className="text-base font-medium text-emerald-600">Competitive</p>
-          </div>
-        </div>
-      </CollapsibleCard>
+      <MarketSnapshotCard transactionId={activeTransactionId} />
 
       <div className="bg-card rounded-xl border border-border shadow-sm p-6 text-center space-y-3">
         <p className="text-base text-foreground font-medium">Already have an accepted offer?</p>

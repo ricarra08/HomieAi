@@ -46,3 +46,7 @@ export const copilotKeys = {
 export const valuationKeys = {
   byHome: (savedHomeId: string | null) => ["home-valuation", savedHomeId] as const,
 };
+
+export const marketKeys = {
+  byHome: (savedHomeId: string | null) => ["market-snapshot", savedHomeId] as const,
+};

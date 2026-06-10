@@ -295,3 +295,23 @@ export interface HomeValueProjection {
   warnings: string[];
   generatedAt: string;
 }
+
+export type MarketTemperature = "seller" | "balanced" | "buyer";
+
+export interface MarketSnapshot {
+  savedHomeId: string;
+  address: string;
+  anchorPrice: number | null;
+  deriveVersion: string;
+  medianPrice: number | null;
+  daysOnMarket: number | null;
+  hpiYoy: number | null;
+  mortgageRate: number | null;
+  homeVsMedianPct: number | null;
+  marketTemperature: MarketTemperature | null;
+  inventoryMonths: number | null;
+  confidenceScore: number;
+  warnings: string[];
+  sourcesUsed: string[];
+  generatedAt: string;
+}
