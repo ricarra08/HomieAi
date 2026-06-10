@@ -1,0 +1,9 @@
+# Dependencies / tool caches at repo root (the app has its own .gitignore)
+node_modules/
+
+# Local Claude Code session state (settings.json is shared and committed)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
+# Captured API response with real saved-home/transaction UUIDs — dev artifact, do not commit
+app/project-response.json

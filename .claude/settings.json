@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(//Users/rcarrasc/Workspace/HomieAi/app/.env.local)"
+    ]
+  }
+}
