@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   computeMonthlyPI,
   computeCashToClose,
+  resolveCashToClose,
   computeDeadlineUrgency,
   computeDaysRemaining,
   computeLEVariance,
@@ -175,6 +176,38 @@ describe("computeCashToClose", () => {
       points: null,
     });
     expect(computeCashToClose(le)).toBe(0);
+  });
+});
+
+/* ================================================================== */
+/*  resolveCashToClose (M-6 — wire amount source)                      */
+/* ================================================================== */
+
+describe("resolveCashToClose", () => {
+  it("prefers the CD's final_cash_to_close (authoritative, net) over the LE estimate", () => {
+    const le = makeLE({ down_payment: 60_000, lender_fees: 3_000, third_party_fees: 2_000 });
+    const cdFields = { final_cash_to_close: { value: 71_500, confidence: "high" } };
+    const result = resolveCashToClose(cdFields, le, { earnestMoney: 10_000 });
+    expect(result.source).toBe("closing_disclosure");
+    expect(result.amount).toBe(71_500); // CD figure used as-is; earnest money NOT re-subtracted
+  });
+
+  it("falls back to cash_to_close when final_cash_to_close is absent", () => {
+    const result = resolveCashToClose({ cash_to_close: 68_000 }, makeLE(), {});
+    expect(result.source).toBe("closing_disclosure");
+    expect(result.amount).toBe(68_000);
+  });
+
+  it("falls back to the LE estimate when no CD figure is present", () => {
+    const le = makeLE({ down_payment: 60_000, lender_fees: 3_000, third_party_fees: 2_000, points: 0 });
+    const result = resolveCashToClose(null, le, { earnestMoney: 10_000 });
+    expect(result.source).toBe("loan_estimate_estimate");
+    expect(result.amount).toBe(55_000); // 65000 - 10000 earnest money
+  });
+
+  it("falls back to the LE estimate when the CD figure is zero/invalid", () => {
+    const result = resolveCashToClose({ final_cash_to_close: { value: 0, confidence: "low" } }, makeLE(), {});
+    expect(result.source).toBe("loan_estimate_estimate");
   });
 });
 

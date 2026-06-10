@@ -43,6 +43,36 @@ export function computeCashToClose(
   return totalCosts - totalCredits;
 }
 
+export interface CashToCloseResult {
+  amount: number | null;
+  /** Where the figure came from — drives the UI's "estimate vs. final wire amount" labeling. */
+  source: "closing_disclosure" | "loan_estimate_estimate";
+}
+
+/**
+ * Resolve the cash-to-close to show at the wire / closing stage (audit finding M-6).
+ *
+ * Prefers the Closing Disclosure's authoritative figure (`final_cash_to_close`, then
+ * `cash_to_close`) — the real amount the buyer wires, already net of credits and inclusive of
+ * prepaid interest, initial escrow reserves, recording fees, and transfer/mortgage taxes. Falls
+ * back to the Loan-Estimate-derived figure, which is an ESTIMATE that omits those line items and
+ * can understate the wire by thousands; callers MUST label that case as an estimate.
+ */
+export function resolveCashToClose(
+  cdFields: Record<string, unknown> | null,
+  chosenLE: LoanEstimate | null,
+  credits: { sellerCredits?: number; lenderCredits?: number; earnestMoney?: number } = {},
+): CashToCloseResult {
+  if (cdFields) {
+    const cd = unwrapCDValue(cdFields, "final_cash_to_close") ?? unwrapCDValue(cdFields, "cash_to_close");
+    if (typeof cd === "number" && cd > 0) {
+      // The CD figure is already final and net of credits — do NOT re-apply earnest money/credits.
+      return { amount: cd, source: "closing_disclosure" };
+    }
+  }
+  return { amount: computeCashToClose(chosenLE, credits), source: "loan_estimate_estimate" };
+}
+
 /**
  * Deadline urgency based on days remaining.
  * Returns a status suitable for UI color coding.

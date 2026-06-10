@@ -4,7 +4,7 @@ import { CheckCircle2, Shield } from "lucide-react";
 import { CollapsibleCard } from "@/components/ui/collapsible-card";
 import { Button } from "@/components/ui/button";
 import { useUpdateTransaction } from "@/lib/hooks/mutations";
-import { computeCashToClose } from "@/lib/computed";
+import { resolveCashToClose } from "@/lib/computed";
 import { formatCurrency } from "@/lib/utils";
 import type { ClosingData } from "@/lib/hooks/use-closing-data";
 import type { ClosingMetadata } from "@/lib/types";
@@ -13,9 +13,11 @@ export function CashToCloseFinalizer({ data, transactionId, userId }: { data: Cl
   const { chosenLE, transaction, meta } = data;
   const updateTransaction = useUpdateTransaction(transactionId, userId);
 
-  const cashToClose = computeCashToClose(chosenLE, {
+  const cdFields = (data.cdDocument?.extracted_fields as Record<string, unknown> | null) ?? null;
+  const { amount: cashToClose, source } = resolveCashToClose(cdFields, chosenLE, {
     earnestMoney: transaction?.earnest_money_amount ?? 0,
   });
+  const isEstimate = source === "loan_estimate_estimate";
 
   function toggleConfirmed() {
     const updated: Partial<ClosingMetadata> = { ...meta, cash_to_close_confirmed: !meta.cash_to_close_confirmed };
@@ -32,11 +34,18 @@ export function CashToCloseFinalizer({ data, transactionId, userId }: { data: Cl
         {cashToClose != null && (
           <div className="text-center py-3">
             <p className="text-3xl font-bold text-foreground">{formatCurrency(cashToClose)}</p>
-            <p className="text-sm text-muted-foreground mt-1">Total amount due at closing</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {isEstimate ? "Estimated from your Loan Estimate" : "Final amount from your Closing Disclosure"}
+            </p>
+            {isEstimate && (
+              <p className="text-xs text-warning mt-1">
+                Estimate only — excludes prepaids, escrow reserves, and taxes. Use the figure on your Closing Disclosure for the actual wire.
+              </p>
+            )}
           </div>
         )}
 
-        {chosenLE && (
+        {isEstimate && chosenLE && (
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Down Payment</span>

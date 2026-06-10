@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { InlineDocUpload } from "@/components/escrow/InlineDocUpload";
 import { useUpdateTransaction } from "@/lib/hooks/mutations";
 import { useDocuments } from "@/lib/hooks/queries";
-import { computeCashToClose } from "@/lib/computed";
+import { resolveCashToClose } from "@/lib/computed";
 import { formatCurrency } from "@/lib/utils";
 import type { ClosingData } from "@/lib/hooks/use-closing-data";
 import type { ClosingMetadata } from "@/lib/types";
@@ -22,7 +22,11 @@ export function WireTransferSafeSend({ data, transactionId, userId }: { data: Cl
   const updateTransaction = useUpdateTransaction(transactionId, userId);
   const { data: allDocs } = useDocuments(transactionId);
 
-  const wireAmount = computeCashToClose(chosenLE, { earnestMoney: transaction?.earnest_money_amount ?? 0 });
+  const cdFields = (data.cdDocument?.extracted_fields as Record<string, unknown> | null) ?? null;
+  const { amount: wireAmount, source } = resolveCashToClose(cdFields, chosenLE, {
+    earnestMoney: transaction?.earnest_money_amount ?? 0,
+  });
+  const isEstimate = source === "loan_estimate_estimate";
   const allVerified = meta.wire_verified_steps.every(Boolean);
   const isWired = meta.wire_status === "wired" || meta.wire_status === "confirmed";
 
@@ -64,8 +68,15 @@ export function WireTransferSafeSend({ data, transactionId, userId }: { data: Cl
 
         {wireAmount != null && (
           <div className="text-center py-2">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Wire Amount</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">
+              {isEstimate ? "Estimated Amount" : "Wire Amount (from Closing Disclosure)"}
+            </p>
             <p className="text-2xl font-bold text-foreground">{formatCurrency(wireAmount)}</p>
+            {isEstimate && (
+              <p className="text-xs text-destructive mt-1 max-w-xs mx-auto">
+                Estimate from your Loan Estimate — it excludes prepaids, escrow, and taxes. Never wire this figure: confirm the exact amount with your escrow officer.
+              </p>
+            )}
           </div>
         )}
 
