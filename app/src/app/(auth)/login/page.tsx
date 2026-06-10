@@ -27,7 +27,15 @@ export default function LoginPage() {
     });
 
     if (error) {
-      setError(error.message);
+      // Don't echo raw Supabase auth errors — they leak whether an account exists
+      // (audit M5). Map the actionable cases; everything else gets a generic message.
+      if (error.message.toLowerCase().includes("email not confirmed")) {
+        setError("Please confirm your email first — check your inbox for the confirmation link.");
+      } else if (error.status === 429) {
+        setError("Too many attempts. Please wait a moment and try again.");
+      } else {
+        setError("Invalid email or password.");
+      }
       setLoading(false);
     } else {
       router.push("/dashboard");

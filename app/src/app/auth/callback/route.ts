@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { toSafeRelativePath } from "@/lib/utils";
+import { logRouteError } from "@/lib/log";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -34,6 +35,14 @@ export async function GET(request: Request) {
       const separator = next.includes("?") ? "&" : "?";
       return NextResponse.redirect(`${origin}${next}${separator}confirmed=true`);
     }
+    // Exchange failures were previously swallowed (audit M7) — a broken email-confirmation
+    // flow would have been invisible in logs while users bounced to /login.
+    logRouteError({ route: "auth/callback", event: "code_exchange_failed", status: 302 }, error);
+  } else {
+    logRouteError(
+      { route: "auth/callback", event: "missing_code", status: 302 },
+      new Error("callback hit without a code param"),
+    );
   }
 
   // If code exchange failed, redirect to login with error hint
