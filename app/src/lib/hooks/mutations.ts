@@ -49,8 +49,9 @@ export function useMarkPhaseGuideSeen(userId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (phase: Phase) => {
+      // The RPC derives the target user from auth.uid() server-side (migration 015); it no longer
+      // accepts a client-supplied user id, closing a cross-tenant write (L-1).
       const { error } = await supabase.rpc("append_seen_phase_guide", {
-        p_user_id: userId,
         p_phase: phase,
       });
       if (error) throw error;
