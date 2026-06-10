@@ -39,6 +39,7 @@ function makeStubSnapshot(overrides: Partial<PropertySnapshot> = {}): PropertySn
       mortgage_rate_30y: 6.8, cpi_yoy: 0.031,
       metro_unemployment: 3.6, metro_hpi_yoy: 0.04,
       metro_inventory_months: 3.5, metro_dom_median: 22,
+      metro_median_price: 400000,
     },
     source_quality: {
       sources_used: ["stub"],
@@ -116,6 +117,7 @@ describe("projectHome", () => {
           metro_hpi_yoy: 5.0,     // 5%/yr returned as 5.0, not 0.05
           metro_inventory_months: 3.5,
           metro_dom_median: 22,
+          metro_median_price: 400000,
         },
       }),
     });

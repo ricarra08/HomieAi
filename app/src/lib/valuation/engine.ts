@@ -13,7 +13,7 @@ import { REGIMES } from "./layers/neighborhood";
 import { STRUCTURAL_COEFFS_VERSION } from "./layers/structural";
 import { NEIGHBORHOOD_VERSION } from "./layers/neighborhood-coeffs";
 
-export const MODEL_VERSION = `v1.1-${STRUCTURAL_COEFFS_VERSION}-${NEIGHBORHOOD_VERSION}`;
+export const MODEL_VERSION = `v1.2-${STRUCTURAL_COEFFS_VERSION}-${NEIGHBORHOOD_VERSION}`;
 
 const PATHS = 2000;
 const HORIZON_MONTHS = 180; // 15 years

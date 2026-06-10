@@ -34,6 +34,18 @@ function normalizeCount(value: number | null, clamp: [number, number]): number |
   return Math.max(clamp[0], Math.min(clamp[1], value));
 }
 
+/**
+ * Dollar amounts have no scale heuristic (415.3 could be thousands-form ZHVI or a data error),
+ * so out-of-range values are nulled rather than clamped — a clamped $50,000 "median" would
+ * render as confident real data in the market card, while null triggers the proper warning.
+ */
+function normalizePriceOrNull(value: number | null, range: [number, number]): number | null {
+  if (value === null) return null;
+  if (!Number.isFinite(value)) return null;
+  if (value < range[0] || value > range[1]) return null;
+  return value;
+}
+
 export function sanitizeSnapshot(input: PropertySnapshot): PropertySnapshot {
   const m = input.macro_snapshot;
   const macroSnapshot = {
@@ -43,6 +55,7 @@ export function sanitizeSnapshot(input: PropertySnapshot): PropertySnapshot {
     metro_hpi_yoy: normalizeFraction(m.metro_hpi_yoy, [-0.20, 0.25]),
     metro_inventory_months: normalizeCount(m.metro_inventory_months, [0, 24]),
     metro_dom_median: normalizeCount(m.metro_dom_median, [0, 365]),
+    metro_median_price: normalizePriceOrNull(m.metro_median_price, [50_000, 5_000_000]),
   };
 
   const q = input.neighborhood_signals;

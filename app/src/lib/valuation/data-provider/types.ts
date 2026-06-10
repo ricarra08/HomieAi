@@ -43,10 +43,12 @@ export const propertySnapshotSchema = z.object({
     address: z.string(),
     sale_price: z.number(),
     sale_date: z.string(),
-    beds: z.number(),
-    baths: z.number(),
-    sqft: z.number(),
-    distance_miles: z.number(),
+    // Nullable: a comp with only price+date is still useful, but missing facts must stay
+    // null in the cached snapshot — backfilled zeros would poison future model fitting.
+    beds: numOrNull,
+    baths: numOrNull,
+    sqft: numOrNull,
+    distance_miles: numOrNull,
   })),
   neighborhood_signals: z.object({
     permit_count_trend: numOrNull,
@@ -71,6 +73,7 @@ export const propertySnapshotSchema = z.object({
     metro_hpi_yoy: numOrNull,
     metro_inventory_months: numOrNull,
     metro_dom_median: numOrNull,
+    metro_median_price: numOrNull,   // USD; metro-level median sale price (ZHVI / Redfin / Realtor)
   }),
   source_quality: z.object({
     sources_used: z.array(z.string()),
