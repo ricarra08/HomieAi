@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { toSafeRelativePath } from "@/lib/utils";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard";
+  // Validate `next` is a same-origin relative path — never trust it for the redirect target,
+  // or an attacker could craft /auth/callback?next=//evil.com to phish via our own auth flow.
+  const next = toSafeRelativePath(searchParams.get("next"), "/dashboard");
 
   if (code) {
     const cookieStore = await cookies();

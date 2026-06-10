@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatCurrency, parseLoanTermYears } from "../utils";
+import { formatCurrency, parseLoanTermYears, formatPercent, toSafeRelativePath } from "../utils";
 
 describe("formatCurrency", () => {
   it("formats null as em dash", () => {
@@ -42,5 +42,49 @@ describe("parseLoanTermYears", () => {
 
   it("defaults to 30 for empty string", () => {
     expect(parseLoanTermYears("")).toBe(30);
+  });
+});
+
+describe("formatPercent", () => {
+  it("formats a rate value with a % suffix", () => {
+    expect(formatPercent(6.5)).toBe("6.5%");
+  });
+
+  it("trims trailing zeros up to 3 decimals", () => {
+    expect(formatPercent(7)).toBe("7%");
+    expect(formatPercent(6.875)).toBe("6.875%");
+  });
+
+  it("formats null/undefined as em dash", () => {
+    expect(formatPercent(null)).toBe("—");
+    expect(formatPercent(undefined)).toBe("—");
+  });
+});
+
+describe("toSafeRelativePath", () => {
+  it("passes a normal relative path through", () => {
+    expect(toSafeRelativePath("/dashboard", "/fallback")).toBe("/dashboard");
+    expect(toSafeRelativePath("/documents?tab=closing", "/fallback")).toBe("/documents?tab=closing");
+  });
+
+  it("rejects protocol-relative and backslash-host open-redirect attempts", () => {
+    expect(toSafeRelativePath("//evil.com", "/dashboard")).toBe("/dashboard");
+    expect(toSafeRelativePath("/\\evil.com", "/dashboard")).toBe("/dashboard");
+  });
+
+  it("rejects absolute URLs and non-path schemes", () => {
+    expect(toSafeRelativePath("https://evil.com", "/dashboard")).toBe("/dashboard");
+    expect(toSafeRelativePath("javascript:alert(1)", "/dashboard")).toBe("/dashboard");
+  });
+
+  it("rejects whitespace / CRLF (redirect header injection)", () => {
+    expect(toSafeRelativePath("/foo\nSet-Cookie: x", "/dashboard")).toBe("/dashboard");
+    expect(toSafeRelativePath("/foo bar", "/dashboard")).toBe("/dashboard");
+  });
+
+  it("falls back for empty / non-string input", () => {
+    expect(toSafeRelativePath(null, "/dashboard")).toBe("/dashboard");
+    expect(toSafeRelativePath("", "/dashboard")).toBe("/dashboard");
+    expect(toSafeRelativePath(undefined, "/dashboard")).toBe("/dashboard");
   });
 });
