@@ -132,6 +132,7 @@ HomeBuyer Pro's AI-generated output constitutes automated informational content 
 Document contents are transmitted to AI processing services (currently OpenAI's API) for the purpose of generating plain-language summaries and field extraction. **Regardless of any third-party AI provider's data policies, HomeBuyer Pro commits to the following:**
 
 - Buyer documents are transmitted solely for the purpose of generating the buyer's requested analysis
+- Before any document text is transmitted for AI processing, the platform applies automated redaction of sensitive identifiers (Social Security numbers, bank account numbers, ABA routing numbers, payment card numbers, and wire-instruction details). One exception applies: scanned or image-based documents that cannot be read as text are transmitted as images for optical text extraction before redaction can occur; the extracted text is then redacted before all further processing and storage
 - HomeBuyer Pro does not authorize, permit, or consent to the use of buyer document content for AI model training by any third-party provider
 - If the platform's AI processing provider changes its data handling policies in a manner inconsistent with this commitment, HomeBuyer Pro will migrate to an alternative provider or implement data processing agreements that preserve these protections
 - The platform selects AI processing providers whose API terms, as of the effective date of this document, exclude API input data from model training
@@ -140,7 +141,7 @@ Document contents are transmitted to AI processing services (currently OpenAI's 
 
 - **No buyer data is sold, licensed, rented, or shared with third parties** for marketing, lead generation, advertising, or any commercial purpose unrelated to the buyer's direct use of the platform
 - No buyer data is shared with the referring agent, brokerage, lender, title company, or any other transaction counterparty unless the buyer explicitly initiates such sharing through the platform's collaborator link feature
-- The platform does not collect, store, or process Social Security numbers, bank account numbers, routing numbers, or credit report data
+- The platform does not request Social Security numbers, bank account numbers, routing numbers, or credit report data from buyers. Documents uploaded by buyers may incidentally contain such identifiers; the platform applies automated redaction to document text before AI processing and before storing any derived text, summaries, or extracted fields. Original uploaded documents are retained encrypted at rest and are not shared except as described in this section
 
 ### 4.4 Data Retention and Deletion
 
