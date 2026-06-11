@@ -58,6 +58,11 @@ export interface Transaction {
   property_in_hoa: boolean;
   property_in_special_district: boolean;
   special_district_annual_cost: number | null;
+  // Agent → buyer handoff (migration 018). claim_token is present only on an unclaimed
+  // agent-created shell; the agent UI exposes it as a /claim link, never the buyer's.
+  claim_token?: string | null;
+  claim_token_expires_at?: string | null;
+  claimed_at?: string | null;
   created_at: string;
   updated_at: string;
 }

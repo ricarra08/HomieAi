@@ -3,6 +3,7 @@ import {
   isValidInviteSlug,
   slugifyDisplayName,
   generateInviteSlug,
+  isLikelyClaimToken,
 } from "../invites";
 
 describe("isValidInviteSlug", () => {
@@ -43,6 +44,21 @@ describe("slugifyDisplayName", () => {
 
   it("caps length", () => {
     expect(slugifyDisplayName("a".repeat(100)).length).toBeLessThanOrEqual(30);
+  });
+});
+
+describe("isLikelyClaimToken", () => {
+  it("accepts UUIDs", () => {
+    expect(isLikelyClaimToken("3f9a1b2c-4d5e-6f70-8a9b-0c1d2e3f4a5b")).toBe(true);
+    expect(isLikelyClaimToken("00000000-0000-0000-0000-000000000000")).toBe(true);
+  });
+  it("rejects non-UUIDs", () => {
+    expect(isLikelyClaimToken("not-a-uuid")).toBe(false);
+    expect(isLikelyClaimToken("3f9a1b2c4d5e6f708a9b0c1d2e3f4a5b")).toBe(false); // no hyphens
+    expect(isLikelyClaimToken("../../etc/passwd")).toBe(false);
+    expect(isLikelyClaimToken("")).toBe(false);
+    expect(isLikelyClaimToken(null)).toBe(false);
+    expect(isLikelyClaimToken(123)).toBe(false);
   });
 });
 

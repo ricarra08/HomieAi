@@ -745,6 +745,31 @@ export function useCreateCollaboratorLink(transactionId: string) {
   });
 }
 
+/**
+ * Agent → buyer handoff: generate (or reuse) a claim link for a client transaction and
+ * optionally email it to the stored client_email. Server enforces ownership + the
+ * not-already-claimed guard (see /api/claim/invite).
+ */
+export function useInviteBuyer(agentId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { transactionId: string; sendEmail: boolean }) => {
+      const res = await fetch("/api/claim/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error ?? "invite_failed");
+      return body as { claimUrl: string; emailed: boolean };
+    },
+    onSuccess: () => {
+      // The transaction now carries a claim_token → refresh so the "Invited" badge appears.
+      qc.invalidateQueries({ queryKey: ["transactions", "agent", agentId] });
+    },
+  });
+}
+
 export function useRevokeCollaboratorLink(transactionId: string) {
   const qc = useQueryClient();
   return useMutation({

@@ -41,6 +41,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/upload") ||
     request.nextUrl.pathname.startsWith("/explain") ||
     request.nextUrl.pathname.startsWith("/join") ||
+    request.nextUrl.pathname.startsWith("/claim") ||
     request.nextUrl.pathname.startsWith("/blog");
 
   const isOnboardingPage =

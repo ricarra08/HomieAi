@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Home, Briefcase, ArrowRight, Loader2 } from "lucide-react";
 import { useCreateProfile } from "@/lib/hooks/mutations";
-import { AGENT_REF_STORAGE_KEY } from "@/lib/invites";
+import { AGENT_REF_STORAGE_KEY, CLAIM_TOKEN_STORAGE_KEY, isLikelyClaimToken } from "@/lib/invites";
 import type { UserRole } from "@/lib/types";
 
 interface RoleOnboardingProps {
@@ -54,7 +54,16 @@ export function RoleOnboarding({ userId }: RoleOnboardingProps) {
       { displayName: displayName.trim(), role: selectedRole, referredByAgentId },
       {
         onSuccess: () => {
-          router.push("/dashboard");
+          // If the buyer arrived via a claim link, finish the claim before the dashboard.
+          // Consume on read (the claim page re-stashes if still unauthenticated) so a stale
+          // token can't mis-route a later session.
+          const pendingClaim = localStorage.getItem(CLAIM_TOKEN_STORAGE_KEY);
+          localStorage.removeItem(CLAIM_TOKEN_STORAGE_KEY);
+          if (selectedRole === "buyer" && isLikelyClaimToken(pendingClaim)) {
+            router.push(`/claim/${pendingClaim}`);
+          } else {
+            router.push("/dashboard");
+          }
         },
         onError: () => {
           setSubmitting(false);

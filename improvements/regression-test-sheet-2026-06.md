@@ -94,6 +94,25 @@ Mark each `[x]` when it passes; note failures inline.
   is buyer-private) — this is the load-bearing privacy promise.
 - [ ] As the buyer, confirm you only see your own workspace, not other buyers'.
 
+### 7b. Agent → buyer handoff / claim  (Option 5 — migration 018, claim routes)
+- [ ] As the **agent**, **Add Client** with a client email → the card shows no badge yet.
+- [ ] Card dropdown → **Invite buyer** → dialog: "Email invite to {email}" sends (toast
+  confirms); the card now shows an **Invited** badge. Reopen → "Resend / copy invite" shows
+  the **same** link (token reused, not regenerated).
+- [ ] The buyer receives the "set up your Phazr workspace" email; the link opens `/claim/<token>`
+  with the agent's name + property.
+- [ ] **New buyer:** from /claim → Create account → confirm email → onboarding (pick buyer) →
+  lands **back on /claim** → **Claim** → dashboard shows the transaction; the agent's card flips
+  to **Joined**.
+- [ ] **Existing buyer:** from /claim → Sign in → routed back to /claim → Claim → dashboard.
+- [ ] **Email binding:** sign in as a buyer whose email ≠ the invited client_email → Claim →
+  "sent to a different email" message (not transferred). (Skip if the agent left client email blank.)
+- [ ] **Re-claim / hijack guards:** open the claim link again after it's claimed → "already
+  claimed". As the agent, try **Invite buyer** on an already-**Joined** client → the option is
+  hidden (and the API 409s).
+- [ ] **Stale token:** open a claim link, abandon it (don't claim), then later sign in normally
+  → you land on **/dashboard**, not a stale claim screen.
+
 ### 8. Resend email — collaborator upload-link delivery  (`db8cad0`)
 - [ ] Generate a collaborator link **with your own email** as recipient → toast says
   **"Upload link created and emailed"** (the "and emailed" is the tell it sent).

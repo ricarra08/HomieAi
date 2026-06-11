@@ -7,6 +7,16 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CLAIM_TOKEN_STORAGE_KEY, isLikelyClaimToken } from "@/lib/invites";
+
+/** If the user arrived mid-claim (/claim → sign in), send them back to finish claiming. */
+function postAuthDestination(): string {
+  const pending = localStorage.getItem(CLAIM_TOKEN_STORAGE_KEY);
+  // Consume on read so a stale token can't mis-route a later unrelated login; the claim
+  // page re-stashes it if the user lands there still unauthenticated.
+  localStorage.removeItem(CLAIM_TOKEN_STORAGE_KEY);
+  return isLikelyClaimToken(pending) ? `/claim/${pending}` : "/dashboard";
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -38,7 +48,7 @@ export default function LoginPage() {
       }
       setLoading(false);
     } else {
-      router.push("/dashboard");
+      router.push(postAuthDestination());
       router.refresh();
     }
   }

@@ -1,10 +1,11 @@
 "use client";
 
-import { Users, Plus, MoreHorizontal, Archive, Trash2, RotateCcw, Link2, Copy, Check } from "lucide-react";
+import { Users, Plus, MoreHorizontal, Archive, Trash2, RotateCcw, Link2, Copy, Check, Send } from "lucide-react";
 import { useUIStore } from "@/lib/store";
 import { useAgentTransactions, useProfile } from "@/lib/hooks/queries";
 import { useDeleteTransaction, useCreateInviteSlug } from "@/lib/hooks/mutations";
 import { AddClientDialog } from "./AddClientDialog";
+import { InviteBuyerDialog } from "./InviteBuyerDialog";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -33,15 +34,21 @@ function ClientCard({
   onArchive,
   onRestore,
   onDelete,
+  onInvite,
 }: {
   transaction: Transaction;
   onClick: () => void;
   onArchive: () => void;
   onRestore: () => void;
   onDelete: () => void;
+  onInvite: () => void;
 }) {
   const badge = PHASE_BADGES[transaction.current_phase] ?? PHASE_BADGES.shopping;
   const isArchived = transaction.archived;
+  // A shell the agent owns (user_id === agent_id) hasn't been handed off yet; once the buyer
+  // claims it, user_id diverges. claim_token present = invite outstanding.
+  const isClaimed = transaction.user_id !== transaction.agent_id;
+  const isInvited = !isClaimed && !!transaction.claim_token;
 
   return (
     <div className="bg-card rounded-xl border border-border shadow-sm p-6 text-left hover:border-accent/40 hover:shadow-md transition-all w-full relative">
@@ -58,6 +65,15 @@ function ClientCard({
             </p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
+            {isClaimed ? (
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-primary/20 text-primary-foreground">
+                Joined
+              </span>
+            ) : isInvited ? (
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-accent/15 text-accent">
+                Invited
+              </span>
+            ) : null}
             {transaction.state && isValidStateCode(transaction.state) && (
               <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-secondary text-muted-foreground border border-border">
                 {STATE_LABELS[transaction.state as StateCode]}
@@ -90,6 +106,17 @@ function ClientCard({
             <MoreHorizontal className="w-4 h-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="end" sideOffset={4}>
+            {!isArchived && !isClaimed && (
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onInvite();
+                }}
+              >
+                <Send className="w-4 h-4" />
+                {isInvited ? "Resend / copy invite" : "Invite buyer"}
+              </DropdownMenuItem>
+            )}
             {isArchived ? (
               <DropdownMenuItem
                 onClick={(e) => {
@@ -202,6 +229,7 @@ interface AgentDashboardProps {
 
 export function AgentDashboard({ userId, showArchived = false }: AgentDashboardProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [inviteFor, setInviteFor] = useState<Transaction | null>(null);
   const { data: allTransactions, isLoading } = useAgentTransactions(userId);
   const { setActiveTransactionId } = useUIStore();
   const deleteTransaction = useDeleteTransaction(userId);
@@ -300,6 +328,7 @@ export function AgentDashboard({ userId, showArchived = false }: AgentDashboardP
               onArchive={() => handleArchive(t)}
               onRestore={() => handleRestore(t)}
               onDelete={() => handleDelete(t)}
+              onInvite={() => setInviteFor(t)}
             />
           ))}
         </div>
@@ -334,6 +363,13 @@ export function AgentDashboard({ userId, showArchived = false }: AgentDashboardP
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         userId={userId}
+      />
+
+      <InviteBuyerDialog
+        open={!!inviteFor}
+        onClose={() => setInviteFor(null)}
+        agentId={userId}
+        transaction={inviteFor}
       />
     </div>
   );

@@ -125,3 +125,63 @@ export function collaboratorInviteEmail(input: CollaboratorInviteInput): {
 
   return { subject, html, text };
 }
+
+export interface AgentClaimInviteInput {
+  /** Inviting agent's display name. Trusted (their own profile). */
+  agentName: string;
+  /** Property address for context; may be "TBD". */
+  propertyAddress: string;
+  /** Full URL to the /claim/<token> page. */
+  claimUrl: string;
+}
+
+export function agentClaimInviteEmail(input: AgentClaimInviteInput): {
+  subject: string;
+  html: string;
+  text: string;
+} {
+  const agent = escapeHtml(input.agentName);
+  const address =
+    input.propertyAddress && input.propertyAddress !== "TBD" ? input.propertyAddress : null;
+  const addressLine = address
+    ? ` for <strong>${escapeHtml(address)}</strong>`
+    : "";
+  const subject = address
+    ? `${input.agentName} set up your Phazr workspace for ${address}`
+    : `${input.agentName} invited you to Phazr`;
+
+  const html = layout(`
+    <p style="margin:0 0 16px;">Hi,</p>
+    <p style="margin:0 0 16px;">
+      <strong>${agent}</strong> set up a Phazr workspace${addressLine} and invited you to take it
+      over. Phazr keeps your home purchase organized — your documents explained, your deadlines
+      tracked, and your agent in the loop — from offer to keys.
+    </p>
+    <p style="margin:0 0 24px;">Create your free account (or sign in) to claim your workspace:</p>
+    <p style="margin:0 0 24px;">${button(input.claimUrl, "Claim your workspace")}</p>
+    <p style="margin:0 0 8px;font-size:13px;color:${MUTED};">
+      Or paste this link into your browser:<br>
+      <a href="${input.claimUrl}" style="color:${BRAND_ACCENT};word-break:break-all;">${input.claimUrl}</a>
+    </p>
+    <p style="margin:16px 0 0;font-size:13px;color:${MUTED};">
+      You'll own your workspace; ${agent} can help you stay coordinated. This link is private and
+      may expire. If you weren't expecting this, you can ignore this email.
+    </p>
+  `);
+
+  const text = [
+    "Hi,",
+    "",
+    `${input.agentName} set up a Phazr workspace${address ? ` for ${address}` : ""} and invited you to take it over.`,
+    "Phazr keeps your home purchase organized — documents explained, deadlines tracked, your agent in the loop.",
+    "",
+    "Create your free account (or sign in) to claim your workspace:",
+    input.claimUrl,
+    "",
+    `You'll own your workspace; ${input.agentName} can help you stay coordinated. This link is private and may expire.`,
+    "",
+    "— Phazr",
+  ].join("\n");
+
+  return { subject, html, text };
+}
