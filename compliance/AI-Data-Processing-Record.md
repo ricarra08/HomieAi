@@ -23,10 +23,10 @@ Transmission). Update whenever the AI provider, agreement, or data-control setti
 ## Organization data-control settings
 
 - **Verified at:** https://platform.openai.com/settings/organization/data-controls
-- **Date verified:** _[fill in]_
-- **"Share inputs/outputs to improve models":** disabled (opt-in not taken)
-- **Evaluation / fine-tuning data sharing:** disabled (default)
-- **Evidence:** _[screenshot filename/location]_
+- **Date verified:** 2026-06-11 — all data-sharing controls set to disabled by the founder
+- **"Share inputs/outputs to improve models":** disabled
+- **Evaluation / fine-tuning data sharing:** disabled
+- **Evidence:** _[screenshot recommended — capture the data-controls page showing all toggles off]_
 
 ## Platform-side technical controls (in code, commit `15aa85a`)
 
