@@ -16,6 +16,7 @@ import {
 } from "./query-keys";
 import { DOCUMENT_LIST_COLUMNS } from "./queries";
 import { generateInviteSlug } from "@/lib/invites";
+import { normalizeEmail } from "@/lib/email/validate";
 import type { Document, Phase, UserRole } from "@/lib/types";
 
 const supabase = createClient();
@@ -705,23 +706,41 @@ export function useCreateCollaboratorLink(transactionId: string) {
       recipientEmail?: string;
       requestedDocuments?: string[];
     }) => {
+      const email = normalizeEmail(params.recipientEmail);
       const { data, error } = await supabase
         .from("collaborator_links")
         .insert({
           deal_id: transactionId,
           link_token: crypto.randomUUID(),
           recipient_role: params.recipientRole,
-          recipient_email: params.recipientEmail ?? null,
+          recipient_email: email,
           requested_documents: params.requestedDocuments ?? null,
         })
         .select()
         .single();
       if (error) throw error;
-      return data;
+
+      // If a valid email was given, email the upload link (server-side; degrades to a no-op
+      // when email isn't configured). Non-fatal: link creation already succeeded.
+      let emailed = false;
+      if (email) {
+        try {
+          const res = await fetch("/api/collaborator/invite", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ linkId: data.id }),
+          });
+          const payload = await res.json().catch(() => ({}));
+          emailed = res.ok && payload.skipped === false;
+        } catch {
+          emailed = false;
+        }
+      }
+      return { ...data, _emailed: emailed };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: collaboratorKeys.list(transactionId) });
-      toast.success("Upload link created");
+      toast.success(data._emailed ? "Upload link created and emailed" : "Upload link created");
     },
   });
 }
