@@ -95,11 +95,14 @@ export interface Document {
   stage: string | null;
   status: "required" | "missing" | "uploaded" | "processing" | "processed" | "failed" | "signed" | "acknowledged" | "final" | "read-only";
   version: string | null;
-  extracted_text: string | null;
+  // Optional: browser document queries exclude this column (H3 — raw document text can
+  // carry sensitive identifiers); only server-side reads (`select("*")`) populate it.
+  extracted_text?: string | null;
   extracted_fields: Record<string, unknown> | null;
   ai_summary: string | null;
   confidence_score: number | null;
   source_type: "buyer-upload" | "collaborator-upload" | "system-generated";
+  collaborator_link_id?: string | null;
   created_at: string;
   updated_at: string;
 }

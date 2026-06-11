@@ -8,6 +8,7 @@ import { getExtractionSystemPrompt, getSummarizationSystemPrompt, TEXT_LIMITS } 
 import { mapExtractedToLE } from "@/lib/ai/le-auto-populate";
 import { isInspectionSubtype } from "@/lib/documents/inspection-subtype";
 import { isDocTypeInScope, shouldAutoPopulateFinancials } from "@/lib/documents/collaborator-scope";
+import { redactPii } from "@/lib/security/pii-redaction";
 import { rateLimit } from "@/lib/rate-limit";
 import { createClient as createSupabaseServer } from "@/lib/supabase/server";
 import { isSameOrigin } from "@/lib/security/same-origin";
@@ -241,6 +242,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // --- Step 2.5: Redact PII at the choke point (H3) ---
+    // Classification, extraction, summarization, and the stored extracted_text /
+    // ai_summary / extracted_fields all derive from this variable — redacting here once
+    // keeps SSNs, account/routing numbers, and wire details out of OpenAI and the DB.
+    // The original PDF in Storage remains the system of record (lossless).
+    const redaction = redactPii(extractedText);
+    extractedText = redaction.text;
+    if (redaction.total > 0) {
+      // Counts only — never the redacted values.
+      console.log(`[doc-process] PII redacted: ${JSON.stringify(redaction.counts)}`);
+    }
+
     // --- Step 3: Classify document ---
     let docType = "other";
     let category = "other";
@@ -408,6 +421,12 @@ Stage mapping:
     // LE field mapping; the UI can surface it to warn the owner this upload was outside link scope.
     if (scopeFlagged) {
       mergedFields._scope_warning = { classified: docType, in_scope: false };
+    }
+
+    // Metadata-only (underscore convention): how many sensitive numbers were redacted before
+    // AI analysis — a future UI hook ("we removed N sensitive numbers"). Counts, never values.
+    if (redaction.total > 0) {
+      mergedFields._pii_redactions = redaction.counts;
     }
 
     const finalFields = Object.keys(mergedFields).length > 0 ? mergedFields : null;

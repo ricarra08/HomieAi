@@ -14,7 +14,8 @@ import {
   collaboratorKeys,
   copilotKeys,
 } from "./query-keys";
-import type { Phase, UserRole } from "@/lib/types";
+import { DOCUMENT_LIST_COLUMNS } from "./queries";
+import type { Document, Phase, UserRole } from "@/lib/types";
 
 const supabase = createClient();
 
@@ -319,27 +320,28 @@ export function useUploadDocument(transactionId: string) {
       const { data, error: insertError } = await supabase
         .from("documents")
         .insert(row)
-        .select()
+        .select(DOCUMENT_LIST_COLUMNS)
         .single();
       if (insertError) throw insertError;
+      const inserted = data as unknown as Document;
 
       // Trigger async processing (extraction + classification)
       fetch("/api/documents/process", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ documentId: data.id }),
+        body: JSON.stringify({ documentId: inserted.id }),
       }).then(async (res) => {
         if (!res.ok) {
-          console.error(`[upload] Document processing failed for ${data.id}: ${res.status}`);
+          console.error(`[upload] Document processing failed for ${inserted.id}: ${res.status}`);
         }
         // Always invalidate so the UI picks up status changes (including "failed")
         qc.invalidateQueries({ queryKey: documentKeys.list(transactionId) });
       }).catch((err) => {
-        console.error(`[upload] Document processing request failed for ${data.id}:`, err);
+        console.error(`[upload] Document processing request failed for ${inserted.id}:`, err);
         qc.invalidateQueries({ queryKey: documentKeys.list(transactionId) });
       });
 
-      return data;
+      return inserted;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: documentKeys.list(transactionId) });
@@ -355,10 +357,10 @@ export function useUpdateDocument(transactionId: string) {
         .from("documents")
         .update(params.updates)
         .eq("id", params.documentId)
-        .select()
+        .select(DOCUMENT_LIST_COLUMNS)
         .single();
       if (error) throw error;
-      return data;
+      return data as unknown as Document;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: documentKeys.list(transactionId) });

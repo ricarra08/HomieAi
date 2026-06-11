@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { createClient as createSupabaseServer } from "@/lib/supabase/server";
 import { isSameOrigin } from "@/lib/security/same-origin";
+import { redactPiiText } from "@/lib/security/pii-redaction";
 import {
   fenceUntrustedContent,
   sanitizeFilename,
@@ -79,9 +80,10 @@ export async function POST(request: NextRequest) {
         .join(", ");
       if (keyFields) docParts.push(`Extracted fields: ${keyFields}`);
     }
+    // Redact-then-fence (H3 defense in depth) — covers documents processed before redaction existed.
     const docContext =
       `Document: ${sanitizeFilename(doc.name)}\nType: ${doc.doc_type ?? "unknown"}` +
-      (docParts.length ? `\n\n${fenceUntrustedContent(docParts.join("\n\n"), nonce)}` : "");
+      (docParts.length ? `\n\n${fenceUntrustedContent(redactPiiText(docParts.join("\n\n")), nonce)}` : "");
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",

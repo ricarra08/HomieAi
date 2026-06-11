@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { computeDeadlineUrgency, computeDaysRemaining } from "@/lib/computed";
 import { isValidStateCode, getStateConfig } from "@/lib/state-configs";
 import { fenceUntrustedContent, sanitizeFilename, makePromptNonce } from "@/lib/valuation/prompt-safety";
+import { redactPiiText } from "@/lib/security/pii-redaction";
 import type { StateConfig } from "@/lib/state-configs";
 import type { Phase, Transaction, Document, Deadline, LoanEstimate, RepairItem, SavedHome } from "@/lib/types";
 
@@ -88,8 +89,11 @@ function buildDocumentsBlock(documents: Document[], nonce: string): string {
       untrusted.push(`**Full Document Text:**\n${rawText}`);
     }
 
+    // Redact-then-fence (H3 defense in depth): the choke point in /api/documents/process
+    // already redacts new uploads, but this covers rows written before redaction existed.
+    // Order is safe — the fence only strips control chars/nonce echoes, never adds digits.
     const section = untrusted.length
-      ? `${header}\n\n${fenceUntrustedContent(untrusted.join("\n\n"), nonce)}`
+      ? `${header}\n\n${fenceUntrustedContent(redactPiiText(untrusted.join("\n\n")), nonce)}`
       : header;
     sections.push(section);
   }

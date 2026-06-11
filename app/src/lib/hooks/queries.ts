@@ -143,17 +143,27 @@ export function useOfferDetails(transactionId: string | null) {
 
 // -- Documents --
 
+/**
+ * Every documents column EXCEPT extracted_text (H3): the raw document text can carry
+ * sensitive identifiers and nothing in the browser renders it — only server-side prompt
+ * assembly reads it. Keep this list in sync with the documents schema.
+ */
+export const DOCUMENT_LIST_COLUMNS =
+  "id, deal_id, name, file_path, file_size, mime_type, doc_type, category, stage, " +
+  "status, version, extracted_fields, ai_summary, confidence_score, source_type, " +
+  "collaborator_link_id, created_at, updated_at";
+
 export function useDocuments(transactionId: string | null) {
   return useQuery({
     queryKey: documentKeys.list(transactionId ?? ""),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("documents")
-        .select("*")
+        .select(DOCUMENT_LIST_COLUMNS)
         .eq("deal_id", transactionId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as Document[];
+      return data as unknown as Document[];
     },
     enabled: !!transactionId,
   });
