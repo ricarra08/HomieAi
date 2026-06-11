@@ -4,6 +4,10 @@
 
 ## Last Updated: April 14, 2026
 
+> **Note (June 2026):** This is the full end-to-end suite. For a targeted regression pass over
+> the recent cycle's changes (PII redaction, agent invite links, Resend email, valuation/market
+> cards, the security hardening pass, privacy page), use `regression-test-sheet-2026-06.md`.
+
 ---
 
 This document defines **7 end-to-end workflows** that exercise every major feature in HomieAi. The workflows are designed as realistic user journeys that cut across phases and feature areas, maximizing coverage with minimal redundancy. A single tester should complete all 7 workflows in 2-3 hours.
