@@ -15,6 +15,7 @@ import {
   copilotKeys,
 } from "./query-keys";
 import { DOCUMENT_LIST_COLUMNS } from "./queries";
+import { generateInviteSlug } from "@/lib/invites";
 import type { Document, Phase, UserRole } from "@/lib/types";
 
 const supabase = createClient();
@@ -25,18 +26,52 @@ const supabase = createClient();
 export function useCreateProfile(userId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (params: { displayName: string; role: UserRole }) => {
+    mutationFn: async (params: {
+      displayName: string;
+      role: UserRole;
+      /** Resolved server-side from an invite slug (/api/join/resolve); buyers only. */
+      referredByAgentId?: string | null;
+    }) => {
       const { data, error } = await supabase
         .from("profiles")
         .insert({
           user_id: userId,
           display_name: params.displayName,
           role: params.role,
+          referred_by_agent_id:
+            params.role === "buyer" ? params.referredByAgentId ?? null : null,
         })
         .select()
         .single();
       if (error) throw error;
       return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: profileKeys.detail(userId) });
+    },
+  });
+}
+
+/**
+ * Agent invite link: generate-and-claim a unique invite_slug for the agent's own profile.
+ * Retries once on a unique-index collision with a fresh random suffix.
+ */
+export function useCreateInviteSlug(userId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (displayName: string) => {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const slug = generateInviteSlug(displayName);
+        const { data, error } = await supabase
+          .from("profiles")
+          .update({ invite_slug: slug })
+          .eq("user_id", userId)
+          .select("invite_slug")
+          .single();
+        if (!error) return data.invite_slug as string;
+        if (error.code !== "23505") throw error; // not a uniqueness collision
+      }
+      throw new Error("Could not generate a unique invite link. Please try again.");
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: profileKeys.detail(userId) });
@@ -132,10 +167,30 @@ export function useCreateTransaction(userId: string) {
       property_in_special_district?: boolean;
       special_district_annual_cost?: number;
     }) => {
+      // Agent referral stamping: a buyer who signed up via an agent's /join link has
+      // referred_by_agent_id on their profile — stamp it onto the transaction so the
+      // agent gains visibility under the existing agent RLS policies. Explicit
+      // agent_id (the agent-creates-client flow) always wins; failures are non-fatal.
+      // Note: referred_by_agent_id is buyer-controlled (own-row RLS), but it only ever
+      // widens access to the buyer's OWN transaction, so trusting it here is safe —
+      // the resolve route's role='agent' filter is the honest-path guard, not a boundary.
+      let agentId = transaction.agent_id;
+      if (!agentId) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role, referred_by_agent_id")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (profile?.role === "buyer" && profile.referred_by_agent_id) {
+          agentId = profile.referred_by_agent_id;
+        }
+      }
+
       const { data, error } = await supabase
         .from("transactions")
         .insert({
           ...transaction,
+          agent_id: agentId,
           user_id: userId,
           current_phase: transaction.current_phase ?? "offer",
         })

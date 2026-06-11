@@ -4,26 +4,60 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Home, Briefcase, ArrowRight, Loader2 } from "lucide-react";
 import { useCreateProfile } from "@/lib/hooks/mutations";
+import { AGENT_REF_STORAGE_KEY } from "@/lib/invites";
 import type { UserRole } from "@/lib/types";
 
 interface RoleOnboardingProps {
   userId: string;
 }
 
+/**
+ * Resolve a stored agent invite slug (set by /signup?ref=) into the agent's user id.
+ * Non-fatal by design: a stale or invalid ref never blocks onboarding.
+ */
+async function resolveAgentReferral(role: UserRole): Promise<string | null> {
+  const slug = localStorage.getItem(AGENT_REF_STORAGE_KEY);
+  if (!slug) return null;
+  localStorage.removeItem(AGENT_REF_STORAGE_KEY);
+  if (role !== "buyer") return null;
+  try {
+    const res = await fetch("/api/join/resolve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug }),
+    });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { agentId?: string };
+    return body.agentId ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function RoleOnboarding({ userId }: RoleOnboardingProps) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  // Covers the async referral round-trip before createProfile.isPending flips — without
+  // it a second click would re-enter handleSubmit, having already consumed the stored
+  // referral slug, and attempt a duplicate profile insert.
+  const [submitting, setSubmitting] = useState(false);
   const createProfile = useCreateProfile(userId);
 
-  function handleSubmit() {
-    if (!displayName.trim() || !selectedRole) return;
+  async function handleSubmit() {
+    if (!displayName.trim() || !selectedRole || submitting) return;
+    setSubmitting(true);
+
+    const referredByAgentId = await resolveAgentReferral(selectedRole);
 
     createProfile.mutate(
-      { displayName: displayName.trim(), role: selectedRole },
+      { displayName: displayName.trim(), role: selectedRole, referredByAgentId },
       {
         onSuccess: () => {
           router.push("/dashboard");
+        },
+        onError: () => {
+          setSubmitting(false);
         },
       }
     );
@@ -103,11 +137,11 @@ export function RoleOnboarding({ userId }: RoleOnboardingProps) {
       <button
         onClick={handleSubmit}
         disabled={
-          !displayName.trim() || !selectedRole || createProfile.isPending
+          !displayName.trim() || !selectedRole || submitting || createProfile.isPending
         }
         className="w-full bg-accent text-accent-foreground shadow-sm rounded-lg px-5 py-3 text-base font-medium hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
-        {createProfile.isPending ? (
+        {submitting || createProfile.isPending ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
             Setting up...

@@ -1,11 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AGENT_REF_STORAGE_KEY, isValidInviteSlug } from "@/lib/invites";
+
+// Agent invite referral (/join/<slug> → /signup?ref=<slug>): the URL/localStorage pair
+// is external state — read it with useSyncExternalStore (server snapshot: false, so
+// hydration stays consistent); the effect below only WRITES to localStorage so the
+// slug survives the email-confirmation roundtrip until onboarding resolves it.
+const subscribeNoop = () => () => {};
+function readInvitedSnapshot(): boolean {
+  const ref = new URLSearchParams(window.location.search).get("ref");
+  if (ref && isValidInviteSlug(ref)) return true;
+  return !!localStorage.getItem(AGENT_REF_STORAGE_KEY);
+}
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -13,7 +25,15 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const invited = useSyncExternalStore(subscribeNoop, readInvitedSnapshot, () => false);
   const supabase = createClient();
+
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get("ref");
+    if (ref && isValidInviteSlug(ref)) {
+      localStorage.setItem(AGENT_REF_STORAGE_KEY, ref);
+    }
+  }, []);
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
@@ -69,6 +89,12 @@ export default function SignupPage() {
           <p className="text-muted-foreground mt-2">
             Create your homebuying workspace
           </p>
+          {invited && (
+            <p className="text-sm text-accent mt-2">
+              You were invited by your agent — your workspace will be connected
+              after setup.
+            </p>
+          )}
         </div>
 
         <form

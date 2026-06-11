@@ -8,6 +8,10 @@ export interface Profile {
   role: UserRole;
   display_name: string;
   seen_phase_guides: Phase[];
+  /** Agent-only: public URL handle for /join/<slug> invite links (migration 017). */
+  invite_slug?: string | null;
+  /** Buyer-only: agent who invited this buyer via /join link (migration 017). */
+  referred_by_agent_id?: string | null;
   created_at: string;
   updated_at: string;
 }
