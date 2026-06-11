@@ -300,7 +300,7 @@ export function useHomeValuation(savedHomeId: string | null) {
       });
       if (!res.ok) {
         const retryAfter = res.headers.get("Retry-After");
-        let message = `Projection failed (${res.status})`;
+        let message = `Couldn't generate scenarios (${res.status})`;
         try {
           const body = await res.json();
           if (body?.error) message = body.error;

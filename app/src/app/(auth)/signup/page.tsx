@@ -147,7 +147,7 @@ export default function SignupPage() {
         </form>
 
         <p className="text-xs text-center text-muted-foreground">
-          🔒 Your data is encrypted and secure
+          🔒 Your data is encrypted in transit and at rest
         </p>
       </div>
     </div>

@@ -94,9 +94,9 @@ export function MarketSnapshotCard({ transactionId }: Props) {
             data={market.data ?? null}
           />
 
-          <p className="text-xs text-muted-foreground border-t border-border pt-3">
-            Market figures are statistical estimates from third-party data; verify with your agent
-            before acting.
+          <p className="text-sm text-muted-foreground border-t border-border pt-3">
+            Market figures are automated estimates from third-party market data — not an
+            appraisal or advice. Verify with your agent before acting on them.
           </p>
         </div>
       )}
@@ -132,7 +132,7 @@ function MarketBody({ isLoading, error, data }: BodyProps) {
       return (
         <ErrorBlock
           title="Hourly limit reached"
-          body={`Hit the shared market+projection limit. Try again in about ${minutes} minutes.`}
+          body={`You've hit the hourly limit for market data and value scenarios. Try again in about ${minutes} minutes.`}
         />
       );
     }

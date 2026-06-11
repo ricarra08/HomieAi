@@ -140,7 +140,7 @@ const SNAPSHOT_JSON_SCHEMA = `{
     "completeness_score": number_0_to_1,
     "notes": string
   },
-  "explanation": "2-3 sentences in plain English describing what most drives this home's projected value. Mention macro headwinds/tailwinds, neighborhood regime if notable, and any large data gaps."
+  "explanation": "2-3 sentences in plain English describing what most drives this home's current estimated value. Mention macro headwinds/tailwinds, neighborhood regime if notable, and any large data gaps. Strictly descriptive: do not predict or promise future values, avoid the word 'will', and never recommend buying, offering, or any course of action."
 }`;
 
 function buildPrompt(address: string, savedHome: SavedHomeInput): string {

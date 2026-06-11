@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
     if (err instanceof RateLimitExceededError) {
       return json(
         429,
-        { error: "rate_limited", message: "Hourly projection limit reached. Try again later." },
+        { error: "rate_limited", message: "Hourly scenario limit reached. Try again later." },
         { "Retry-After": String(err.retryAfterSeconds) },
       );
     }

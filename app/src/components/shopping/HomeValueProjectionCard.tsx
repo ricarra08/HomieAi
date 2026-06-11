@@ -43,10 +43,10 @@ export function HomeValueProjectionCard({ transactionId }: Props) {
     : "5/10/15-year scenarios for a saved home";
 
   return (
-    <CollapsibleCard title="Home Value Projection" subtitle={subtitle}>
+    <CollapsibleCard title="Home Value Scenarios" subtitle={subtitle}>
       {!homes || homes.length === 0 ? (
         <p className="text-sm text-muted-foreground py-4">
-          Save a home first to see a projected value.
+          Save a home first to explore value scenarios.
         </p>
       ) : (
         <div className="space-y-5">
@@ -76,10 +76,13 @@ export function HomeValueProjectionCard({ transactionId }: Props) {
             data={projection.data ?? null}
           />
 
-          <p className="text-xs text-muted-foreground border-t border-border pt-3">
-            Projections are statistical estimates based on the home, its location, current market
-            conditions, and neighborhood signals. Actual outcomes vary; treat these as a planning
-            tool, not financial advice.
+          <p className="text-sm text-muted-foreground border-t border-border pt-3">
+            These scenarios are automated estimates modeled from market data —{" "}
+            <strong className="font-medium text-foreground">not an appraisal</strong>, not a
+            guarantee or forecast of what this home will be worth, and not advice on what to
+            offer or pay. Ranges show the middle 50% of 2,000 simulated paths, and confidence is
+            capped at 75/100 until the model has been validated against real outcomes. For an
+            opinion of this home&apos;s value, talk to your agent or a licensed appraiser.
           </p>
         </div>
       )}
@@ -113,21 +116,21 @@ function ProjectionBody({ isLoading, error, data }: BodyProps) {
       return (
         <ErrorBlock
           title="Hourly limit reached"
-          body={`You've hit the projection limit. Try again in about ${minutes} minutes.`}
+          body={`You've hit the scenario limit. Try again in about ${minutes} minutes.`}
         />
       );
     }
     if (error.status === 503) {
       return (
         <ErrorBlock
-          title="Projections temporarily unavailable"
+          title="Scenarios temporarily unavailable"
           body="Our data source didn't return a usable response. Please try again shortly."
         />
       );
     }
     return (
       <ErrorBlock
-        title="Couldn't generate a projection"
+        title="Couldn't generate scenarios"
         body={error.message || "An unexpected error occurred. Please try again."}
       />
     );
@@ -135,7 +138,7 @@ function ProjectionBody({ isLoading, error, data }: BodyProps) {
 
   if (!data) {
     return (
-      <p className="text-sm text-muted-foreground py-4">Pick a home above to see a projection.</p>
+      <p className="text-sm text-muted-foreground py-4">Pick a home above to see scenarios.</p>
     );
   }
 
@@ -147,7 +150,7 @@ function ProjectionBody({ isLoading, error, data }: BodyProps) {
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <span className="text-sm text-muted-foreground">Current fair value</span>
+          <span className="text-sm text-muted-foreground">Estimated value today</span>
           <div className="text-2xl font-semibold text-foreground">
             ${Math.round(data.currentValue.fairValue).toLocaleString()}
           </div>

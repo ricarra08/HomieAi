@@ -15,7 +15,9 @@ import { NEIGHBORHOOD_VERSION } from "./layers/neighborhood-coeffs";
 
 export const MODEL_VERSION = `v1.2-${STRUCTURAL_COEFFS_VERSION}-${NEIGHBORHOOD_VERSION}`;
 
-const PATHS = 2000;
+// Disclosed to users in HomeValueProjectionCard and compliance brief §2.4 ("2,000 simulated
+// paths") — update that copy together with this constant.
+export const PATHS = 2000;
 const HORIZON_MONTHS = 180; // 15 years
 const SERIES_CHECKPOINTS = [0, 3, 6, 12, 24, 36, 60, 84, 108, 132, 156, 180];
 

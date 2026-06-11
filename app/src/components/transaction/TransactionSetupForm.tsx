@@ -358,7 +358,7 @@ export function TransactionSetupForm({
       </form>
 
       <p className="text-sm text-muted-foreground text-center mt-6">
-        🔒 Your data is encrypted and secure
+        🔒 Your data is encrypted in transit and at rest
       </p>
     </div>
   );

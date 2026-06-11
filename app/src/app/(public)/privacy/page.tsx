@@ -119,18 +119,25 @@ export default function PrivacyPage() {
             </P>
           </Section>
 
-          <Section n="4" title="AI Processing of Your Documents">
+          <Section n="4" title="AI Processing of Your Documents and Saved Homes">
             <P>
               The Service uses third-party artificial intelligence services
               (currently OpenAI&rsquo;s API) to classify documents, extract key
-              fields, generate plain-language summaries, and answer your questions.
-              The following commitments apply regardless of any provider&rsquo;s own
-              policies:
+              fields, generate plain-language summaries, answer your questions,
+              and retrieve market statistics for homes you save. The following
+              commitments apply regardless of any provider&rsquo;s own policies:
             </P>
             <UL>
               <li>
                 Document content is transmitted solely to generate the analysis you
                 requested
+              </li>
+              <li>
+                If you use the market snapshot or home value scenarios features,
+                the street address of a home you saved (and basic listing facts
+                such as price, beds, and baths) is transmitted to the AI provider
+                to retrieve market statistics for that area. This information is
+                used only to generate those displays
               </li>
               <li>
                 Before document text is transmitted for AI processing, we apply

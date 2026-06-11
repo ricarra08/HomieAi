@@ -129,7 +129,7 @@ export function LEComparisonTable({ estimates, transactionId }: LEComparisonTabl
 
   function handleAskHomie() {
     const names = estimates.map((le) => le.lender).join(", ");
-    const msg = `Compare my ${estimates.length} loan estimates (${names}) and tell me which is the best deal overall.`;
+    const msg = `Walk me through the differences between my ${estimates.length} loan estimates (${names}).`;
     (window as unknown as Record<string, string>).__pendingCopilotPrefill = msg;
     setCopilotOpen(true);
     setTimeout(() => {
@@ -172,7 +172,12 @@ export function LEComparisonTable({ estimates, transactionId }: LEComparisonTabl
                     <p className="text-sm text-muted-foreground">{le.product}</p>
                     {i === bestIdx && (
                       <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-primary/20 px-2 py-0.5 rounded-full">
-                        <Check className="w-3 h-3" /> Best Value
+                        <Check className="w-3 h-3" />{" "}
+                        {mode === "monthly"
+                          ? "Lowest monthly payment"
+                          : mode === "cash"
+                            ? "Lowest cash to close"
+                            : "Lowest total cost"}
                       </span>
                     )}
                     {!le.is_chosen && (

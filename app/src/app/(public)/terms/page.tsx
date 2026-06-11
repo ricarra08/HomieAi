@@ -60,11 +60,11 @@ export default function TermsPage() {
           <Section n="2" title="Description of Service">
             <P>
               Phazr is a consumer information technology platform that
-              provides document summarization, transaction organization, and
-              deadline tracking functionality to residential homebuyers. The
-              Service utilizes artificial intelligence to parse user-uploaded
-              documents and generate plain-language restatements of their
-              contents.
+              provides document summarization, transaction organization,
+              deadline tracking, and general market information functionality
+              to residential homebuyers. The Service utilizes artificial
+              intelligence to parse user-uploaded documents and generate
+              plain-language restatements of their contents.
             </P>
             <SubSection title="2.1 The Service Includes:">
               <UL>
@@ -91,6 +91,13 @@ export default function TermsPage() {
                   Secure document upload links for third-party transaction
                   professionals
                 </li>
+                <li>
+                  Display of clearly-disclaimed, automated market statistics
+                  and home value estimates with scenario ranges, provided as
+                  general information only — these are not appraisals, not
+                  forecasts or guarantees of any property&rsquo;s value, and
+                  not advice on any transaction decision
+                </li>
               </UL>
             </SubSection>
             <SubSection title="2.2 The Service Does Not Include:">
@@ -99,7 +106,12 @@ export default function TermsPage() {
                   Legal, financial, tax, investment, or real estate advice of any
                   kind
                 </li>
-                <li>Property valuations, market analyses, or appraisals</li>
+                <li>
+                  Appraisals, broker price opinions, comparative market
+                  analyses, or individualized advice regarding the value of any
+                  property (automated, clearly-disclaimed value estimates are
+                  displayed as general information only, per Section 2.1)
+                </li>
                 <li>
                   Mortgage origination, processing, underwriting, or brokerage
                 </li>
@@ -274,8 +286,8 @@ export default function TermsPage() {
             <SubSection title="6.1 Our Property">
               <P>
                 The Service, including its design, code, AI models, extraction
-                schemas, user interface, and documentation, is owned by HomeBuyer
-                Pro, Inc. and is protected by copyright, trademark, and other
+                schemas, user interface, and documentation, is owned by Phazr,
+                Inc. and is protected by copyright, trademark, and other
                 intellectual property laws. These Terms do not grant you any
                 right, title, or interest in the Service except for the limited
                 right to use it in accordance with these Terms.

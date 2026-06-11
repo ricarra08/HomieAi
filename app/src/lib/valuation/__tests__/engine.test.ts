@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { projectHome } from "../engine";
+import { projectHome, PATHS } from "../engine";
 import type { PropertySnapshot } from "../data-provider/types";
 
 function makeStubSnapshot(overrides: Partial<PropertySnapshot> = {}): PropertySnapshot {
@@ -161,5 +161,25 @@ describe("projectHome", () => {
         }),
       }),
     ).toThrow();
+  });
+});
+
+// The in-card disclosure (HomeValueProjectionCard) and compliance brief §2.4 publicly state
+// that ranges show "the middle 50% of 2,000 simulated paths". These pins keep that legal
+// disclosure true if the engine is ever tuned — update the consumer copy and brief together
+// with any change here.
+describe("publicly disclosed model facts", () => {
+  it("runs 2,000 simulated paths", () => {
+    expect(PATHS).toBe(2000);
+  });
+
+  it("conservative/optimistic are the middle-50% band (p25/p75)", () => {
+    const result = projectHome({ ...baseInput, snapshot: makeStubSnapshot() });
+    expect(result.series.length).toBeGreaterThan(0);
+    for (const point of result.series) {
+      const [lo, hi] = point.range50 ?? [NaN, NaN];
+      expect(point.conservative).toBe(lo);
+      expect(point.optimistic).toBe(hi);
+    }
   });
 });

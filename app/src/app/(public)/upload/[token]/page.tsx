@@ -143,7 +143,7 @@ export default function CollaboratorUploadPage() {
         )}
 
         <p className="text-xs text-center text-muted-foreground">
-          Powered by Phazr &middot; Files are encrypted and secure
+          Powered by Phazr &middot; Files are encrypted in transit and at rest
         </p>
       </div>
     </div>

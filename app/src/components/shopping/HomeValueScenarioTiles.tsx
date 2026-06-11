@@ -33,8 +33,9 @@ export function HomeValueScenarioTiles({ projection }: Props) {
             <span className="text-2xl font-semibold text-foreground mt-1">
               {formatPrice(point.moderate)}
             </span>
-            <span className="text-sm text-muted-foreground mt-1">
-              {formatPrice(point.conservative)} – {formatPrice(point.optimistic)}
+            <span className="text-sm text-muted-foreground mt-1">Moderate scenario</span>
+            <span className="text-sm text-muted-foreground">
+              Range: {formatPrice(point.conservative)} – {formatPrice(point.optimistic)}
             </span>
           </div>
         );
