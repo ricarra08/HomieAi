@@ -13,9 +13,15 @@ Transmission). Update whenever the AI provider, agreement, or data-control setti
 
 ## Data Processing Addendum (DPA)
 
+- **Status: DEFERRED (decision 2026-06-11)** — the OpenAI platform account is currently a
+  personal account, and the self-serve DPA requires a business account. Revisit after beta.
+  Note: this only requires an organization account with business details (free), not a paid
+  tier. Recommended latest trigger: before brokerage due diligence; ideally before real
+  buyer documents flow at scale. Interim mitigations in force: automated PII redaction
+  before transmission (commit `15aa85a`) + org data-sharing controls verified disabled.
 - **Executed via:** https://openai.com/policies/data-processing-addendum/ (self-serve form;
   countersigned PDF returned by email)
-- **Date executed:** _[fill in]_
+- **Date executed:** _[fill in when executed]_
 - **Signatory:** _[name, title]_
 - **Legal entity:** _[fill in]_
 - **Countersigned PDF stored at:** _[fill in — keep a copy outside the repo]_
