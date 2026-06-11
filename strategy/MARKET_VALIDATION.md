@@ -1,4 +1,4 @@
-# HomeBuyer Pro — Market Validation & Competitive Landscape
+# Phazr — Market Validation & Competitive Landscape
 ## Version 1.0 — April 2026
 ## Internal strategy document — Confidential
 
@@ -56,10 +56,10 @@ No product owns this job. The buyer's side of the deal is still managed via PDFs
 
 ### 1.5 Regulatory Context
 
-- **TRID (TILA-RESPA Integrated Disclosures):** Mandates standardized Loan Estimate and Closing Disclosure forms. These are structured documents with defined fields — perfect for AI extraction and comparison. TRID also defines tolerance rules (zero-tolerance, 10% cumulative tolerance, unlimited tolerance categories) that HomeBuyer Pro's LE vs CD variance detection enforces.
+- **TRID (TILA-RESPA Integrated Disclosures):** Mandates standardized Loan Estimate and Closing Disclosure forms. These are structured documents with defined fields — perfect for AI extraction and comparison. TRID also defines tolerance rules (zero-tolerance, 10% cumulative tolerance, unlimited tolerance categories) that Phazr's LE vs CD variance detection enforces.
 - **CFPB enforcement:** Ongoing push for borrower transparency and timely disclosures. Tools that help buyers understand their documents align with CFPB's consumer protection mission.
 - **State-level escrow timeline requirements:** California, Florida, and other states have specific escrow holder duties and timelines that create compliance complexity software can simplify.
-- **FL post-Surfside regulations:** SIRS (Structural Integrity Reserve Study) and milestone inspection requirements for buildings 3+ stories and 30+ years old. Buildings that fail or haven't completed these inspections are unlendable. This is a deal-killer that HomeBuyer Pro can surface early.
+- **FL post-Surfside regulations:** SIRS (Structural Integrity Reserve Study) and milestone inspection requirements for buildings 3+ stories and 30+ years old. Buildings that fail or haven't completed these inspections are unlendable. This is a deal-killer that Phazr can surface early.
 
 ---
 
@@ -67,7 +67,7 @@ No product owns this job. The buyer's side of the deal is still managed via PDFs
 
 ### 2.1 Direct Competitors
 
-| Competitor | What They Do | Overlap with HomeBuyer Pro | Critical Gap |
+| Competitor | What They Do | Overlap with Phazr | Critical Gap |
 |------------|-------------|---------------------------|--------------|
 | **Qualia Connect** | Consumer portal offered through title/escrow companies (B2B2C). Real-time closing updates, secure doc sharing, e-signing. Added AI email responses Aug 2025. | ~40% — Closest competitor. Tracks closing progress, secure messaging. | No LE/CD variance detection, no document intelligence/classification, no cash-to-close engine, no AI copilot grounded in deal data, no shopping/offer phases. Distribution locked to title companies. |
 | **Preclose** | Contract-to-close communication tool with buyer-facing mobile app. Doc uploads, checklist workflows. Founded by former BoomTown exec. | ~30% — Similar in spirit. Checklists, doc upload, milestone tracking. | Appears stalled/small. No AI. No document intelligence. No financial analysis. |
@@ -84,7 +84,7 @@ No product owns this job. The buyer's side of the deal is still managed via PDFs
 | **Shaker** | Modern transaction management for agents. Clean UI, milestone tracking, task management. | ~15% | Better design than Dotloop/SkySlope, but still agent-first. Buyer view is limited. |
 | **Nekst / Trackxi** | Lightweight transaction checklists for agents. | <10% | No buyer-facing product. No AI. No document intelligence. |
 | **HomeBot** | Post-close engagement platform for loan officers/agents. Monthly wealth-building digests for homeowners. | ~5% | Different problem (post-close retention, not transaction management). Has buyer features but nothing for escrow/closing. |
-| **CertifID / Closinglock** | Wire fraud prevention and secure closing payments. CertifID expanding into closing management with AI-powered payoff ordering. Closinglock has protected $500B+ in transactions. | ~15% (wire fraud slice only) | Solves one slice of HomeBuyer Pro's value prop. Not a comprehension layer. Potential integration partner. |
+| **CertifID / Closinglock** | Wire fraud prevention and secure closing payments. CertifID expanding into closing management with AI-powered payoff ordering. Closinglock has protected $500B+ in transactions. | ~15% (wire fraud slice only) | Solves one slice of Phazr's value prop. Not a comprehension layer. Potential integration partner. |
 
 ### 2.3 Non-Competitors Often Confused With This Space
 
@@ -97,7 +97,7 @@ No product owns this job. The buyer's side of the deal is still managed via PDFs
 
 ### 2.4 Gap Analysis — What No One Does
 
-| Capability | HomeBuyer Pro | Qualia Connect | Preclose | Jointly | Everyone Else |
+| Capability | Phazr | Qualia Connect | Preclose | Jointly | Everyone Else |
 |-----------|:---:|:---:|:---:|:---:|:---:|
 | LE vs CD variance detection | Yes | No | No | No | No |
 | AI document classification + extraction | Yes | No | No | No | No |
@@ -110,7 +110,7 @@ No product owns this job. The buyer's side of the deal is still managed via PDFs
 | Wire fraud prevention flow | Yes | No | No | No | CertifID/Closinglock only |
 | Buyer can use without agent/brokerage adoption | Yes | No (title company distributes) | Partial | No (agent-driven) | N/A |
 
-**The whitespace is enormous.** No consumer product does document intelligence, LE/CD variance detection, progressive cash-to-close estimation, or deal-grounded AI copilot. These are HomeBuyer Pro's core differentiators and they have zero competition today.
+**The whitespace is enormous.** No consumer product does document intelligence, LE/CD variance detection, progressive cash-to-close estimation, or deal-grounded AI copilot. These are Phazr's core differentiators and they have zero competition today.
 
 ### 2.5 Moat Assessment
 

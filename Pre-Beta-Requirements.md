@@ -1,4 +1,4 @@
-# HomeBuyer Pro — Pre-Beta Requirements
+# Phazr — Pre-Beta Requirements
 
 ## Why This Document Exists
 
@@ -72,7 +72,7 @@ These features touch financial data, professional-facing surfaces, or first impr
 
 **What it does:** Public, ungated page. Upload any PDF, get instant AI classification + explanation. No signup.
 
-**Why it's Tier 1:** This is likely the first time a buyer or agent encounters HomeBuyer Pro. The simulation showed privacy and accuracy are the top two objections. If the first experience is a broken upload, a wrong classification, or a confusing error — they leave and never come back. There is no second first impression.
+**Why it's Tier 1:** This is likely the first time a buyer or agent encounters Phazr. The simulation showed privacy and accuracy are the top two objections. If the first experience is a broken upload, a wrong classification, or a confusing error — they leave and never come back. There is no second first impression.
 
 **What to test:**
 - [ ] Upload without being logged in — verify no auth redirect, no error
@@ -110,7 +110,7 @@ These features touch financial data, professional-facing surfaces, or first impr
 - [ ] Visit a revoked link — verify clear message
 - [ ] Upload 10 files rapidly — verify rate limit message is clear
 - [ ] Upload from mobile — lenders often forward links to their phone
-- [ ] Verify "Powered by HomeBuyer Pro" branding is visible and links somewhere useful
+- [ ] Verify "Powered by Phazr" branding is visible and links somewhere useful
 - [ ] Verify the upload confirmation message is professional (this is a lender/title officer seeing it)
 
 **Key files:**

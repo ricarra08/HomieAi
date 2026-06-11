@@ -1,4 +1,4 @@
-# HomeBuyer Pro — Product Improvements Roadmap
+# Phazr — Product Improvements Roadmap
 ## Version 1.0 — April 2026
 ## Consolidated from: Realtor interviews, demo feedback, expert analysis, and internal planning
 ## Internal strategy document — Confidential

@@ -75,7 +75,7 @@ To start clean:
   - [x] Login page loads with same styling as signup
   - [x] Enter credentials and click **Sign In**
   - [x] Redirected to `/dashboard`
-  - [x] Sidebar shows "HomeBuyer Pro" wordmark with 3 nav items: Dashboard, Documents, Financing
+  - [x] Sidebar shows "Phazr" wordmark with 3 nav items: Dashboard, Documents, Financing
 5. Open a new tab, navigate to `/dashboard`
   - [x] Session persists -- user is still logged in (no redirect to `/login`)
 6. Navigate to `/login` while logged in
@@ -752,7 +752,7 @@ Test each "Ask Homie" button. For each, first **close the copilot**, then click 
   - Documents page loads, sidebar highlights "Documents"
 3. Click **Financing** in sidebar
   - Financing page loads, sidebar highlights "Financing"
-4. Verify sidebar is **256px** wide and shows "HomeBuyer Pro" wordmark
+4. Verify sidebar is **256px** wide and shows "Phazr" wordmark
   - Wordmark visible at top of sidebar
 
 ### Progress Stepper Accuracy

@@ -1,12 +1,12 @@
 ---
 name: Build Plan + AI Contract
-overview: "Broad Surface, Narrow Core build plan for HomeBuyer Pro v1. 10-12 weeks, solo dev + AI assistants. Shopping and Offer built light as acquisition surfaces. Escrow, Closing, Documents, Financing, and AI Copilot built deep. Post-Close as thin continuity. Includes complete AI/data extraction contract with tiered document types. Built on Next.js (App Router) + Supabase + OpenAI."
+overview: "Broad Surface, Narrow Core build plan for Phazr v1. 10-12 weeks, solo dev + AI assistants. Shopping and Offer built light as acquisition surfaces. Escrow, Closing, Documents, Financing, and AI Copilot built deep. Post-Close as thin continuity. Includes complete AI/data extraction contract with tiered document types. Built on Next.js (App Router) + Supabase + OpenAI."
 todos: []
 isProject: false
 ---
 
 
-# HomeBuyer Pro v1 — Build Plan + AI Extraction Contract
+# Phazr v1 — Build Plan + AI Extraction Contract
 ## Aligned to MVP Scope Overlay v2.0 — Broad Surface, Narrow Core
 
 ---
@@ -115,7 +115,7 @@ graph TB
 - App layout: sidebar (256px) + main content + floating AICopilot button
 - Progress stepper (`ProgressStepper`) — 69px, fixed top, 5-phase, Mint for completed/current, Gray for future
 - **Sidebar navigation: 3 items** (confirmed from Figma) — Dashboard, Documents, Financing
-  - "HomeBuyer Pro" wordmark above nav
+  - "Phazr" wordmark above nav
   - Phase-contextual CTA button at sidebar bottom
 - Global footer (`GlobalFooter`) — 52px, fixed bottom, disclaimer text
 - **AICopilot**: Two states. Collapsed = 56x56 Bronze floating button, fixed bottom-right. Expanded = right-side panel (~300px), chat UI with message history, input field, send button (Mint), quick-action chips ("Explain this document", "Calculate closing costs", "Market analysis"). Default collapsed.
@@ -416,7 +416,7 @@ copilot_messages (id, deal_id, role, content, citations, phase,
 - Equity Tracking — "Monitor your home's value and equity growth over time" + "Coming Soon"
 - Homeowner Tools — "Maintenance tracking, warranty management, and more" + "Coming Soon"
 
-**Closing message:** "Thank you for using HomeBuyer Pro" + "We hope we helped make your homebuying journey clearer and less stressful."
+**Closing message:** "Thank you for using Phazr" + "We hope we helped make your homebuying journey clearer and less stressful."
 
 ### 5.4 Phase Transitions (Week 8)
 - Shopping → Offer: "Ready to make an offer?" with home pre-population

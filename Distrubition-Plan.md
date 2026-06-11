@@ -1,4 +1,4 @@
-# HomeBuyer Pro — Distribution Playbook
+# Phazr — Distribution Playbook
 
 ## Table of Contents
 
@@ -28,7 +28,7 @@
 
 ## 1. Context
 
-HomeBuyer Pro is a fully-built MVP (Phases 0-5) with zero distribution infrastructure. No landing page, no analytics, no email service, no referral loops, no SEO. The product is strong — document intelligence, LE/CD variance detection, AI copilot, wire fraud prevention — but invisible. The founder is solo, FL-based, has a realtor friend (8 years experience) who's been begging for this, an advisor who built PadX, and a May launch deadline. Other income covers runway. Goal: organic, delegatable growth.
+Phazr is a fully-built MVP (Phases 0-5) with zero distribution infrastructure. No landing page, no analytics, no email service, no referral loops, no SEO. The product is strong — document intelligence, LE/CD variance detection, AI copilot, wire fraud prevention — but invisible. The founder is solo, FL-based, has a realtor friend (8 years experience) who's been begging for this, an advisor who built PadX, and a May launch deadline. Other income covers runway. Goal: organic, delegatable growth.
 
 **The problem isn't product. It's visibility.**
 
@@ -49,7 +49,7 @@ Most startups bet on one channel and pray. We're running three concurrently beca
 
 Agents are the recurring distribution engine. One agent does 10-30 transactions/year. One happy agent = 10-30 buyers/year, every year, for free. Your realtor friend isn't just your first user — she's your first distribution channel. If she loves it, she tells her brokerage. If her brokerage loves it, 20-50 agents start sending buyers. That's 200-1,500 buyers/year from a single brokerage relationship.
 
-**The viral mechanic already exists** — collaborator upload links. Every time a buyer sends an upload link to their agent, lender, or escrow officer, those professionals see HomeBuyer Pro. But right now it's buried and manual. We need to make it effortless and visible.
+**The viral mechanic already exists** — collaborator upload links. Every time a buyer sends an upload link to their agent, lender, or escrow officer, those professionals see Phazr. But right now it's buried and manual. We need to make it effortless and visible.
 
 **The flywheel:**
 ```
@@ -103,7 +103,7 @@ Buyer Googles "what does my loan estimate mean"
   → Agent sees the product → Flywheel A activates
 ```
 
-**Key insight:** This wedge feeds Strategy A. Every buyer who discovers HomeBuyer Pro through the free tool and then shares a collaborator link with their agent creates an entry point for agent-led distribution.
+**Key insight:** This wedge feeds Strategy A. Every buyer who discovers Phazr through the free tool and then shares a collaborator link with their agent creates an entry point for agent-led distribution.
 
 ---
 
@@ -149,7 +149,7 @@ Go where anxious homebuyers already are:
 
 **Community rules:**
 - NEVER spam. Provide genuine value first. Answer questions. Share knowledge.
-- Only mention HomeBuyer Pro when it's genuinely relevant ("I use this tool with my buyers to explain their LE")
+- Only mention Phazr when it's genuinely relevant ("I use this tool with my buyers to explain their LE")
 - Build reputation over 2-4 weeks before any product mentions
 - Let the community discover the product through your helpfulness
 
@@ -217,7 +217,7 @@ Here's why. The broker doesn't need to ban anything. A single offhand comment �
 
 1. **Neutralize Agent Zero.** She keeps using the product personally but stops recommending it to colleagues. The flywheel's engine goes silent.
 2. **Freeze the brokerage.** Other agents sense leadership's stance and avoid adoption. A few independents still try it, but the 10-15 organic sign-ups collapse to 2-3.
-3. **Poison the broader network.** The broker's skepticism leaks into Facebook groups, board meetings, and hallway conversations. It shapes the narrative about HomeBuyer Pro across the local agent community — not just inside one brokerage.
+3. **Poison the broader network.** The broker's skepticism leaks into Facebook groups, board meetings, and hallway conversations. It shapes the narrative about Phazr across the local agent community — not just inside one brokerage.
 
 This is the **single biggest external veto point** the distribution plan must account for. It applies to any brokerage, not just Agent Zero's.
 
@@ -283,7 +283,7 @@ The root page currently redirects to `/login`. Nobody knows what this product is
 
 **Messaging:**
 - **Headline:** "Finally understand your home purchase."
-- **Subhead:** "HomeBuyer Pro organizes your escrow, explains your documents, tracks your deadlines, and catches costly mistakes — so you close with confidence."
+- **Subhead:** "Phazr organizes your escrow, explains your documents, tracks your deadlines, and catches costly mistakes — so you close with confidence."
 - **Agent hook:** "Send this to your buyers. They'll stop calling you at 10pm."
 
 ### 0.2 — OG Tags & Social Preview (CRITICAL)
@@ -292,7 +292,7 @@ When your realtor friend texts the link to a buyer, it needs to look professiona
 
 - OpenGraph image (1200x630), title, description
 - Twitter Card meta tags
-- Simple OG image (wheat/bronze brand colors, "HomeBuyer Pro" + tagline)
+- Simple OG image (wheat/bronze brand colors, "Phazr" + tagline)
 
 **Key file:** `app/src/app/layout.tsx`
 
@@ -302,7 +302,7 @@ Your realtor friend needs to text a link to her buyer that says: "Use this for o
 
 **Build:**
 - Agent signs up, creates profile (name, brokerage, photo)
-- Agent gets personal referral URL: `homebuyerpro.com/join/[agent-slug]`
+- Agent gets personal referral URL: `phazr.co/join/[agent-slug]`
 - Buyer lands on: "[Agent Name] from [Brokerage] invited you to track your home purchase"
 - Buyer signs up, agent auto-associated with deal
 - Agent sees deal milestone status (phase, next deadline — read-only)
@@ -376,7 +376,7 @@ The simulation showed that an unprepared first impression with a brokerage princ
 
 A single document Agent Zero can hand to her broker, forward to a skeptical colleague, or reference in a Facebook group thread. Contents:
 
-- HomeBuyer Pro is a **document explanation tool**, not an advisory service
+- Phazr is a **document explanation tool**, not an advisory service
 - All AI-generated explanations include a visible disclaimer: *"This is not legal, financial, or real estate advice. Consult your agent, lender, or attorney for guidance."*
 - The tool **does not replace agent guidance** — it supplements it by reducing "what does this mean?" calls
 - Buyer documents are encrypted at rest and in transit
@@ -388,7 +388,7 @@ A single document Agent Zero can hand to her broker, forward to a skeptical coll
 
 | Objection | Response |
 |-----------|----------|
-| "Is this compliant with our E&O policy?" | HomeBuyer Pro doesn't provide advice — it explains documents in plain English with a disclaimer on every response. Agents aren't liable for what the tool says, just as they aren't liable for what Google says. |
+| "Is this compliant with our E&O policy?" | Phazr doesn't provide advice — it explains documents in plain English with a disclaimer on every response. Agents aren't liable for what the tool says, just as they aren't liable for what Google says. |
 | "What if the AI gives wrong advice?" | The tool explicitly states it's not advice. It's a reading aid, like a glossary. If a buyer has questions after reading the explanation, they call their agent — which is the existing workflow. |
 | "Are we liable if a buyer relies on this?" | No. The buyer initiates usage. The tool carries its own disclaimers. Agents recommend it the same way they'd recommend a mortgage calculator — it's a resource, not a professional opinion. |
 | "Why should I trust a new SaaS tool?" | Fair question. Here's the data from [X] deals where buyers used it: [link to deal data summary]. Zero compliance incidents. Fewer after-hours calls. More organized closings. |
@@ -434,8 +434,8 @@ Your realtor friend is not a beta tester. She's your **co-founder for distributi
 - Key question: "Would you pay to give this to every buyer?"
 - If yes → agent-product-market fit confirmed
 - If no → what's missing?
-- **Compile deal data into a one-page summary:** "X buyers used HomeBuyer Pro. After-hours calls dropped from Y to Z. Zero compliance incidents. Documents were organized before closing." This is your broker unlock — don't present it to the broker yet, just have it ready.
-- **Check the narrative:** Has the broker heard about HomeBuyer Pro yet? If not, now is the time for Agent Zero to casually mention it with the compliance doc in hand — before it comes through the grapevine.
+- **Compile deal data into a one-page summary:** "X buyers used Phazr. After-hours calls dropped from Y to Z. Zero compliance incidents. Documents were organized before closing." This is your broker unlock — don't present it to the broker yet, just have it ready.
+- **Check the narrative:** Has the broker heard about Phazr yet? If not, now is the time for Agent Zero to casually mention it with the compliance doc in hand — before it comes through the grapevine.
 
 ### 4.2 — Launch the Free Document Tool (Strategy B)
 
@@ -465,14 +465,14 @@ If even ONE buyer says "I finally understood what was happening" or "this caught
 
 Every transaction involves a lender. When a buyer sends an upload link to their loan officer, that LO sees:
 
-> "[Buyer Name]'s Deal — Upload documents to HomeBuyer Pro"
-> "Powered by HomeBuyer Pro"
+> "[Buyer Name]'s Deal — Upload documents to Phazr"
+> "Powered by Phazr"
 
 That LO does 15-20 closings/month. If they see ONE organized buyer, they'll wonder why their others aren't. Passive distribution — you don't sell to lenders, buyers do it for you.
 
 ### 4.6 — Title Company Early Engagement (Simulation-Informed)
 
-Both simulations showed title companies as **organic accelerators** — they start recommending HomeBuyer Pro to buyers unprompted after just a few exposures. The original plan deferred title company engagement to Phase 2. That's too late. Title officers field 3-5 "what does this mean?" calls per buyer during escrow. A tool that reduces those calls earns goodwill fast.
+Both simulations showed title companies as **organic accelerators** — they start recommending Phazr to buyers unprompted after just a few exposures. The original plan deferred title company engagement to Phase 2. That's too late. Title officers field 3-5 "what does this mean?" calls per buyer during escrow. A tool that reduces those calls earns goodwill fast.
 
 **Week 2-3:**
 - When Agent Zero's buyers send collaborator upload links to title/escrow contacts, follow up with a soft touch: "Did the upload link work okay for you? Any issues on your end?"
@@ -500,7 +500,7 @@ Don't wait for the broker to hear about it organically. Agent Zero casually ment
 
 > "I've been using this tool with my last few buyers — they're way more organized. Here's the compliance info in case you want to look at it."
 
-Hand the broker the compliance one-pager (from Section 0.7) **before** they form an opinion. The goal is to make the first thing they associate with HomeBuyer Pro be "compliance-aware," not "random SaaS tool."
+Hand the broker the compliance one-pager (from Section 0.7) **before** they form an opinion. The goal is to make the first thing they associate with Phazr be "compliance-aware," not "random SaaS tool."
 
 **Step 2: Lead with data, not enthusiasm (Week 4-6).**
 Present the deal data summary from Phase 1:
@@ -546,7 +546,7 @@ By week 4, you have data on which documents are uploaded most. Double down:
 
 **Agent Facebook/Instagram Groups:** Your realtor friend posts:
 
-> "I've been using this app with my buyers and it's a game-changer. They actually understand their closing disclosure now. Anyone else tried HomeBuyer Pro?"
+> "I've been using this app with my buyers and it's a game-changer. They actually understand their closing disclosure now. Anyone else tried Phazr?"
 
 Not you posting. A real agent with 8 years of credibility. One post in a 5,000-member agent group = 20-50 agent signups.
 
@@ -610,7 +610,7 @@ Build 10-15 total SEO pages. Each targeting a high-intent query:
 
 By month 3, lenders have seen the product through collaborator links. Approach:
 
-> "Borrowers who use HomeBuyer Pro close 20% faster. They understand their LE, track conditions, don't delay on docs. Want to recommend it?"
+> "Borrowers who use Phazr close 20% faster. They understand their LE, track conditions, don't delay on docs. Want to recommend it?"
 
 Lender gets branded invite link. Borrowers are more organized = fewer basic questions = faster close.
 
@@ -661,7 +661,7 @@ Lender gets branded invite link. Borrowers are more organized = fewer basic ques
 | 6 | **Resend email integration** | 1 day | All strategies — engagement, collaborator delivery, retention |
 | 7 | **Agent mini-dashboard** | 1-2 days | Strategy A — agents need visibility to stay engaged |
 | 8 | **Blog section** (`/blog`) | 1 day | Strategy C — SEO starts compounding immediately |
-| 9 | **"Powered by HomeBuyer Pro"** enhanced branding on public pages | 2 hours | Strategy A — every collaborator page is a passive ad |
+| 9 | **"Powered by Phazr"** enhanced branding on public pages | 2 hours | Strategy A — every collaborator page is a passive ad |
 | 10 | **Share results** button on /explain | 4 hours | Strategy B — makes document analysis shareable |
 
 ### Nice-to-Have for Month 2+
@@ -778,7 +778,7 @@ Lender gets branded invite link. Borrowers are more organized = fewer basic ques
 
 ### For Your Realtor Friend (to post in agent groups):
 
-> "I've been using this app called HomeBuyer Pro with my last few buyers and it's been a game-changer. They actually understand their closing disclosure now, and I'm getting way fewer 'what does this mean?' calls. It reads their documents and explains everything in plain English. Has anyone else tried it? [link]"
+> "I've been using this app called Phazr with my last few buyers and it's been a game-changer. They actually understand their closing disclosure now, and I'm getting way fewer 'what does this mean?' calls. It reads their documents and explains everything in plain English. Has anyone else tried it? [link]"
 
 ### Agent Empowerment Response (Simulation-Informed — counters "will this replace me?" fear)
 
@@ -792,11 +792,11 @@ The Strategy B simulation surfaced a recurring concern among agents: *"We need t
 
 > "My buyers used to call me at 10pm asking what their LE means. Now they read the explanation first and call me with real questions — 'should I push back on this origination fee?' That's the kind of conversation I want to be having."
 
-**Key framing principle:** The tool handles *information* (what does this document say?). The agent provides *judgment* (what should I do about it?). HomeBuyer Pro elevates the agent from reading documents out loud to providing strategic guidance. Every agent-facing message should reinforce this distinction.
+**Key framing principle:** The tool handles *information* (what does this document say?). The agent provides *judgment* (what should I do about it?). Phazr elevates the agent from reading documents out loud to providing strategic guidance. Every agent-facing message should reinforce this distinction.
 
 ### The 90-Second Pitch (for your friend to use in person):
 
-> "You know how your buyers call you at 10pm asking what their closing disclosure means? Or they miss a deadline because they didn't know it existed? HomeBuyer Pro is like a personal assistant for your buyer's transaction. It reads their documents, explains what everything means, tracks their deadlines, and catches mistakes — like when the closing disclosure doesn't match the loan estimate. You send them a link, they sign up, and suddenly they're organized. Fewer calls for you, fewer surprises for them. And honestly — your buyers start asking you better questions. Instead of 'what does escrow mean?' they ask 'should I push back on this fee?' That's the upgrade."
+> "You know how your buyers call you at 10pm asking what their closing disclosure means? Or they miss a deadline because they didn't know it existed? Phazr is like a personal assistant for your buyer's transaction. It reads their documents, explains what everything means, tracks their deadlines, and catches mistakes — like when the closing disclosure doesn't match the loan estimate. You send them a link, they sign up, and suddenly they're organized. Fewer calls for you, fewer surprises for them. And honestly — your buyers start asking you better questions. Instead of 'what does escrow mean?' they ask 'should I push back on this fee?' That's the upgrade."
 
 ### For Reddit/Community (Strategy B + C):
 
@@ -820,11 +820,11 @@ Lead with operational results. Brokers don't care about features — they care a
 
 ### Compliance One-Pager (content outline for the PDF/page):
 
-> **What HomeBuyer Pro Is:**
+> **What Phazr Is:**
 > - A document explanation tool that helps homebuyers understand their closing documents
 > - A deadline tracker and deal organizer
 >
-> **What HomeBuyer Pro Is NOT:**
+> **What Phazr Is NOT:**
 > - Not legal advice, financial advice, or real estate advice
 > - Not a replacement for agent, lender, or attorney guidance
 > - Not a referral service or marketplace

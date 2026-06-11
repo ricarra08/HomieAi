@@ -1,4 +1,4 @@
-# HomeBuyer Pro — State-by-State Comparison
+# Phazr — State-by-State Comparison
 ## FL, TX, AZ, CA — Complete Differences Analysis
 ## Version 1.0 — April 2026
 ## Internal reference — Confidential

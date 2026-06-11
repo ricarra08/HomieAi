@@ -1,4 +1,4 @@
-# HomeBuyer Pro — Product Specification
+# Phazr — Product Specification
 ## Version 1.2
 ### Aligned to MVP Scope Overlay v2.0 — Broad Surface, Narrow Core
 
@@ -6,13 +6,13 @@
 
 ## 1. Executive Summary
 
-**Product Name:** HomeBuyer Pro
+**Product Name:** Phazr
 **Product Type:** Web Application (Next.js)
 **Target Audience:** Homebuyers in the United States, from serious shopping through close
 **Primary Goal:** Give buyers clarity, organization, and confidence across the homebuying journey — with deepest value in escrow, closing, documents, financing, and AI-powered deal intelligence
 
 **Core Value Proposition:**
-HomeBuyer Pro v1 is a buyer-first homebuying workspace that helps people move from serious shopping to keys in hand. The product feels complete across the journey but earns its reputation in the escrow-to-close window — where documents arrive fast, deadlines run, financial numbers change, and the buyer is least informed.
+Phazr v1 is a buyer-first homebuying workspace that helps people move from serious shopping to keys in hand. The product feels complete across the journey but earns its reputation in the escrow-to-close window — where documents arrive fast, deadlines run, financial numbers change, and the buyer is least informed.
 
 The product organizes the journey, explains the deal, keeps the buyer on track, and helps them avoid expensive mistakes.
 
@@ -112,7 +112,7 @@ Does not appear in the product UI. Part of the long-term vision.
 
 ### 3.1 Product Identity
 
-HomeBuyer Pro v1 is a **buyer-first homebuying workspace** that helps people move from serious shopping to close.
+Phazr v1 is a **buyer-first homebuying workspace** that helps people move from serious shopping to close.
 
 It covers the full buyer journey but builds its moat in escrow, closing, documents, financing, and AI-powered deal intelligence.
 
@@ -526,7 +526,7 @@ The system does **not** need v1 support for:
   2. Documents (FileText icon) — **Build Deep** — Full-width view. Available once a deal exists.
   3. Financing (CreditCard icon) — **Build Deep** — Full-width view. Available once a deal exists.
 - **Active State:** Accent (#D38E45 Bronze) text/icon with Card (#FFFFFF) background, subtle shadow
-- **Brand header:** "HomeBuyer Pro" wordmark above the navigation items.
+- **Brand header:** "Phazr" wordmark above the navigation items.
 - **Bottom button:** Phase-contextual CTA at the bottom of the sidebar (e.g., "Proceed to Closing").
 
 **IA note:** The prototype has 3 sidebar nav items, not 5. Homes, Insurance, and other views are not top-level sidebar destinations in v1 — they are either embedded in the Dashboard (Shopping phase includes home tracking) or accessible from within phase dashboards (insurance binding is inside Escrow, not a separate nav item). The sidebar is intentionally minimal.
@@ -547,7 +547,7 @@ The system does **not** need v1 support for:
 - Message history with timestamps
 - Input field: "Ask about homebuying, documents, or scenarios..."
 - Send button (Primary/Mint Green #6EE7B7)
-- **Quick-action chips** pinned at bottom: "Explain this document", "Calculate closing costs", "Market analysis"
+- **Quick-action chips** pinned at bottom, phase-adaptive (e.g. "Explain this document", "Calculate closing costs", "What should I look for in a home?"). No "Market analysis" chip — the AI never performs market analysis (compliance brief §2.2)
 - **Deal-context grounded** — see Section 8 for full AI spec
 - Phase-aware depth (lighter in Shopping/Offer, deep in Escrow/Closing)
 - Dismiss by clicking X or pressing Escape; panel pushes content left or overlays depending on viewport width
@@ -655,7 +655,7 @@ The AI copilot **must not**:
 - Recommend specific professionals, lenders, or service providers
 - Imply certainty where underlying document or timeline data is incomplete
 - Answer questions about topics outside the buyer's current deal without clearly labeling the response as general education
-- Speculate on market conditions, property values, or investment outcomes
+- Speculate on market conditions, property values, or investment outcomes. (The Shopping surface displays clearly-disclaimed automated value scenarios and market statistics as product UI; the copilot may describe how to read those displays but never opines on them or applies them to decisions — see compliance brief §2.4)
 
 ### 8.5 Boundary Communication
 
@@ -758,10 +758,13 @@ The Shopping view is intentionally minimal — the prototype confirms this as a 
 - Transitions to Offer phase
 - Pre-populates offer form with selected home details
 
+#### Added post-spec (May–June 2026)
+- **Market Snapshot card** — local market statistics (median price, days on market, trend, mortgage rate, market temperature) from third-party market data
+- **Home Value Scenarios card** — clearly-disclaimed automated value estimate with conservative/moderate/optimistic 5/10/15-year scenario ranges; not an appraisal, Shopping surface only, never referenced by the AI as a value opinion (governing controls: compliance brief §2.4)
+
 #### What does NOT ship in Shopping
 - MLS search or property import
-- Market analytics, neighborhood comps, price trends
-- Equity appreciation forecast, BRBC summary
+- BRBC summary
 - Loan type recommendation wizard
 - Separate "Homes" sidebar navigation item — homes are managed inside Dashboard/Shopping
 
@@ -1104,7 +1107,7 @@ Visible in the product to give completeness and maintain the buyer relationship.
 - **Homeowner Tools** — "Maintenance tracking, warranty management, and more" + "Coming Soon" badge
 
 **4. Closing message** — Thin Continuity
-- "Thank you for using HomeBuyer Pro"
+- "Thank you for using Phazr"
 - "We hope we helped make your homebuying journey clearer and less stressful."
 
 #### Deferred from Post-Close (v1.0 archive)
@@ -1392,10 +1395,9 @@ The following component names are confirmed from the Figma prototype (file: `eiC
 - Cash-to-close breakdown
 
 **Deferred charts:**
-- Equity appreciation line chart
-- Home value trends
-- Market analytics
 - Offer strength gauge
+
+*(The home value scenario chart and market snapshot — originally deferred here — shipped May–June 2026; see the Shopping section and compliance brief §2.4.)*
 
 ### 11.4 Smart Comparisons — v1
 
@@ -1636,7 +1638,7 @@ v1 success is measured by engagement and retention, not revenue (see Section 19)
 > "This app provides educational guidance only. We don't provide legal, financial, or brokerage services."
 
 **AI copilot disclaimer (shown on first use and accessible via info icon):**
-> "HomeBuyer Pro's AI assistant explains documents and surfaces information from your deal. It does not provide legal, financial, or real estate advice. Always consult your attorney, lender, or agent before making decisions."
+> "Phazr's AI assistant explains documents and surfaces information from your deal. It does not provide legal, financial, or real estate advice. Always consult your attorney, lender, or agent before making decisions."
 
 ### 18.2 AI-Specific Compliance Guardrails
 
@@ -1702,7 +1704,7 @@ At 90 days, v1 is successful if:
 
 ### 20.1 Key Competitors
 
-| Competitor | Strength | Gap HomeBuyer Pro fills |
+| Competitor | Strength | Gap Phazr fills |
 |------------|----------|----------------------|
 | Redfin/Zillow | Property search, market data | No escrow/closing support |
 | Better.com / Rocket Mortgage | Loan origination | Lender-centric, not buyer-centric; no deal management |
@@ -1922,7 +1924,7 @@ This spec exists alongside two other governing documents:
 
 The following features are part of the long-term product vision but are **not v1 build scope**. They are preserved for future reference.
 
-- Full Shopping depth: MLS integration, property import, market analytics, neighborhood comps, equity forecast
+- Full Shopping depth: MLS integration, property import (market snapshot and value scenarios shipped May–June 2026 in clearly-disclaimed form — see compliance brief §2.4)
 - Full Offer depth: RPA builder, offer strength analyzer, counteroffer simulator, escalation clauses
 - Full Post-Close depth: equity tracker, refi rate watch, insurance risk monitor, maintenance planner, ADU planner, property tax
 - Full Insurance depth: quote comparison, coverage education, carrier analysis
@@ -1996,7 +1998,7 @@ Toast notifications: 3000ms (auto-dismiss)
 **Document Version:** 1.2
 **Last Updated:** April 5, 2026
 **Aligned To:** MVP Scope Overlay v2.0 — Broad Surface, Narrow Core
-**Purpose:** Product reference document for HomeBuyer Pro v1 — buyer-first homebuying workspace, serious shopping through close
+**Purpose:** Product reference document for Phazr v1 — buyer-first homebuying workspace, serious shopping through close
 **Audience:** Product managers, developers, designers, stakeholders
 **Scope Authority:** MVP Scope Overlay v2.0 governs. Where this spec and the overlay conflict, the overlay wins.
 

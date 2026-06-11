@@ -1,4 +1,4 @@
-# HomeBuyer Pro — State Workflow Engine Specification
+# Phazr — State Workflow Engine Specification
 ## Engineering Reference for State-Conditional Workflows
 ## Version 1.0 — April 2026
 ## Internal — Confidential

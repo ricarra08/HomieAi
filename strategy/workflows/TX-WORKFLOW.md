@@ -1,6 +1,6 @@
 # Texas Real Estate Transaction Workflow
 
-> Product + Engineering reference for TX-specific transaction logic in HomeBuyer Pro.
+> Product + Engineering reference for TX-specific transaction logic in Phazr.
 
 ---
 

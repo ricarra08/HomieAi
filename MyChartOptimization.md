@@ -1,7 +1,7 @@
-You are now operating in Phase 2 strategy mode for HomeBuyer Pro.
+You are now operating in Phase 2 strategy mode for Phazr.
 
 Context:
-HomeBuyer Pro was intentionally built first as a buyer-first B2C product.
+Phazr was intentionally built first as a buyer-first B2C product.
 The core buyer experience is already live and proven around:
 - Shopping / Offer / Escrow / Closing journey continuity
 - document intelligence
@@ -20,7 +20,7 @@ Now that the buyer truth layer is proven, we want to design the next phase:
 MYCHART-STYLE BROKERAGE LAYER
 
 Core analogy:
-Just like MyChart gives patients a clean experience while still serving hospitals and providers underneath, HomeBuyer Pro should remain a buyer-first experience while allowing brokerages to offer it as a branded premium client portal/workspace.
+Just like MyChart gives patients a clean experience while still serving hospitals and providers underneath, Phazr should remain a buyer-first experience while allowing brokerages to offer it as a branded premium client portal/workspace.
 
 This is NOT:
 - a pivot into a clunky brokerage admin tool
@@ -146,7 +146,7 @@ Describe the leading indicators that would prove this next phase is working:
 
 10. Final recommendation
 Give a direct strategic recommendation:
-Should HomeBuyer Pro pursue the MyChart-style brokerage layer after the buyer product is proven?
+Should Phazr pursue the MyChart-style brokerage layer after the buyer product is proven?
 If yes, how aggressively and in what sequence?
 
 Tone:

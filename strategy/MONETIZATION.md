@@ -1,4 +1,4 @@
-# HomeBuyer Pro — Monetization Strategy
+# Phazr — Monetization Strategy
 ## Version 1.0 — April 2026
 ## Internal strategy document — Confidential
 
@@ -86,7 +86,7 @@ Buyers spend $8K–$12K in closing costs. The value propositions at each tier:
 Agents who see the platform (via collaborator upload links, email CC, or buyer screenshots) will want their buyers using it.
 
 **Mechanism:**
-1. Agent gets a free branded referral link: "Your agent recommends HomeBuyer Pro"
+1. Agent gets a free branded referral link: "Your agent recommends Phazr"
 2. Buyer signs up through the link → Pro features unlocked for that deal (buyer doesn't pay)
 3. Agent pays nothing at this stage — this is a lead-in to Phase 3
 4. Agent sees that their buyers are more organized, ask fewer repetitive questions, and close more smoothly
@@ -130,7 +130,7 @@ Brokerage renews subscription
 
 The agent value proposition is not "another tool." It's **fewer phone calls and fewer confused clients:**
 
-| Agent pain today | How HomeBuyer Pro solves it |
+| Agent pain today | How Phazr solves it |
 |---|---|
 | "Where are we in the process?" calls | Buyer has real-time phase dashboard |
 | "What does this document mean?" calls | AI explains every document |
@@ -142,7 +142,7 @@ The agent value proposition is not "another tool." It's **fewer phone calls and 
 
 ### 4.4 Why Brokerages Will Pay
 
-| Brokerage pain today | How HomeBuyer Pro solves it |
+| Brokerage pain today | How Phazr solves it |
 |---|---|
 | Inconsistent client experience across agents | Standardized branded workspace for every buyer |
 | No visibility into deal progress | Portfolio dashboard with milestone tracking |
@@ -202,7 +202,7 @@ This data is valuable to buyers (choosing vendors), agents (recommending vendors
 ### 6.2 Lender Marketplace (Year 3-4, Deferred)
 The Zillow playbook applied to the transaction, not the search:
 - Zillow monetizes the top of funnel (lead gen for agents)
-- HomeBuyer Pro can monetize the middle/bottom of funnel (lender comparison + transaction intelligence)
+- Phazr can monetize the middle/bottom of funnel (lender comparison + transaction intelligence)
 - Buyers already compare LEs in the platform → natural insertion point for lender advertising or referral fees
 - **This is the $100M+ play.** But it requires volume, trust, and regulatory care. Defer until B2C + B2B2C are proven.
 

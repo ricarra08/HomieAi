@@ -1,10 +1,10 @@
-# HomeBuyer Pro — MVP Scope Overlay
+# Phazr — MVP Scope Overlay
 ## Version 2.0
 ## Governing document for v1 build scope
 
 ## Purpose
 
-This document defines what **HomeBuyer Pro is for v1**, what it is **not**, and what the team should build first.
+This document defines what **Phazr is for v1**, what it is **not**, and what the team should build first.
 
 It sits above the broader Product Specification. If the broader spec conflicts with this overlay, **this overlay wins**.
 
@@ -20,7 +20,7 @@ The product should feel like a complete buyer operating system across the homebu
 
 ## 1. Product Identity
 
-HomeBuyer Pro v1 is a **buyer-first homebuying workspace** that helps people move from serious shopping to close.
+Phazr v1 is a **buyer-first homebuying workspace** that helps people move from serious shopping to close.
 
 Its job is to help buyers:
 - organize their journey across every phase
@@ -29,7 +29,7 @@ Its job is to help buyers:
 - stay on top of next steps
 - avoid expensive mistakes
 
-### HomeBuyer Pro v1 is
+### Phazr v1 is
 - a buyer-facing workspace that spans the homebuying journey
 - a document intelligence layer
 - a financing clarity layer
@@ -37,7 +37,7 @@ Its job is to help buyers:
 - a deal-context AI copilot
 - a guided system that adapts depth to the buyer's current phase
 
-### HomeBuyer Pro v1 is not
+### Phazr v1 is not
 - a home search portal or Zillow replacement
 - an agent replacement
 - a contract drafting tool
@@ -188,15 +188,15 @@ The Shopping phase is the product's front door for early-stage buyers. The Figma
 - "Ready to make an offer?" CTA → Offer workspace
 - AI Copilot floating button available; lighter grounding in this phase
 - Home tracking is embedded in the Shopping dashboard, NOT a separate sidebar nav item
+- **Added post-MVP (May–June 2026):** Market Snapshot card (local market statistics from third-party market data) and Home Value Scenarios card (clearly-disclaimed automated value estimate with conservative/moderate/optimistic 5/10/15-year scenario ranges). Not an appraisal, never shown in Offer/Escrow/Closing surfaces, never used by the AI as a value opinion — governing controls in compliance brief §2.4
 
 **What does not ship:**
 - Separate "Homes" sidebar navigation item (prototype has 3 nav items: Dashboard, Documents, Financing)
 - MLS integration or property search
 - Zillow/Redfin import
-- Market analytics or neighborhood comps
 - Affordability calculator (not in prototype)
 - Pre-approval status card (not in prototype)
-- Equity appreciation forecast, BRBC summary, loan type wizard
+- BRBC summary, loan type wizard
 
 ### Offer — Build Light
 The Offer phase captures the transition from "interested buyer" to "buyer under contract."
@@ -265,7 +265,7 @@ These are not optional polish. They are part of the product's identity and user 
 ### UI behavior (confirmed from prototype screenshot)
 The AI Copilot has two states:
 - **Collapsed:** 56x56 Bronze floating button, fixed bottom-right. Present on every screen. Never open by default.
-- **Expanded:** Right-side panel (~300px). "AI Copilot" header with expand/close buttons. Chat interface with message history, input field, send button (Mint Green). Quick-action chips pinned at bottom: "Explain this document", "Calculate closing costs", "Market analysis" — chips adapt to the current phase.
+- **Expanded:** Right-side panel (~300px). "AI Copilot" header with expand/close buttons. Chat interface with message history, input field, send button (Mint Green). Quick-action chips pinned at bottom, adapting to the current phase (e.g. "Explain this document", "Calculate closing costs", "What should I look for in a home?"). No "Market analysis" chip — the AI never performs market analysis (compliance brief §2.2).
 
 ### Non-negotiable rule
 **The AI must always know the deal context before it answers.**
@@ -289,7 +289,7 @@ If sufficient context is not available, the AI should request it rather than ans
 
 ### AI is not allowed to do
 - Everything listed in spec Section 8.4
-- In Shopping: provide property valuations, market predictions, investment advice
+- In Shopping: provide property valuations, market predictions, investment advice. (The Shopping page itself displays clearly-disclaimed automated value scenarios and market statistics as product UI — the AI may describe how to read those cards but never treats their numbers as a value opinion or applies them to offer decisions; see compliance brief §2.4)
 - In Offer: draft contract terms, recommend offer prices, negotiate
 
 The AI should explicitly state its boundary when needed.
