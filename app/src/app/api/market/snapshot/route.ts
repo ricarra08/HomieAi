@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
   // 4. Snapshot via shared helper. The rate limit is charged inside ensureSnapshot's
   // single-flight miss path (onCacheMiss), so concurrent requests from the two shopping
   // cards cost one token, not two, and the charge can't drift from the cache check.
-  // TODO(v2): move rateLimit to a distributed store so it survives multi-instance deployment.
+  // Rate limiting is durable (Supabase consume_rate_limit RPC, migration 019) with an in-memory fallback.
   let snapshotResult;
   try {
     snapshotResult = await ensureSnapshot({
@@ -121,10 +121,14 @@ export async function POST(request: NextRequest) {
         baths: savedHome.baths,
         sqft: savedHome.sqft,
       },
-      onCacheMiss: () => {
-        const { limited } = rateLimit(`valuation:${userId}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
+      onCacheMiss: async () => {
+        const { limited, retryAfterSeconds } = await rateLimit(
+          `valuation:${userId}`,
+          RATE_LIMIT_MAX,
+          RATE_LIMIT_WINDOW_MS
+        );
         if (limited) {
-          throw new RateLimitExceededError(RATE_LIMIT_WINDOW_MS / 1000);
+          throw new RateLimitExceededError(retryAfterSeconds ?? RATE_LIMIT_WINDOW_MS / 1000);
         }
       },
     });

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sanitizeFilename } from "@/lib/valuation/prompt-safety";
 import { isAllowedFileContent } from "@/lib/documents/file-signature";
@@ -153,28 +153,34 @@ export async function POST(request: NextRequest) {
     await supabase.from("documents").update({ status: "failed" }).eq("id", doc.id);
     return NextResponse.json({ success: true, documentId: doc.id, fileName: file.name });
   }
-  fetch(`${origin}/api/documents/process`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-internal-secret": internalSecret,
-    },
-    body: JSON.stringify({ documentId: doc.id }),
-  }).then(async (res) => {
-    if (!res.ok) {
-      console.error(`[collaborator-upload] Document processing failed for ${doc.id}: ${res.status}`);
-      // Mark document as failed so the UI reflects the error
+  // after() keeps the serverless function alive until this completes — a bare
+  // fire-and-forget fetch can be frozen the moment the response is sent, leaving the
+  // document stuck in "processing" forever on the deployed environment.
+  after(async () => {
+    try {
+      const res = await fetch(`${origin}/api/documents/process`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-internal-secret": internalSecret,
+        },
+        body: JSON.stringify({ documentId: doc.id }),
+      });
+      if (!res.ok) {
+        console.error(`[collaborator-upload] Document processing failed for ${doc.id}: ${res.status}`);
+        // Mark document as failed so the UI reflects the error
+        await supabase
+          .from("documents")
+          .update({ status: "failed" })
+          .eq("id", doc.id);
+      }
+    } catch (err) {
+      console.error(`[collaborator-upload] Document processing request failed for ${doc.id}:`, err);
       await supabase
         .from("documents")
         .update({ status: "failed" })
         .eq("id", doc.id);
     }
-  }).catch(async (err) => {
-    console.error(`[collaborator-upload] Document processing request failed for ${doc.id}:`, err);
-    await supabase
-      .from("documents")
-      .update({ status: "failed" })
-      .eq("id", doc.id);
   });
 
   return NextResponse.json({ success: true, documentId: doc.id, fileName: file.name });

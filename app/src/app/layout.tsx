@@ -18,6 +18,7 @@ const dmSerif = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://phazr.co"),
   title: "Phazr — Finally Understand Your Home Purchase",
   description:
     "Phazr organizes your escrow, explains your documents, tracks your deadlines, and catches costly mistakes — so you close with confidence.",
@@ -28,12 +29,15 @@ export const metadata: Metadata = {
     siteName: "Phazr",
     type: "website",
     locale: "en_US",
+    // TODO(post-beta): replace with a purpose-made 1200x630 social card.
+    images: ["/PHAZR-Logo.png"],
   },
   twitter: {
     card: "summary_large_image",
     title: "Phazr — Finally Understand Your Home Purchase",
     description:
       "AI reads your real estate documents and tells you what they mean. Track deadlines, compare loans, prevent wire fraud. Free to start.",
+    images: ["/PHAZR-Logo.png"],
   },
   keywords: [
     "homebuyer",

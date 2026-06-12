@@ -76,7 +76,11 @@ export default function ClaimPage({ params }: { params: Promise<{ token: string 
               ? "This invite link has expired. Ask your agent for a new one."
               : body.error === "email_mismatch"
                 ? "This invite was sent to a different email address. Sign in with the email your agent used, or ask them for a new link."
-                : "Couldn't claim this workspace. Please try again.",
+                : body.error === "cannot_claim_own"
+                  ? "This is your own invite link — it's meant for your client. Send it to them instead."
+                  : body.error === "not_a_buyer" || body.error === "no_profile"
+                    ? "This account is set up as an agent. Your client should open this link with their own (buyer) account."
+                    : "Couldn't claim this workspace. Please try again.",
         );
         setClaiming(false);
         return;

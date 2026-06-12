@@ -70,6 +70,12 @@ These features touch financial data, professional-facing surfaces, or first impr
 
 ### 1.3 Free `/explain` Tool (Strategy B First Impression)
 
+> **DESCOPED FROM BETA (2026-06-12, strategy ruling):** the public ungated contract-explainer
+> is deferred indefinitely — Florida UPL exposure is criminal (Fla. Stat. §454.23), the niche is
+> already occupied by free tools, and counsel review is a precondition for any public explainer
+> surface. It is NOT part of the launch gate; the Golden Path below does not include it. The
+> checklist is preserved for whenever a (likely condo-document) wedge ships post-counsel.
+
 **What it does:** Public, ungated page. Upload any PDF, get instant AI classification + explanation. No signup.
 
 **Why it's Tier 1:** This is likely the first time a buyer or agent encounters Phazr. The simulation showed privacy and accuracy are the top two objections. If the first experience is a broken upload, a wrong classification, or a confusing error — they leave and never come back. There is no second first impression.
@@ -372,6 +378,6 @@ If all 10 steps work with real documents, ship the beta.
 
 **How bugs reach you:**
 - Agent Zero reports directly (text/call — she's your first line of defense)
-- In-app feedback mechanism (add a simple "Report an issue" link in the sidebar — low effort, high signal)
-- Monitor PostHog for error events and rage clicks
-- Check Supabase logs for failed API calls daily during the first 2 weeks
+- In-app feedback mechanism — ✅ shipped 2026-06-12: "Report an issue" in the sidebar account menu (mailto)
+- ~~Monitor PostHog~~ — analytics descoped to fast-follow (first post-launch task); until then:
+- Check Supabase logs + Vercel function logs for failed API calls daily during the first 2 weeks (`lib/log.ts` emits structured `route`/`event` errors)

@@ -24,7 +24,7 @@ function json(status: number, body: unknown) {
 
 export async function GET(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const { limited } = rateLimit(`claim-info:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
+  const { limited } = await rateLimit(`claim-info:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
   if (limited) return json(429, { error: "rate_limited" });
 
   const token = request.nextUrl.searchParams.get("token");

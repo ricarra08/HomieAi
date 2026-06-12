@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
   if (authError || !authData.user) return json(401, { error: "unauthenticated" });
   const agentId = authData.user.id;
 
-  const { limited } = rateLimit(`claim-invite:${agentId}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
+  const { limited } = await rateLimit(`claim-invite:${agentId}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
   if (limited) return json(429, { error: "rate_limited" });
 
   // RLS gates this read to transactions the caller owns or agents.

@@ -15,7 +15,7 @@ function clientIdentifier(request: NextRequest): string {
 
 export async function GET(request: NextRequest) {
   const ip = clientIdentifier(request);
-  const { limited } = rateLimit(`geocode:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
+  const { limited } = await rateLimit(`geocode:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
   if (limited) {
     return Response.json(
       { error: "Too many address lookups. Please wait a moment." },

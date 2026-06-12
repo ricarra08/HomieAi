@@ -12,11 +12,17 @@ Mark each `[x]` when it passes; note failures inline.
 
 ## Pre-test setup (do first)
 
-- [ ] **Apply migrations 011–017** in the Supabase SQL editor, in order. Note especially:
+- [ ] **Apply migrations 011–020** in the Supabase SQL editor, in order. Note especially:
   - `016_redact_legacy_document_pii.sql` is **destructive** — nulls extracted_text/ai_summary
     and sets affected docs to `status='failed'`. Run on the beta/dev DB only when ready.
   - `017_agent_invites.sql` adds `profiles.invite_slug` + `referred_by_agent_id` — **the
     /join feature 404s/no-ops until this is applied.**
+  - `018_transaction_claim.sql` adds the claim_token columns — **the entire agent→buyer
+    invite/claim flow errors out until this is applied.**
+  - `019_durable_rate_limit.sql` adds `consume_rate_limit` — without it every API call
+    logs `durable_limiter_unavailable_memory_fallback` and limiting is per-instance only.
+  - `020_increment_uploads_received.sql` defines the RPC the collaborator upload route
+    has always called (silences one logged error per upload).
 - [ ] **Env vars set** (local `.env.local` + Vercel): `RESEND_API_KEY`, `EMAIL_FROM`,
   `NEXT_PUBLIC_SITE_URL`, plus existing Supabase/OpenAI/Geoapify/`INTERNAL_API_SECRET`.
 - [ ] Two accounts ready: one **buyer**, one **agent** (chosen at onboarding).

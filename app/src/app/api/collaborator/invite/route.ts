@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
   }
   const userId = authData.user.id;
 
-  const { limited } = rateLimit(`collab-invite:${userId}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
+  const { limited } = await rateLimit(`collab-invite:${userId}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
   if (limited) {
     return json(429, { error: "rate_limited" });
   }

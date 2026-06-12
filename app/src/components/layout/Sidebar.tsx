@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { useUIStore } from "@/lib/store";
-import { LayoutDashboard, FileText, CreditCard, ChevronLeft, ChevronRight, LogOut, Users, ArrowLeft, Archive } from "lucide-react";
+import { LayoutDashboard, FileText, CreditCard, ChevronLeft, ChevronRight, LogOut, Users, ArrowLeft, Archive, LifeBuoy } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { useProfile, useTransaction } from "@/lib/hooks/queries";
@@ -16,6 +16,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
+
+// Beta feedback inbox (Pre-Beta-Requirements "Bug Response Protocol"). Swap to a
+// support@phazr.co alias once inbound mail is set up on the domain.
+const SUPPORT_EMAIL = "ricardocarr0817@gmail.com";
 
 const buyerNavItems = [
   { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -193,6 +197,18 @@ export function Sidebar() {
                 </DropdownMenuLabel>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => {
+                  window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
+                    "Phazr — issue report"
+                  )}&body=${encodeURIComponent(
+                    "What happened:\n\nWhat I expected:\n\nPage I was on:\n"
+                  )}`;
+                }}
+              >
+                <LifeBuoy className="w-4 h-4" />
+                Report an issue
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="w-4 h-4" />
                 Log out

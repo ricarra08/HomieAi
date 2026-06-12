@@ -40,9 +40,9 @@ export default function TermsPage() {
               services (collectively, the &ldquo;Service&rdquo;).
             </P>
             <P>
-              By creating an account, accessing the Service, or using the free
-              document analyzer tool at /explain, you acknowledge that you have
-              read, understood, and agree to be bound by these Terms and our{" "}
+              By creating an account or accessing the Service, you acknowledge
+              that you have read, understood, and agree to be bound by these
+              Terms and our{" "}
               <Link href="/privacy" className="text-accent hover:underline">
                 Privacy Policy
               </Link>
@@ -50,9 +50,9 @@ export default function TermsPage() {
               these Terms, do not use the Service.
             </P>
             <P>
-              If you are using the free document analyzer tool without creating
-              an account, your upload of a document constitutes acceptance of
-              these Terms as they apply to that feature.
+              If you are uploading documents through a secure upload link without
+              creating an account, your upload constitutes acceptance of these
+              Terms as they apply to that feature.
             </P>
           </Section>
 
@@ -718,12 +718,6 @@ export default function TermsPage() {
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Privacy Policy
-            </Link>
-            <Link
-              href="/compliance"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Compliance
             </Link>
           </div>
         </div>

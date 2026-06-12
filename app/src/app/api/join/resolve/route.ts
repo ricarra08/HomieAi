@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
   }
 
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const { limited } = rateLimit(`join-resolve:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
+  const { limited } = await rateLimit(`join-resolve:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
   if (limited) {
     return json(429, { error: "rate_limited" });
   }

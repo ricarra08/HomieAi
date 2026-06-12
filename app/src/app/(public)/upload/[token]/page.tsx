@@ -35,7 +35,16 @@ export default function CollaboratorUploadPage() {
         return res.json();
       })
       .then((data) => setLinkInfo(data))
-      .catch((err) => setError(err.message))
+      .catch((err) => {
+        // Professionals (lenders, title officers) see this page — never surface raw
+        // exception text (e.g. a JSON parse error) to them.
+        console.error("collaborator link validation failed:", err);
+        setError(
+          err instanceof Error && err.message && !err.message.includes("JSON")
+            ? err.message
+            : "This link couldn't be verified. Please try again in a moment, or ask the buyer to send a fresh link."
+        );
+      })
       .finally(() => setLoading(false));
   }, [token]);
 

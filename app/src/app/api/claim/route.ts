@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
   if (authError || !authData.user) return json(401, { error: "unauthenticated" });
   const buyerId = authData.user.id;
 
-  const { limited } = rateLimit(`claim:${buyerId}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
+  const { limited } = await rateLimit(`claim:${buyerId}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);
   if (limited) return json(429, { error: "rate_limited" });
 
   const admin = createSupabaseAdmin(

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useInView } from "motion/react";
 import {
@@ -19,7 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { DEMO_LE_ROWS, DEMO_TESTIMONIALS, FEATURES } from "@/components/landing/data";
+import { DEMO_LE_ROWS, FEATURES } from "@/components/landing/data";
 import { DocumentPreview } from "@/components/landing/DocumentPreview";
 import { ExtractionPanel } from "@/components/landing/ExtractionPanel";
 import { PainPoint } from "@/components/landing/PainPoint";
@@ -690,58 +691,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ── */}
-      <section className="bg-secondary/50 border-y border-border py-20">
-        <div className="max-w-6xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl font-semibold tracking-tight">
-              What homebuyers and realtors are saying
-            </h2>
-            <p className="text-base text-muted-foreground mt-3 max-w-lg mx-auto">
-              From anxious to confident — Phazr guides buyers through the
-              process they never learned in school.
-            </p>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {DEMO_TESTIMONIALS.map((t, i) => (
-              <motion.div
-                key={t.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-30px" }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col"
-              >
-                <p className="text-3xl text-accent/40 font-serif leading-none mb-3">
-                  &ldquo;
-                </p>
-                <p className="text-sm text-foreground leading-relaxed flex-1">
-                  {t.quote}
-                </p>
-                <div className="flex items-center gap-3 mt-5 pt-4 border-t border-border">
-                  <div className="w-9 h-9 rounded-full bg-accent/15 flex items-center justify-center shrink-0">
-                    <span className="text-xs font-semibold text-accent">
-                      {t.initials}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {t.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Testimonials removed for beta launch: the product has no users yet, and
+          fabricated endorsements with names/locations are both an FTC problem and a
+          credibility risk with the first real agents. Reinstate with real quotes. */}
 
       {/* ── TRUST / SECURITY ── */}
       <section className="py-16">
@@ -813,6 +765,20 @@ export default function LandingPage() {
             <p className="text-sm text-muted-foreground mt-1">
               From serious shopping to keys in hand.
             </p>
+            <div className="flex gap-4 mt-2">
+              <Link
+                href="/terms"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Terms of Service
+              </Link>
+              <Link
+                href="/privacy"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Privacy Policy
+              </Link>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} Phazr. All rights reserved.

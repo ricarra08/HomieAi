@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { limited } = rateLimit(`copilot:${userId}`, 30, 60_000);
+    const { limited } = await rateLimit(`copilot:${userId}`, 30, 60_000);
     if (limited) {
       return new Response(
         JSON.stringify({ error: "Too many requests. Please wait a moment." }),

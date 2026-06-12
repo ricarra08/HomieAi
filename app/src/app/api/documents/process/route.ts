@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limit by documentId to prevent reprocess spam
-    const { limited } = rateLimit(`doc-process:${documentId}`, 3, 60_000);
+    const { limited } = await rateLimit(`doc-process:${documentId}`, 3, 60_000);
     if (limited) {
       return NextResponse.json(
         { error: "Too many processing requests. Please wait." },
